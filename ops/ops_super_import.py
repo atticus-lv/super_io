@@ -14,24 +14,28 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
 
     def execute(self, context):
         clipboard = Clipboard.push()
-        config = get_config(check_use=True)
 
         for file in clipboard.file_urls:
             # custom operator
+            config = get_config(check_use=True)
             ext = file.filepath.split('.')[-1].lower()
+            ext_list = []
+            index_list = []
 
-            ext_list = [ops_config['extension'] for ops_config in config.values()]
-            print(ext_list)
+            for index, ops_config in config.items():
+                ext_list.append(ops_config['extension'])
+                index_list.append(index)
 
             if ext in ext_list:
                 index = ext_list.index(ext)
-                ops_config = config[index]
+                ops_args = config[index_list[index]]
 
-                ops_config.pop('extension')
-                bl_idname = ops_config.pop('bl_idname')
-                ops_config['filepath'] = file.filepath
+                # clean args
+                ops_args.pop('extension')
+                bl_idname = ops_args.pop('bl_idname')
+                ops_args['filepath'] = file.filepath
                 try:
-                    exec(f'bpy.ops.{bl_idname}(**{ops_config})')
+                    exec(f'bpy.ops.{bl_idname}(**{ops_args})')
                 except Exception as e:
                     self.report({"ERROR"}, str(e))
 
