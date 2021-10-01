@@ -36,8 +36,9 @@ class ExtensionOperatorProperty(PropertyGroup):
 
 
 class SPIO_OT_OperatorInputAction(bpy.types.Operator):
+    """Add / Remove current prop"""
     bl_idname = "wm.spio_operator_input_action"
-    bl_label = "Add"
+    bl_label = "Operator Props Operate"
     bl_options = {'REGISTER', 'UNDO'}
 
     extension_list_index: IntProperty()
@@ -60,8 +61,9 @@ class SPIO_OT_OperatorInputAction(bpy.types.Operator):
 
 
 class SPIO_OT_ExtensionListAction(bpy.types.Operator):
+    """Add / Remove current config"""
     bl_idname = "wm.spio_extension_list_action"
-    bl_label = "Add"
+    bl_label = "Config Operate"
     bl_options = {'REGISTER', 'UNDO'}
 
     index: IntProperty()
@@ -86,9 +88,11 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     extension_list: CollectionProperty(type=ExtensionOperatorProperty)
 
     def draw(self, context):
-        layout = self.layout
+        layout = self.layout.column()
+
         row = layout.row()
         row.alignment = 'CENTER'
+        row.scale_y = 1.25
         row.operator('spio.config_import', icon='IMPORT')
         row.operator('spio.config_export', icon='EXPORT')
 
@@ -99,6 +103,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             col = layout.box().column()
 
             row = col.row()
+            # row.alert = True
             row.alignment = 'RIGHT'
             d = row.operator('wm.spio_extension_list_action', text='Remove', icon='PANEL_CLOSE')
             d.action = 'REMOVE'
@@ -139,7 +144,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         row = layout.row(align=True)
         row.alignment = 'LEFT'
-        row.operator('wm.spio_extension_list_action', text='Add Extension Config', icon='FILE_NEW').action = 'ADD'
+        row.operator('wm.spio_extension_list_action', text='Add Extension Config', icon='FILE_NEW',
+                     emboss=False).action = 'ADD'
 
 
 def register():

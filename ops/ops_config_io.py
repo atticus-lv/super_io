@@ -21,7 +21,6 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
 
         with open(self.filepath, "r", encoding='utf-8') as f:
             data = json.load(f)
-            print(data)
             for ext, values in data.items():
                 if ext not in exist_config:
                     item = pref.extension_list.add()
@@ -34,6 +33,8 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
                         prop_item = item.prop_list.add()
                         prop_item.name = prop
                         prop_item.value = str(prop_value)
+
+            self.report({"INFO"}, f'Load config from "{self.filepath}"')
 
         return {"FINISHED"}
 
@@ -53,6 +54,7 @@ class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
         config = get_config()
         with open(self.filepath, "w", encoding='utf-8') as f:
             json.dump(config, f, indent=4)
+            self.report({"INFO"}, f'Save config to "{self.filepath}"')
 
         return {"FINISHED"}
 
