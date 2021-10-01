@@ -1,5 +1,6 @@
+# This module is basic on https://github.com/Yeetus3141/ImagePaste
+
 from __future__ import annotations
-from locale import getdefaultlocale
 
 
 class Process:

@@ -80,6 +80,11 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
+        row = layout.row()
+        row.alignment = 'CENTER'
+        row.operator('spio.config_import',icon = 'IMPORT')
+        row.operator('spio.config_export',icon='EXPORT')
+
         row = layout.row(align=True)
         row.alignment = 'LEFT'
 
