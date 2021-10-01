@@ -2,6 +2,7 @@ import bpy
 
 from ..clipboard.windows import WindowsClipboard as Clipboard
 from .utils import get_config
+from mathutils import Vector
 
 
 class VIEW3D_OT_SuperImport(bpy.types.Operator):
@@ -47,9 +48,6 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
                 bpy.ops.import_curve.svg(filepath=file.filepath)
             else:
                 bpy.ops.object.load_reference_image(filepath=file.filepath)
-
-            # view import
-            bpy.ops.view3d.view_selected(use_all_regions=False)
 
         return {"FINISHED"}
 
