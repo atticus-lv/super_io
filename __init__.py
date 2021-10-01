@@ -1,15 +1,15 @@
 bl_info = {
-    "name": "Super Import Export (SPIO)",
+    "name": "Super IO (SPIO)",
     "author": "Atticus",
-    "blender": (3, 0, 0),
-    "version": (0, 1),
+    "blender": (2, 9, 3),
+    "version": (0, 2),
     "category": "Import-Export",
     "support": "COMMUNITY",
     "doc_url": "",
     "tracker_url": "",
     "description": "Copy paste to import Model/Images (Inspired by Binit's ImagePaste)",
-    'warning':"Only Windows Support Now",
-    "location": "3D Viewport",
+    'warning': "Only Windows Support Now",
+    "location": "3DView > F3 > Super Import( Recommend to assign shortcut 'Ctrl Shift V')",
 }
 
 import importlib
