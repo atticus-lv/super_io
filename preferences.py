@@ -22,9 +22,16 @@ class OperatorInputProperty(PropertyGroup):
     value: StringProperty(name='Value')
 
 
+def correct_blidname(self, context):
+    if self.bl_idname.startswith('bpy.ops.'):
+        self.bl_idname = self.bl_idname[8:]
+    if self.bl_idname.endswith('()'):
+        self.bl_idname = self.bl_idname[:-2]
+
+
 class ExtensionOperatorProperty(PropertyGroup):
     name: StringProperty(name='Extension')
-    bl_idname: StringProperty(name='Operator Identifier')
+    bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
     prop_list: CollectionProperty(type=OperatorInputProperty)
 
 
@@ -82,8 +89,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         layout = self.layout
         row = layout.row()
         row.alignment = 'CENTER'
-        row.operator('spio.config_import',icon = 'IMPORT')
-        row.operator('spio.config_export',icon='EXPORT')
+        row.operator('spio.config_import', icon='IMPORT')
+        row.operator('spio.config_export', icon='EXPORT')
 
         row = layout.row(align=True)
         row.alignment = 'LEFT'
