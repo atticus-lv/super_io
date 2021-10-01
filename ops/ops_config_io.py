@@ -17,7 +17,7 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
         pref = get_pref()
-        exist_config = get_config()
+        exist_config = get_config(check_use=False)
 
         with open(self.filepath, "r", encoding='utf-8') as f:
             data = json.load(f)
@@ -25,11 +25,10 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
                 if ext not in exist_config:
                     item = pref.extension_list.add()
 
-                    item.name = ext
-                    item.bl_idname = values['bl_idname']
+                    item.name = values.pop('extension')
+                    item.bl_idname = values.pop('bl_idname')
 
                     for prop, prop_value in values.items():
-                        if prop == 'bl_idname': continue
                         prop_item = item.prop_list.add()
                         prop_item.name = prop
                         prop_item.value = str(prop_value)

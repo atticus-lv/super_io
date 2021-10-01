@@ -20,8 +20,14 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
             # custom operator
             ext = file.filepath.split('.')[-1].lower()
 
-            if ext in config:
-                ops_config = config[ext]
+            ext_list = [ops_config['extension'] for ops_config in config.values()]
+            print(ext_list)
+
+            if ext in ext_list:
+                index = ext_list.index(ext)
+                ops_config = config[index]
+
+                ops_config.pop('extension')
                 bl_idname = ops_config.pop('bl_idname')
                 ops_config['filepath'] = file.filepath
                 try:
