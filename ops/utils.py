@@ -20,7 +20,7 @@ def is_float(s) -> bool:
     return False
 
 
-def get_config() -> dict:
+def get_config(check_use=False) -> dict:
     """
     :return:{
         extension[str]:{
@@ -33,7 +33,8 @@ def get_config() -> dict:
     config = dict()
     for extension_list_index, item in enumerate(pref.extension_list):
         if item.name == '' or item.bl_idname == '': continue
-
+        if check_use and item.use is False: continue
+        
         ops_config = {'bl_idname': item.bl_idname}
 
         for prop_index, prop_item in enumerate(item.prop_list):

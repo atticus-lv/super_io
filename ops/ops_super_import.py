@@ -14,7 +14,7 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
 
     def execute(self, context):
         clipboard = Clipboard.push()
-        config = get_config()
+        config = get_config(check_use=True)
 
         for file in clipboard.file_urls:
             # custom operator

@@ -30,6 +30,7 @@ def correct_blidname(self, context):
 
 
 class ExtensionOperatorProperty(PropertyGroup):
+    use: BoolProperty(name='Use', default=True)
     name: StringProperty(name='Extension')
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
     prop_list: CollectionProperty(type=OperatorInputProperty)
@@ -102,9 +103,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         for extension_list_index, item in enumerate(self.extension_list):
             col = layout.box().column()
 
-            row = col.row()
+            row = col.split(factor=0.75)
             # row.alert = True
-            row.alignment = 'RIGHT'
+            row.prop(item, 'use')
             d = row.operator('wm.spio_extension_list_action', text='Remove', icon='PANEL_CLOSE')
             d.action = 'REMOVE'
             d.index = extension_list_index
@@ -112,19 +113,20 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             row = col.row()
             row.label(text='File Extension')
             row.label(text='Operator Identifier')
-            row.separator()
 
             row = col.row()
             row.prop(item, 'name', text='')
             row.prop(item, 'bl_idname', text='')
 
-            box = col.box().column(align=True)
-            row = box.row(align=True)
+            col.separator()
+
+            box = col.box().column()
+            row = box.row()
             row.label(text='Property Name')
             row.label(text='Property Value')
 
             for prop_index, prop_item in enumerate(item.prop_list):
-                row = box.column().row()
+                row = box.row()
 
                 row.prop(prop_item, 'name', text='')
                 row.prop(prop_item, 'value', text='')
@@ -138,7 +140,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
             row = box.row()
             row.alignment = 'LEFT'
-            d = row.operator('wm.spio_operator_input_action', text='Operator Args', icon='ADD', emboss=False)
+            d = row.operator('wm.spio_operator_input_action', text='Add Property', icon='ADD', emboss=False)
             d.action = 'ADD'
             d.extension_list_index = extension_list_index
 
