@@ -1,5 +1,6 @@
 import bpy
 from .. import __folder_name__
+from bpy.props import CollectionProperty
 
 
 def get_pref():
@@ -20,23 +21,33 @@ def is_float(s) -> bool:
     return False
 
 
-def get_config(check_use=False) -> dict:
+def get_config(pref_config: CollectionProperty, check_use=False, filter=None) -> dict:
     """
     :return:{
-        extension[str]:{
+        name[str]:{
+        'extension':extension[str],
         'bl_idname':bl_idname[str],
-        **args
-        }
+        'prop_list':**args[dict],
+        },
+        ...
     }
     """
-    pref = get_pref()
-    config = dict()
-    for extension_list_index, item in enumerate(pref.extension_list):
-        if item.name == '' or item.bl_idname == '': continue
-        if check_use and item.use is False: continue
+    config_list = dict()
 
-        ops_config = {'extension': item.name,
-                      'bl_idname': item.bl_idname}
+    for config_list_index, item in enumerate(pref_config):
+
+        if True in (item.name == '',
+                    item.bl_idname == '',
+                    item.extension == ''): continue
+        if check_use and item.use_config is False: continue
+
+        if filter:
+            if item.extension != filter: continue
+
+        ops_config = dict()
+        config = {'extension': item.extension,
+                  'bl_idname': item.bl_idname,
+                  'prop_list': ops_config}
 
         for prop_index, prop_item in enumerate(item.prop_list):
             prop = prop_item.name
@@ -44,6 +55,7 @@ def get_config(check_use=False) -> dict:
 
             if prop == '' or value == '': continue
 
+            # change string to value
             if value.isdigit():
                 ops_config[prop] = int(value)
             elif is_float(value):
@@ -53,6 +65,7 @@ def get_config(check_use=False) -> dict:
             else:
                 ops_config[prop] = value
 
-        config[extension_list_index] = ops_config
+        config_list[item.name] = config
 
-    return config
+    print(config_list)
+    return config_list

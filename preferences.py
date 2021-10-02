@@ -17,7 +17,7 @@ def get_pref():
     return bpy.context.preferences.addons.get(__folder_name__).preferences
 
 
-class OperatorInputProperty(PropertyGroup):
+class OperatorProperty(PropertyGroup):
     name: StringProperty(name='Property')
     value: StringProperty(name='Value')
 
@@ -29,11 +29,23 @@ def correct_blidname(self, context):
         self.bl_idname = self.bl_idname[:-2]
 
 
+def correct_name(self, context):
+    pref = get_pref()
+    names = [item.name for item in pref.config_list if item.name == self.name and item.name != '']
+    if len(names) != 1:
+        self.name += '(1)'
+
+
 class ExtensionOperatorProperty(PropertyGroup):
-    use: BoolProperty(name='Use', default=True)
-    name: StringProperty(name='Extension')
+    # UI
+    expand_panel: BoolProperty(name='Expand Panel', default=True)
+    # USE
+    use_config: BoolProperty(name='Use', default=True)
+
+    name: StringProperty(name='Preset Name', update=correct_name)
+    extension: StringProperty(name='Extension')
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
-    prop_list: CollectionProperty(type=OperatorInputProperty)
+    prop_list: CollectionProperty(type=OperatorProperty)
 
 
 class SPIO_OT_OperatorInputAction(bpy.types.Operator):
@@ -42,7 +54,7 @@ class SPIO_OT_OperatorInputAction(bpy.types.Operator):
     bl_label = "Operator Props Operate"
     bl_options = {'REGISTER', 'UNDO'}
 
-    extension_list_index: IntProperty()
+    config_list_index: IntProperty()
     prop_index: IntProperty()
     action: EnumProperty(items=[
         ('ADD', 'Add', ''),
@@ -51,7 +63,7 @@ class SPIO_OT_OperatorInputAction(bpy.types.Operator):
 
     def execute(self, context):
         pref = get_pref()
-        item = pref.extension_list[self.extension_list_index]
+        item = pref.config_list[self.config_list_index]
 
         if self.action == 'ADD':
             item.prop_list.add()
@@ -63,7 +75,7 @@ class SPIO_OT_OperatorInputAction(bpy.types.Operator):
 
 class SPIO_OT_ExtensionListAction(bpy.types.Operator):
     """Add / Remove current config"""
-    bl_idname = "wm.spio_extension_list_action"
+    bl_idname = "wm.spio_config_list_action"
     bl_label = "Config Operate"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -76,9 +88,10 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
     def execute(self, context):
         pref = get_pref()
         if self.action == 'ADD':
-            pref.extension_list.add()
+            item = pref.config_list.add()
+            item.name = f'Config{len(pref.config_list)}'
         else:
-            pref.extension_list.remove(self.index)
+            pref.config_list.remove(self.index)
 
         return {'FINISHED'}
 
@@ -86,7 +99,7 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
 class SPIO_Preference(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    extension_list: CollectionProperty(type=ExtensionOperatorProperty)
+    config_list: CollectionProperty(type=ExtensionOperatorProperty)
 
     def draw(self, context):
         layout = self.layout.column()
@@ -100,58 +113,64 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         row = layout.row(align=True)
         row.alignment = 'LEFT'
 
-        for extension_list_index, item in enumerate(self.extension_list):
+        for config_list_index, item in enumerate(self.config_list):
             col = layout.box().column()
 
-            row = col.split(factor=0.75)
-            # row.alert = True
-            row.prop(item, 'use')
-            d = row.operator('wm.spio_extension_list_action', text='Remove', icon='PANEL_CLOSE')
+            row = col.split(factor=0.7)
+
+            row.prop(item, 'expand_panel', text=item.name + ' : ' + item.extension,
+                     icon='TRIA_DOWN' if item.expand_panel else 'TRIA_RIGHT',
+                     emboss=False)
+
+            sub = row.row(align=True)
+            sub.prop(item, 'use_config')
+            d = sub.operator('wm.spio_config_list_action', text='', icon='PANEL_CLOSE', emboss=False)
             d.action = 'REMOVE'
-            d.index = extension_list_index
+            d.index = config_list_index
 
-            row = col.row()
-            row.label(text='File Extension')
-            row.label(text='Operator Identifier')
+            if not item.expand_panel: continue
 
-            row = col.row()
-            row.prop(item, 'name', text='')
-            row.prop(item, 'bl_idname', text='')
+            col.use_property_split = True
+            col.prop(item, 'name')
+            col.prop(item, 'extension')
 
-            col.separator()
+            col.prop(item, 'bl_idname')
 
             box = col.box().column()
-            row = box.row()
-            row.label(text='Property Name')
-            row.label(text='Property Value')
+            box.label(text='Operator Property', icon='PROPERTIES')
+
+            if item.bl_idname == '':
+                box.alert = True
+                box.label(text='Fill in Operator Identifier First', icon='ERROR')
+                continue
 
             for prop_index, prop_item in enumerate(item.prop_list):
-                row = box.row()
+                col = box.box().column()
 
-                row.prop(prop_item, 'name', text='')
-                row.prop(prop_item, 'value', text='')
+                row = col.row(align=True)
+                row.prop(prop_item, 'name')
+                col.prop(prop_item, 'value')
 
                 d = row.operator('wm.spio_operator_input_action', text='', icon='PANEL_CLOSE', emboss=False)
                 d.action = 'REMOVE'
-                d.extension_list_index = extension_list_index
+                d.config_list_index = config_list_index
                 d.prop_index = prop_index
 
-            box.separator()
-
-            row = box.row()
+            col = box.box().column()
+            row = col.row()
             row.alignment = 'LEFT'
             d = row.operator('wm.spio_operator_input_action', text='Add Property', icon='ADD', emboss=False)
             d.action = 'ADD'
-            d.extension_list_index = extension_list_index
+            d.config_list_index = config_list_index
 
-        row = layout.row(align=True)
+        row = layout.box().row(align=True)
         row.alignment = 'LEFT'
-        row.operator('wm.spio_extension_list_action', text='Add Extension Config', icon='FILE_NEW',
+        row.operator('wm.spio_config_list_action', text='Add Extension Config', icon='FILE_NEW',
                      emboss=False).action = 'ADD'
 
 
 def register():
-    bpy.utils.register_class(OperatorInputProperty)
+    bpy.utils.register_class(OperatorProperty)
     bpy.utils.register_class(SPIO_OT_OperatorInputAction)
     bpy.utils.register_class(ExtensionOperatorProperty)
     bpy.utils.register_class(SPIO_OT_ExtensionListAction)
@@ -159,7 +178,7 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(OperatorInputProperty)
+    bpy.utils.unregister_class(OperatorProperty)
     bpy.utils.unregister_class(SPIO_OT_OperatorInputAction)
     bpy.utils.unregister_class(ExtensionOperatorProperty)
     bpy.utils.unregister_class(SPIO_OT_ExtensionListAction)

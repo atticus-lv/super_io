@@ -21,14 +21,15 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
 
         with open(self.filepath, "r", encoding='utf-8') as f:
             data = json.load(f)
-            for ext, values in data.items():
-                if ext not in exist_config:
-                    item = pref.extension_list.add()
+            for name, values in data.items():
+                if name not in exist_config:
+                    item = pref.config_list.add()
 
-                    item.name = values.pop('extension')
+                    item.name = name
+                    item.extension = values.pop('extension')
                     item.bl_idname = values.pop('bl_idname')
 
-                    for prop, prop_value in values.items():
+                    for prop, prop_value in values['prop_list'].items():
                         prop_item = item.prop_list.add()
                         prop_item.name = prop
                         prop_item.value = str(prop_value)
@@ -50,7 +51,8 @@ class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
     # use_filter_folder = True
 
     def execute(self, context):
-        config = get_config()
+        config_list = get_pref().config_list
+        config = get_config(config_list)
         with open(self.filepath, "w", encoding='utf-8') as f:
             json.dump(config, f, indent=4)
             self.report({"INFO"}, f'Save config to "{self.filepath}"')
