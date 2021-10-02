@@ -109,7 +109,6 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
         self.clipboard = None
         self.ext = None
 
-        self.report({"INFO"}, 'Loading Clipboard')
         self.clipboard = Clipboard.push()
         if self.clipboard is None:
             return {"CANCELLED"}
