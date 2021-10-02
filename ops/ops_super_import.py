@@ -5,15 +5,18 @@ from bpy.props import EnumProperty, CollectionProperty, StringProperty, IntPrope
 from ..clipboard.windows import WindowsClipboard as Clipboard
 from .utils import get_config, is_float, get_pref
 
-import time
+from ..ui.icon_utils import RSN_Preview
+
+import_icon = RSN_Preview(image='import.bip', name='import_icon')
 
 
 class TEMP_UL_ConfigList(bpy.types.UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()
-        row.label(text=item.name)
-        row.label(text=item.bl_idname)
+
+        row.prop(item, 'name', text='', emboss=False)
+        row.prop(item, 'bl_idname', text='', emboss=False)
 
     def filter_items(self, context, data, propname):
         items = getattr(data, propname)
@@ -73,10 +76,12 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
         pref = get_pref()
         row = layout.row()
         row.alignment = "LEFT"
-        row.label(text=f'Import {len(self.file_list)} {self.ext} Object')
-        row.prop(self, 'show_urls', icon='INFO', text='')
+        row.prop(self, 'show_urls', text=f'Import {len(self.file_list)} {self.ext} Object',
+                 icon_value=import_icon.get_image_icon_id(), emboss=False)
+        row.separator()
+
         if self.show_urls:
-            col = layout.column(align=1)
+            col = layout.column(align=True)
             for file in self.file_list:
                 col.label(text=str(file.filepath))
 
@@ -86,10 +91,10 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
             self, "config_list_index")
 
         item = pref.config_list[self.config_list_index]
-        layout.prop(item, 'bl_idname')
 
-        box = layout.column().box()
+        box = layout.box().split().column(align=True)
 
+        box.label(text=item.name, icon='EDITMODE_HLT')
         row = box.row()
         row.label(text='Property Name')
         row.label(text='Property Value')
@@ -200,11 +205,6 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
                 bpy.ops.import_curve.svg(filepath=file.filepath)
             else:
                 bpy.ops.object.load_reference_image(filepath=file.filepath)
-
-
-from ..ui.icon_utils import RSN_Preview
-
-import_icon = RSN_Preview(image='import.bip', name='import_icon')
 
 
 def draw_menu(self, context):
