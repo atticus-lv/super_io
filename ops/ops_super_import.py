@@ -1,10 +1,14 @@
 import bpy
+
 from bpy.props import EnumProperty, CollectionProperty, StringProperty, IntProperty, BoolProperty
+
 from ..clipboard.windows import WindowsClipboard as Clipboard
 from .utils import get_config, is_float, get_pref
 
+import time
 
-class Temp_UL_ConfigList(bpy.types.UIList):
+
+class TEMP_UL_ConfigList(bpy.types.UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()
@@ -67,15 +71,17 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         pref = get_pref()
-
-        layout.prop(self, 'show_urls', icon='INFO', text=f'Import {len(self.file_list)} {self.ext} Object')
+        row = layout.row()
+        row.alignment = "LEFT"
+        row.label(text=f'Import {len(self.file_list)} {self.ext} Object')
+        row.prop(self, 'show_urls', icon='INFO', text='')
         if self.show_urls:
             col = layout.column(align=1)
             for file in self.file_list:
                 col.label(text=str(file.filepath))
 
         layout.template_list(
-            "Temp_UL_ConfigList", "Task List",
+            "TEMP_UL_ConfigList", "Task List",
             pref, "config_list",
             self, "config_list_index")
 
@@ -94,33 +100,42 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
             row.prop(prop_item, 'value', text='')
 
     def invoke(self, context, event):
+        self.file_list.clear()
+        self.clipboard = None
+        self.ext = None
+
+        self.report({"INFO"}, 'Loading Clipboard')
         self.clipboard = Clipboard.push()
-        tmp_ext = []
         if self.clipboard is None:
             return {"CANCELLED"}
 
         for file in self.clipboard.file_urls:
             self.file_list.append(file)
             extension = file.filepath.split('.')[-1].lower()
-            if extension not in tmp_ext:
-                tmp_ext.append(extension)
-            if len(tmp_ext) > 1:
+            if self.ext is None:
+                self.ext = extension
+            elif self.ext != extension:
                 self.report({"ERROR"}, "Only one type of file can be imported at a time")
                 return {"CANCELLED"}
 
         # get extension
-        self.ext = tmp_ext[0]
-        config = get_config(get_pref().config_list, check_use=True, filter=self.ext)
+        context.scene.spio_ext = self.ext
 
+        config, index_list = get_config(get_pref().config_list, check_use=True, filter=context.scene.spio_ext,
+                                        return_index=True)
         # import default if not custom config for this file extension
         if len(config) == 0:
             self.use_custom_config = False
             return self.execute(context)
+        elif len(config) >= 1:
+            self.use_custom_config = True
 
-        self.use_custom_config = True
-        context.scene.spio_ext = self.ext
+            if len(config) == 1:
+                self.config_list_index = index_list[0]
+                return self.execute(context)
 
-        return context.window_manager.invoke_props_dialog(self, width=450)
+            if len(config) > 1:
+                return context.window_manager.invoke_props_dialog(self, width=450)
 
     def execute(self, context):
         if self.use_custom_config is False:
@@ -130,7 +145,7 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
         return {"FINISHED"}
 
     def import_custom(self):
-        for file in self.clipboard.file_urls:
+        for file in self.file_list:
             config_item = get_pref().config_list[self.config_list_index]
             ops_args = dict()
 
@@ -153,8 +168,9 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
             bl_idname = config_item.bl_idname
 
             try:
-                print(f'bpy.ops.{bl_idname}(**{ops_args})')
-                exec(f'bpy.ops.{bl_idname}(**{ops_args})')
+                ops = f'bpy.ops.{bl_idname}(**{ops_args})'
+                exec(ops)
+                self.report({"INFO"}, ops)
             except Exception as e:
                 self.report({"ERROR"}, str(e))
 
@@ -186,13 +202,29 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
                 bpy.ops.object.load_reference_image(filepath=file.filepath)
 
 
+from ..ui.icon_utils import RSN_Preview
+
+import_icon = RSN_Preview(image='import.bip', name='import_icon')
+
+
+def draw_menu(self, context):
+    layout = self.layout
+    layout.operator('view3d.spio_import', icon_value=import_icon.get_image_icon_id())
+    layout.separator()
+
+
 def register():
-    bpy.utils.register_class(Temp_UL_ConfigList)
+    import_icon.register()
+
+    bpy.utils.register_class(TEMP_UL_ConfigList)
     bpy.utils.register_class(VIEW3D_OT_SuperImport)
 
     bpy.types.Scene.spio_ext = StringProperty(name='Filter extension', default='')
+    bpy.types.TOPBAR_MT_file_context_menu.prepend(draw_menu)
 
 
 def unregister():
-    bpy.utils.unregister_class(Temp_UL_ConfigList)
+    import_icon.unregister()
+
+    bpy.utils.unregister_class(TEMP_UL_ConfigList)
     bpy.utils.unregister_class(VIEW3D_OT_SuperImport)

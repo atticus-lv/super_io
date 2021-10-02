@@ -103,7 +103,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout.column()
-
+        # layout.operator('spio.install_clipboard')
         row = layout.row()
         row.alignment = 'CENTER'
         row.scale_y = 1.25

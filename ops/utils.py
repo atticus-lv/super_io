@@ -21,7 +21,7 @@ def is_float(s) -> bool:
     return False
 
 
-def get_config(pref_config: CollectionProperty, check_use=False, filter=None) -> dict:
+def get_config(pref_config: CollectionProperty, check_use=False, filter=None, return_index=False):
     """
     :return:{
         name[str]:{
@@ -33,7 +33,7 @@ def get_config(pref_config: CollectionProperty, check_use=False, filter=None) ->
     }
     """
     config_list = dict()
-
+    index_list = []
     for config_list_index, item in enumerate(pref_config):
 
         if True in (item.name == '',
@@ -49,23 +49,25 @@ def get_config(pref_config: CollectionProperty, check_use=False, filter=None) ->
                   'bl_idname': item.bl_idname,
                   'prop_list': ops_config}
 
-        for prop_index, prop_item in enumerate(item.prop_list):
-            prop = prop_item.name
-            value = prop_item.value
+        index_list.append(config_list_index)
 
-            if prop == '' or value == '': continue
+        if len(item.prop_list) != 0:
+            for prop_index, prop_item in enumerate(item.prop_list):
+                prop = prop_item.name
+                value = prop_item.value
 
-            # change string to value
-            if value.isdigit():
-                ops_config[prop] = int(value)
-            elif is_float(value):
-                ops_config[prop] = float(value)
-            elif value in {'True', 'False'}:
-                ops_config[prop] = eval(value)
-            else:
-                ops_config[prop] = value
+                if prop == '' or value == '': continue
+
+                # change string to value
+                if value.isdigit():
+                    ops_config[prop] = int(value)
+                elif is_float(value):
+                    ops_config[prop] = float(value)
+                elif value in {'True', 'False'}:
+                    ops_config[prop] = eval(value)
+                else:
+                    ops_config[prop] = value
 
         config_list[item.name] = config
 
-    print(config_list)
-    return config_list
+    return config_list if not return_index else config_list, index_list
