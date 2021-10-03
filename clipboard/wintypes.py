@@ -2,6 +2,7 @@ import sys
 import ctypes
 import ctypes.wintypes as w
 
+from locale import getdefaultlocale
 
 class WintypesClipboard():
     def __init__(self, file_urls: list[str] = None):
@@ -36,12 +37,14 @@ class WintypesClipboard():
             h_hdrop = self.GetClipboardData(self.CF_HDROP)
 
             if h_hdrop:
-                FS_ENCODING = sys.getfilesystemencoding()
+                # FS_ENCODING = sys.getfilesystemencoding()
+                FS_ENCODING = getdefaultlocale()[1]
                 file_count = self.DragQueryFile(h_hdrop, -1, None, 0)
 
                 for index in range(file_count):
                     buf = ctypes.c_buffer(260)
                     self.DragQueryFile(h_hdrop, index, buf, ctypes.sizeof(buf))
+                    print()
                     self.file_urls.append(buf.value.decode(FS_ENCODING))
 
         self.CloseClipboard()

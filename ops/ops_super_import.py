@@ -111,6 +111,7 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
 
         self.clipboard = Clipboard()
         self.file_list = self.clipboard.push()
+        del self.clipboard
 
         if len(self.file_list) == 0:
             return {"CANCELLED"}
