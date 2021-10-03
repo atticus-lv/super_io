@@ -99,6 +99,7 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
 class SPIO_Preference(bpy.types.AddonPreferences):
     bl_idname = __package__
 
+    force_unicode: BoolProperty(name='Force "utf-8"', description='Force to use "utf-8" to decode filepath')
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
 
     def draw(self, context):

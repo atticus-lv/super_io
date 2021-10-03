@@ -105,15 +105,18 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
             row.prop(prop_item, 'value', text='')
 
     def invoke(self, context, event):
+        # restore
         self.file_list.clear()
         self.clipboard = None
         self.ext = None
 
         self.clipboard = Clipboard()
-        self.file_list = self.clipboard.push()
-        del self.clipboard
+        self.file_list = self.clipboard.push(force_unicode=get_pref().force_unicode)
+
+        del self.clipboard  # release clipboard
 
         if len(self.file_list) == 0:
+            self.report({"ERROR"}, "No file found in clipboard")
             return {"CANCELLED"}
 
         for file_path in self.file_list:
