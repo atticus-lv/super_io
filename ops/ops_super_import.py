@@ -46,10 +46,8 @@ class TEMP_UL_ConfigList(bpy.types.UIList):
         return filtered, ordered
 
 
-class VIEW3D_OT_SuperImport(bpy.types.Operator):
+class SuperImport(bpy.types.Operator):
     """Paste Model/Images"""
-
-    bl_idname = "view3d.spio_import"
     bl_label = "Super Import"
     bl_options = {"UNDO_GROUPED"}
 
@@ -62,14 +60,6 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
     config_list_index: IntProperty(name='Active Index')
     # UI
     show_urls: BoolProperty(default=False, name='Show Files')
-
-    @classmethod
-    def poll(_cls, context):
-        return (
-                context.area.type == "VIEW_3D"
-                and context.area.ui_type == "VIEW_3D"
-                and context.mode == "OBJECT"
-        )
 
     def draw(self, context):
         layout = self.layout
@@ -154,6 +144,7 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
         return {"FINISHED"}
 
     def import_custom(self):
+        """import users' custom configs"""
         for file_path in self.file_list:
             config_item = get_pref().config_list[self.config_list_index]
             ops_args = dict()
@@ -185,6 +176,22 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
 
     def import_default(self):
         """Import with blender's default setting"""
+        pass
+
+
+class VIEW3D_OT_SuperImport(SuperImport):
+    bl_idname = "view3d.spio_import"
+    bl_label = "Super Import View3D"
+
+    @classmethod
+    def poll(_cls, context):
+        return (
+                context.area.type == "VIEW_3D"
+                and context.area.ui_type == "VIEW_3D"
+                and context.mode == "OBJECT"
+        )
+
+    def import_default(self):
         ext = self.ext
         for file_path in self.file_list:
             path = file_path
@@ -212,9 +219,41 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
                 bpy.ops.object.load_reference_image(filepath=path)
 
 
-def draw_menu(self, context):
+class NODE_OT_SuperImport(SuperImport):
+    bl_idname = "node.spio_import"
+    bl_label = "Super Import ShaderNodeTree"
+
+    @classmethod
+    def poll(_cls, context):
+        return (
+                context.area.type == "NODE_EDITOR"
+                and context.area.ui_type == "ShaderNodeTree"
+                and context.space_data.edit_tree is not None
+        )
+
+    def import_default(self):
+        ext = self.ext
+        nt = bpy.context.space_data.edit_tree
+        location_X, location_Y = bpy.context.space_data.cursor_location
+        for file_path in self.file_list:
+            tex_node = nt.nodes.new("ShaderNodeTexImage")
+            tex_node.location = location_X, location_Y
+            location_Y += 300
+
+            path = file_path
+            image = bpy.data.images.load(filepath=path)
+            tex_node.image = image
+
+
+def file_context_menu(self, context):
     layout = self.layout
     layout.operator('view3d.spio_import', icon_value=import_icon.get_image_icon_id())
+    layout.separator()
+
+
+def node_context_menu(self, context):
+    layout = self.layout
+    layout.operator('node.spio_import', icon_value=import_icon.get_image_icon_id())
     layout.separator()
 
 
@@ -223,13 +262,19 @@ def register():
 
     bpy.utils.register_class(TEMP_UL_ConfigList)
     bpy.utils.register_class(VIEW3D_OT_SuperImport)
+    bpy.utils.register_class(NODE_OT_SuperImport)
 
     bpy.types.Scene.spio_ext = StringProperty(name='Filter extension', default='')
-    bpy.types.TOPBAR_MT_file_context_menu.prepend(draw_menu)
+    bpy.types.TOPBAR_MT_file_context_menu.prepend(file_context_menu)
+    bpy.types.NODE_MT_context_menu.prepend(node_context_menu)
 
 
 def unregister():
     import_icon.unregister()
 
+    bpy.types.TOPBAR_MT_file_context_menu.remove(file_context_menu)
+    bpy.types.NODE_MT_context_menu.remove(node_context_menu)
+
     bpy.utils.unregister_class(TEMP_UL_ConfigList)
     bpy.utils.unregister_class(VIEW3D_OT_SuperImport)
+    bpy.utils.unregister_class(NODE_OT_SuperImport)
