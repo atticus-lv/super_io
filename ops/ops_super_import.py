@@ -2,7 +2,7 @@ import bpy
 
 from bpy.props import EnumProperty, CollectionProperty, StringProperty, IntProperty, BoolProperty
 
-from ..clipboard.windows import WindowsClipboard as Clipboard
+from ..clipboard.wintypes import WintypesClipboard as Clipboard
 from .utils import get_config, is_float, get_pref
 
 from ..ui.icon_utils import RSN_Preview
@@ -82,8 +82,8 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
 
         if self.show_urls:
             col = layout.column(align=True)
-            for file in self.file_list:
-                col.label(text=str(file.filepath))
+            for file_path in self.file_list:
+                col.label(text=str(file_path))
 
         layout.template_list(
             "TEMP_UL_ConfigList", "Task List",
@@ -109,13 +109,14 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
         self.clipboard = None
         self.ext = None
 
-        self.clipboard = Clipboard.push()
-        if self.clipboard is None:
+        self.clipboard = Clipboard()
+        self.file_list = self.clipboard.push()
+
+        if len(self.file_list) == 0:
             return {"CANCELLED"}
 
-        for file in self.clipboard.file_urls:
-            self.file_list.append(file)
-            extension = file.filepath.split('.')[-1].lower()
+        for file_path in self.file_list:
+            extension = file_path.split('.')[-1].lower()
             if self.ext is None:
                 self.ext = extension
             elif self.ext != extension:
@@ -149,7 +150,7 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
         return {"FINISHED"}
 
     def import_custom(self):
-        for file in self.file_list:
+        for file_path in self.file_list:
             config_item = get_pref().config_list[self.config_list_index]
             ops_args = dict()
 
@@ -168,7 +169,7 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
                 else:
                     ops_args[prop] = value
 
-            ops_args['filepath'] = file.filepath
+            ops_args['filepath'] = file_path
             bl_idname = config_item.bl_idname
 
             try:
@@ -181,29 +182,30 @@ class VIEW3D_OT_SuperImport(bpy.types.Operator):
     def import_default(self):
         """Import with blender's default setting"""
         ext = self.ext
-        for file in self.file_list:
+        for file_path in self.file_list:
+            path = file_path
             if ext in {'usd', 'usdc', 'usda'}:
-                bpy.ops.wm.usd_import(filepath=file.filepath)
+                bpy.ops.wm.usd_import(filepath=file_path)
             elif ext == 'ply':
-                bpy.ops.import_mesh.ply(file.filepath)
+                bpy.ops.import_mesh.ply(filepath=path)
             elif ext == 'stl':
-                bpy.ops.import_mesh.stl(filepath=file.filepath)
+                bpy.ops.import_mesh.stl(filepath=path)
             elif ext == 'dae':
-                bpy.ops.wm.collada_import(filepath=file.filepath)
+                bpy.ops.wm.collada_import(filepath=path)
             elif ext == 'abc':
-                bpy.ops.wm.alembic_import(filepath=file.filepath)
+                bpy.ops.wm.alembic_import(filepath=path)
             elif ext == 'obj':
-                bpy.ops.import_scene.obj(filepath=file.filepath)
+                bpy.ops.import_scene.obj(filepath=path)
             elif ext == 'fbx':
-                bpy.ops.import_scene.fbx(filepath=file.filepath)
+                bpy.ops.import_scene.fbx(filepath=path)
             elif ext in {'glb', 'gltf'}:
-                bpy.ops.import_scene.gltf(filepath=file.filepath)
+                bpy.ops.import_scene.gltf(filepath=path)
             elif ext in {'x3d', 'wrl'}:
-                bpy.ops.import_scene.x3d(filepath=file.filepath)
+                bpy.ops.import_scene.x3d(filepath=path)
             elif ext == 'svg':
-                bpy.ops.import_curve.svg(filepath=file.filepath)
+                bpy.ops.import_curve.svg(filepath=path)
             else:
-                bpy.ops.object.load_reference_image(filepath=file.filepath)
+                bpy.ops.object.load_reference_image(filepath=path)
 
 
 def draw_menu(self, context):
