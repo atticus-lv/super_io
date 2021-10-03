@@ -99,12 +99,13 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
 class SPIO_Preference(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    force_unicode: BoolProperty(name='Force "utf-8"', description='Force to use "utf-8" to decode filepath')
+    force_unicode: BoolProperty(name='Force Unicode', description='Force to use "utf-8" to decode filepath')
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
 
     def draw(self, context):
         layout = self.layout.column()
-        # layout.operator('spio.install_clipboard')
+        layout.prop(self, 'force_unicode')
+
         row = layout.row()
         row.alignment = 'CENTER'
         row.scale_y = 1.25
