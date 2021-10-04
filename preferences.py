@@ -83,15 +83,32 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
     action: EnumProperty(items=[
         ('ADD', 'Add', ''),
         ('REMOVE', 'Remove', ''),
+        ('COPY', 'Copy', ''),
     ])
 
     def execute(self, context):
         pref = get_pref()
+
         if self.action == 'ADD':
             item = pref.config_list.add()
             item.name = f'Config{len(pref.config_list)}'
-        else:
+
+        elif self.action == 'REMOVE':
             pref.config_list.remove(self.index)
+
+        elif self.action == 'COPY':
+            cur_item = pref.config_list[self.index]
+
+            item = pref.config_list.add()
+            item.name = cur_item.name + '_copy'
+            item.use_config = cur_item.use_config
+            item.extension = cur_item.extension
+            item.bl_idname = cur_item.bl_idname
+
+            for cur_prop_item in cur_item.prop_list:
+                prop_item = item.prop_list.add()
+                prop_item.name = cur_prop_item.name
+                prop_item.value = cur_prop_item.value
 
         return {'FINISHED'}
 
@@ -124,8 +141,13 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                      icon='TRIA_DOWN' if item.expand_panel else 'TRIA_RIGHT',
                      emboss=False)
 
-            sub = row.row(align=True)
+            sub = row.row()
             sub.prop(item, 'use_config')
+
+            c = sub.operator('wm.spio_config_list_action', text='Copy', icon='FILE_HIDDEN')
+            c.action = 'COPY'
+            c.index = config_list_index
+
             d = sub.operator('wm.spio_config_list_action', text='', icon='PANEL_CLOSE', emboss=False)
             d.action = 'REMOVE'
             d.index = config_list_index
