@@ -7,7 +7,7 @@ from bpy_extras.io_utils import ExportHelper, ImportHelper
 
 
 class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
-    """Paste Model/Images"""
+    """Import config from a json file"""
 
     bl_idname = "spio.config_import"
     bl_label = "Import Config"
@@ -40,7 +40,7 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
 
 
 class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
-    """Paste Model/Images"""
+    """Export all configs to a json file"""
 
     bl_idname = "spio.config_export"
     bl_label = "Export Config"

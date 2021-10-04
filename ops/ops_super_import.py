@@ -76,7 +76,7 @@ class SuperImport(bpy.types.Operator):
                 col.label(text=str(file_path))
 
         layout.template_list(
-            "TEMP_UL_ConfigList", "Task List",
+            "TEMP_UL_ConfigList", "Config List",
             pref, "config_list",
             self, "config_list_index")
 

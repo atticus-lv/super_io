@@ -74,7 +74,7 @@ class SPIO_OT_OperatorInputAction(bpy.types.Operator):
 
 
 class SPIO_OT_ExtensionListAction(bpy.types.Operator):
-    """Add / Remove current config"""
+    """Add / Remove / Copy current config"""
     bl_idname = "wm.spio_config_list_action"
     bl_label = "Config Operate"
     bl_options = {'REGISTER', 'UNDO'}
@@ -92,9 +92,11 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
         if self.action == 'ADD':
             item = pref.config_list.add()
             item.name = f'Config{len(pref.config_list)}'
+            pref.config_list_index = len(pref.config_list) - 1
 
         elif self.action == 'REMOVE':
             pref.config_list.remove(self.index)
+            pref.config_list_index = self.index -1 if self.index != 0 else 0
 
         elif self.action == 'COPY':
             cur_item = pref.config_list[self.index]
@@ -110,87 +112,115 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
                 prop_item.name = cur_prop_item.name
                 prop_item.value = cur_prop_item.value
 
+            pref.config_list_index = len(pref.config_list) - 1
+
         return {'FINISHED'}
+
+
+class PREF_UL_ConfigList(bpy.types.UIList):
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        sub = layout.split(factor=0.2)
+        row = sub.row()
+        row.prop(item, 'use_config', text='')
+        row.prop(item, 'extension', text='', emboss=False)
+
+        row = sub.row()
+        row.prop(item, 'name', text='', emboss=False)
+        row.prop(item, 'bl_idname', text='', emboss=False)
 
 
 class SPIO_Preference(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    force_unicode: BoolProperty(name='Force Unicode', description='Force to use "utf-8" to decode filepath')
+    # UI
+    ui: EnumProperty(items=[
+        ('SETTINGS', 'Settings', ''),
+        ('CONFIG', 'Config', ''),
+    ])
+    # Settings
+    force_unicode: BoolProperty(name='Force Unicode',
+                                description='Force to use "utf-8" to decode filepath \n'
+                                            'Only enable when your system coding "utf-8"')
+
+    # Preset
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
+    config_list_index: IntProperty(min=0, default=0)
 
     def draw(self, context):
-        layout = self.layout.column()
+        layout = self.layout.split(factor=0.2)
+        layout.scale_y = 1.2
+
+        col = layout.column(align=True)
+        col.prop(self, 'ui', expand=True)
+
+        col = layout.column()
+        if self.ui == 'SETTINGS':
+            self.draw_settings(context, col)
+        elif self.ui == 'CONFIG':
+            self.draw_config(context, col)
+
+    def draw_settings(self, context, layout):
+        layout.use_property_split = True
         layout.prop(self, 'force_unicode')
 
+    def draw_config(self, context, layout):
         row = layout.row()
         row.alignment = 'CENTER'
         row.scale_y = 1.25
         row.operator('spio.config_import', icon='IMPORT')
         row.operator('spio.config_export', icon='EXPORT')
 
-        row = layout.row(align=True)
-        row.alignment = 'LEFT'
+        layout.separator()
 
-        for config_list_index, item in enumerate(self.config_list):
-            col = layout.box().column()
+        row = layout.column(align=True).row()
 
-            row = col.split(factor=0.7)
+        row_left = row
 
-            row.prop(item, 'expand_panel', text=item.name + ' : ' + item.extension,
-                     icon='TRIA_DOWN' if item.expand_panel else 'TRIA_RIGHT',
-                     emboss=False)
+        row_l = row_left.row(align=True)
+        col_list = row_l.column(align=True)
+        col_btn = row_l.column(align=True)
 
-            sub = row.row()
-            sub.prop(item, 'use_config')
+        col_list.template_list(
+            "PREF_UL_ConfigList", "Config List",
+            self, "config_list",
+            self, "config_list_index")
 
-            c = sub.operator('wm.spio_config_list_action', text='Copy', icon='FILE_HIDDEN')
-            c.action = 'COPY'
-            c.index = config_list_index
+        col_btn.operator('wm.spio_config_list_action', text='', icon='ADD').action = 'ADD'
 
-            d = sub.operator('wm.spio_config_list_action', text='', icon='PANEL_CLOSE', emboss=False)
-            d.action = 'REMOVE'
-            d.index = config_list_index
+        d = col_btn.operator('wm.spio_config_list_action', text='', icon='REMOVE')
+        d.action = 'REMOVE'
+        d.index = self.config_list_index
 
-            if not item.expand_panel: continue
+        c = col_btn.operator('wm.spio_config_list_action', text='', icon='COPY_ID')
+        c.action = 'COPY'
+        c.index = self.config_list_index
 
-            col.use_property_split = True
-            col.prop(item, 'name')
-            col.prop(item, 'extension')
+        item = self.config_list[self.config_list_index]
+        if not item: return
 
-            col.prop(item, 'bl_idname')
+        col = layout.column()
+        box = col.box().column()
+        box.label(text=item.name, icon='EDITMODE_HLT')
 
-            box = col.box().column()
-            box.label(text='Operator Property', icon='PROPERTIES')
-
-            if item.bl_idname == '':
-                box.alert = True
-                box.label(text='Fill in Operator Identifier First', icon='ERROR')
-                continue
-
-            for prop_index, prop_item in enumerate(item.prop_list):
-                col = box.box().column()
-
-                row = col.row(align=True)
-                row.prop(prop_item, 'name')
-                col.prop(prop_item, 'value')
-
-                d = row.operator('wm.spio_operator_input_action', text='', icon='PANEL_CLOSE', emboss=False)
-                d.action = 'REMOVE'
-                d.config_list_index = config_list_index
-                d.prop_index = prop_index
-
+        for prop_index, prop_item in enumerate(item.prop_list):
             col = box.box().column()
-            row = col.row()
-            row.alignment = 'LEFT'
-            d = row.operator('wm.spio_operator_input_action', text='Add Property', icon='ADD', emboss=False)
-            d.action = 'ADD'
-            d.config_list_index = config_list_index
 
-        row = layout.box().row(align=True)
+            row = col.row(align=True)
+            row.prop(prop_item, 'name')
+            col.prop(prop_item, 'value')
+
+            d = row.operator('wm.spio_operator_input_action', text='', icon='PANEL_CLOSE', emboss=False)
+            d.action = 'REMOVE'
+            d.config_list_index = self.config_list_index
+            d.prop_index = prop_index
+
+        col = box.box().column()
+        row = col.row()
         row.alignment = 'LEFT'
-        row.operator('wm.spio_config_list_action', text='Add Extension Config', icon='FILE_NEW',
-                     emboss=False).action = 'ADD'
+        d = row.operator('wm.spio_operator_input_action', text='Add Property', icon='ADD', emboss=False)
+        d.action = 'ADD'
+        d.config_list_index = self.config_list_index
 
 
 def register():
@@ -198,6 +228,7 @@ def register():
     bpy.utils.register_class(SPIO_OT_OperatorInputAction)
     bpy.utils.register_class(ExtensionOperatorProperty)
     bpy.utils.register_class(SPIO_OT_ExtensionListAction)
+    bpy.utils.register_class(PREF_UL_ConfigList)
     bpy.utils.register_class(SPIO_Preference)
 
 
@@ -206,4 +237,5 @@ def unregister():
     bpy.utils.unregister_class(SPIO_OT_OperatorInputAction)
     bpy.utils.unregister_class(ExtensionOperatorProperty)
     bpy.utils.unregister_class(SPIO_OT_ExtensionListAction)
+    bpy.utils.unregister_class(PREF_UL_ConfigList)
     bpy.utils.unregister_class(SPIO_Preference)
