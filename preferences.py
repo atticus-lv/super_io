@@ -96,7 +96,7 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
 
         elif self.action == 'REMOVE':
             pref.config_list.remove(self.index)
-            pref.config_list_index = self.index -1 if self.index != 0 else 0
+            pref.config_list_index = self.index - 1 if self.index != 0 else 0
 
         elif self.action == 'COPY':
             cur_item = pref.config_list[self.index]
@@ -203,19 +203,51 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box = col.box().column()
         box.label(text=item.name, icon='EDITMODE_HLT')
 
-        for prop_index, prop_item in enumerate(item.prop_list):
-            col = box.box().column()
+        box.use_property_split = True
+        box.prop(item, 'name')
+        box.prop(item, 'extension')
+        box.prop(item, 'bl_idname')
 
-            row = col.row(align=True)
-            row.prop(prop_item, 'name')
-            col.prop(prop_item, 'value')
-
-            d = row.operator('wm.spio_operator_input_action', text='', icon='PANEL_CLOSE', emboss=False)
-            d.action = 'REMOVE'
-            d.config_list_index = self.config_list_index
-            d.prop_index = prop_index
-
+        # ops props
         col = box.box().column()
+
+        row = col.row(align=True)
+        if item.bl_idname != '':
+            text = 'Op: bpy.ops.' + item.bl_idname + '( ' + 'filepath:... ,'
+            if len(item.prop_list) == 0:
+                text += ')'
+        else:
+            text = 'No Operator Found'
+
+        row.label(icon='TOOL_SETTINGS', text=text)
+
+        temp_row = col.row()
+        temp_row.alignment='RIGHT'
+        temp_row.separator()
+        col_text = temp_row.column(align=True)
+
+        text = []
+
+        if item.bl_idname != '':
+            for prop_index, prop_item in enumerate(item.prop_list):
+                sub = col.row(align=True)
+                col.prop(prop_item, 'value')
+
+                sub.prop(prop_item, 'name')
+                d = sub.operator('wm.spio_operator_input_action', text='', icon='PANEL_CLOSE', emboss=False)
+                d.action = 'REMOVE'
+                d.config_list_index = self.config_list_index
+                d.prop_index = prop_index
+
+                if prop_item.name != '' and prop_item.value != '':
+                    text.append(f'{prop_item.name}={prop_item.value}')
+
+        for i, t in enumerate(text):
+            if i != len(text) - 1:
+                col_text.label(text=t + ',')
+            else:
+                col_text.label(text=t + ')')
+
         row = col.row()
         row.alignment = 'LEFT'
         d = row.operator('wm.spio_operator_input_action', text='Add Property', icon='ADD', emboss=False)
