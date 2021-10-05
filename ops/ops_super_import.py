@@ -1,9 +1,10 @@
 import bpy
+import time
 
 from bpy.props import EnumProperty, CollectionProperty, StringProperty, IntProperty, BoolProperty
 
 from ..clipboard.wintypes import WintypesClipboard as Clipboard
-from .utils import get_config, is_float, get_pref
+from .utils import get_config, is_float, get_pref, MeasureTime
 
 from ..ui.icon_utils import RSN_Preview
 
@@ -137,11 +138,16 @@ class SuperImport(bpy.types.Operator):
                 return context.window_manager.invoke_props_dialog(self, width=450)
 
     def execute(self, context):
-        if self.use_custom_config is False:
-            self.import_default()
-        else:
-            self.import_custom()
-        return {"FINISHED"}
+        with MeasureTime() as start_time:
+            if self.use_custom_config is False:
+                self.import_default()
+            else:
+                self.import_custom()
+
+            if get_pref().report_time: self.report({"INFO"},
+                                                   f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
+
+            return {"FINISHED"}
 
     def import_custom(self):
         """import users' custom configs"""
@@ -168,9 +174,7 @@ class SuperImport(bpy.types.Operator):
             bl_idname = config_item.bl_idname
 
             try:
-                ops = f'bpy.ops.{bl_idname}(**{ops_args})'
-                exec(ops)
-                self.report({"INFO"}, ops)
+                exec(f'bpy.ops.{bl_idname}(**{ops_args})')
             except Exception as e:
                 self.report({"ERROR"}, str(e))
 
@@ -185,11 +189,11 @@ class VIEW3D_OT_SuperImport(SuperImport):
 
     @classmethod
     def poll(_cls, context):
-        return (
-                context.area.type == "VIEW_3D"
-                and context.area.ui_type == "VIEW_3D"
-                and context.mode == "OBJECT"
-        )
+        if context.area.type == "VIEW_3D":
+            return context.area.ui_type == "VIEW_3D" and context.mode == "OBJECT"
+        #
+        # elif context.area.type == "NODE_EDITOR":
+        #     return context.area.ui_type == "ShaderNodeTree" and context.space_data.edit_tree is not None
 
     def import_default(self):
         ext = self.ext

@@ -2,10 +2,20 @@ import bpy
 from .. import __folder_name__
 from bpy.props import CollectionProperty
 
+import time
+
 
 def get_pref():
     """get preferences of this plugin"""
     return bpy.context.preferences.addons.get(__folder_name__).preferences
+
+
+class MeasureTime():
+    def __enter__(self):
+        return time.time()
+
+    def __exit__(self, type, value, traceback):
+        pass
 
 
 def is_float(s) -> bool:

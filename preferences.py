@@ -118,16 +118,77 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
 
 
 class PREF_UL_ConfigList(bpy.types.UIList):
+    filter_type: EnumProperty(name='Filter Type', items=[
+        ('NAME', 'Name', ''),
+        ('EXT', 'Extension', ''),
+    ])
+
+    filter_extension: StringProperty(
+        default='',
+        name="Filter Extension")
+
+    reverse: BoolProperty(
+        name="Reverse",
+        default=True,
+        options=set(),
+        description="Reverse name filtering",
+    )
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        sub = layout.split(factor=0.2)
+        sub = layout.row(align=True)
         row = sub.row()
         row.prop(item, 'use_config', text='')
-        row.prop(item, 'extension', text='', emboss=False)
+        row.prop(item, 'name', text='', emboss=False)
 
         row = sub.row()
-        row.prop(item, 'name', text='', emboss=False)
+        row.prop(item, 'extension', text='', emboss=False)
         row.prop(item, 'bl_idname', text='', emboss=False)
+
+    def draw_filter(self, context, layout):
+        """UI code for the filtering/sorting/search area."""
+        layout.separator()
+        col = layout.column()
+
+        col.prop(self, 'filter_type')
+
+        row = col.row(align=1)
+        if self.filter_type == 'EXT':
+            row.prop(self, 'filter_extension', text='Extension', icon='FILTER')
+        else:
+            row.prop(self, "filter_name", text="Name")
+
+        row.prop(self, "reverse", text="", icon='ARROW_LEFTRIGHT')
+
+    def filter_items(self, context, data, propname):
+        items = getattr(data, propname)
+        ordered = []
+        filtered = [self.bitflag_filter_item] * len(items)
+
+        if self.filter_type == 'EXT':
+            for i, item in enumerate(items):
+                if item.extension != self.filter_extension and self.filter_extension != '':
+                    filtered[i] &= ~self.bitflag_filter_item
+
+        else:
+            if self.filter_name:
+                filtered = bpy.types.UI_UL_list.filter_items_by_name(self.filter_name, self.bitflag_filter_item, items,
+                                                                     "name", reverse=self.reverse)
+
+        if filtered:
+            show_flag = self.bitflag_filter_item & ~self.bitflag_filter_item
+            for i, bitflag in enumerate(filtered):
+                if bitflag == show_flag:
+                    filtered[i] = self.bitflag_filter_item
+                else:
+                    filtered[i] &= ~self.bitflag_filter_item
+
+        if self.filter_type == 'EXT':
+            if self.filter_extension != '':
+                try:
+                    ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i.extension), True)
+                except:
+                    pass
+        return filtered, ordered
 
 
 class SPIO_Preference(bpy.types.AddonPreferences):
@@ -142,7 +203,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     force_unicode: BoolProperty(name='Force Unicode',
                                 description='Force to use "utf-8" to decode filepath \n'
                                             'Only enable when your system coding "utf-8"')
-
+    report_time: BoolProperty(name='Report time', description='Report import time', default=True)
     # Preset
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
     config_list_index: IntProperty(min=0, default=0)
@@ -163,6 +224,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     def draw_settings(self, context, layout):
         layout.use_property_split = True
         layout.prop(self, 'force_unicode')
+        layout.prop(self, 'report_time')
 
     def draw_config(self, context, layout):
         row = layout.row()
@@ -196,6 +258,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         c.action = 'COPY'
         c.index = self.config_list_index
 
+        if len(self.config_list) == 0: return
         item = self.config_list[self.config_list_index]
         if not item: return
 
@@ -213,16 +276,14 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         row = col.row(align=True)
         if item.bl_idname != '':
-            text = 'Op: bpy.ops.' + item.bl_idname + '( ' + 'filepath:... ,'
-            if len(item.prop_list) == 0:
-                text += ')'
+            text = 'bpy.ops.' + item.bl_idname + '(' + 'filepath:... ,' + '{prop=value})'
         else:
             text = 'No Operator Found'
 
         row.label(icon='TOOL_SETTINGS', text=text)
 
         temp_row = col.row()
-        temp_row.alignment='RIGHT'
+        temp_row.alignment = 'RIGHT'
         temp_row.separator()
         col_text = temp_row.column(align=True)
 
@@ -241,12 +302,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
                 if prop_item.name != '' and prop_item.value != '':
                     text.append(f'{prop_item.name}={prop_item.value}')
-
-        for i, t in enumerate(text):
-            if i != len(text) - 1:
-                col_text.label(text=t + ',')
-            else:
-                col_text.label(text=t + ')')
 
         row = col.row()
         row.alignment = 'LEFT'
