@@ -1,6 +1,7 @@
 import bpy
 from ..ops.utils import get_pref
 from ..preferences import SPIO_Preference
+from ..ops.ops_super_import import import_icon
 
 
 class SidebarSetup:
@@ -10,7 +11,7 @@ class SidebarSetup:
     # bl_options = {'DRAW_BOX'}
 
 
-class SPIO_PT_UnitPanel(SidebarSetup, bpy.types.Panel):
+class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
     bl_label = ''
 
     bl_options = {'HEADER_LAYOUT_EXPAND'}
@@ -20,10 +21,14 @@ class SPIO_PT_UnitPanel(SidebarSetup, bpy.types.Panel):
         layout.alignment = "CENTER"
         pref = get_pref()
 
-        row = layout.split(factor=0.5,align = True)
-        row.label(text='Super IO')
-        row = row.row(align=1)
+        row = layout.split(factor=0.5, align=True)
+        row.label(text='Super IO Settings')
+        row = row.row(align=True)
         row.prop(pref, 'ui', expand=True, text='', emboss=False)
+
+        row.separator(factor=2)
+        row.operator('spio.config_import', icon='IMPORT', text='')
+        row.operator('spio.config_export', icon='EXPORT', text='')
 
     def draw(self, context):
         layout = self.layout
@@ -33,10 +38,23 @@ class SPIO_PT_UnitPanel(SidebarSetup, bpy.types.Panel):
         else:
             SPIO_Preference.draw_config(pref, context, layout)
 
+class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
+    bl_label = 'Super Import'
+
+    def draw(self,context):
+        layout = self.layout
+        row = layout.row()
+        row.alignment = 'CENTER'
+        row.scale_y = 1.5
+        row.separator()
+        row.operator("view3d.spio_import", icon_value=import_icon.get_image_icon_id())
+        row.separator()
 
 def register():
-    bpy.utils.register_class(SPIO_PT_UnitPanel)
+    bpy.utils.register_class(SPIO_PT_PrefPanel)
+    bpy.utils.register_class(SPIO_PT_ImportPanel)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_PT_UnitPanel)
+    bpy.utils.unregister_class(SPIO_PT_PrefPanel)
+    bpy.utils.unregister_class(SPIO_PT_ImportPanel)
