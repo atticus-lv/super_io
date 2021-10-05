@@ -129,9 +129,9 @@ class PREF_UL_ConfigList(bpy.types.UIList):
 
     reverse: BoolProperty(
         name="Reverse",
-        default=True,
+        default=False,
         options=set(),
-        description="Reverse name filtering",
+        description="Reverse current filtering",
     )
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
@@ -147,11 +147,11 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         layout.separator()
         col = layout.column()
 
-        col.prop(self, 'filter_type')
+        col.prop(self, 'filter_type', icon='FILTER')
 
         row = col.row(align=1)
         if self.filter_type == 'EXT':
-            row.prop(self, 'filter_extension', text='Extension', icon='FILTER')
+            row.prop(self, 'filter_extension', text='Extension')
         else:
             row.prop(self, "filter_name", text="Name")
 
@@ -187,7 +187,7 @@ class PREF_UL_ConfigList(bpy.types.UIList):
                 pass
         else:
             try:
-                ordered = bpy.types.UI_UL_list.sort_items_helper(items,'name')
+                ordered = bpy.types.UI_UL_list.sort_items_helper(items, 'name')
             except:
                 pass
         return filtered, ordered
@@ -217,11 +217,18 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         col = layout.column(align=True)
         col.prop(self, 'ui', expand=True)
 
+        col.separator(factor=2)
+        self.draw_import(context, col)
+
         col = layout.column()
         if self.ui == 'SETTINGS':
             self.draw_settings(context, col)
         elif self.ui == 'CONFIG':
             self.draw_config(context, col)
+
+    def draw_import(self, context, layout):
+        layout.operator('spio.config_import', icon='IMPORT')
+        layout.operator('spio.config_export', icon='EXPORT')
 
     def draw_settings(self, context, layout):
         layout.use_property_split = True
@@ -229,14 +236,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         layout.prop(self, 'report_time')
 
     def draw_config(self, context, layout):
-        row = layout.row()
-        row.alignment = 'CENTER'
-        row.scale_y = 1.25
-        row.operator('spio.config_import', icon='IMPORT')
-        row.operator('spio.config_export', icon='EXPORT')
-
-        layout.separator()
-
         row = layout.column(align=True).row()
 
         row_left = row
@@ -294,9 +293,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         if item.bl_idname != '':
             for prop_index, prop_item in enumerate(item.prop_list):
                 sub = col.row(align=True)
-                col.prop(prop_item, 'value')
+                sub_col = sub.column(align= True)
+                sub_col.prop(prop_item, 'name')
+                sub_col.prop(prop_item, 'value')
 
-                sub.prop(prop_item, 'name')
                 d = sub.operator('wm.spio_operator_input_action', text='', icon='PANEL_CLOSE', emboss=False)
                 d.action = 'REMOVE'
                 d.config_list_index = self.config_list_index

@@ -242,7 +242,8 @@ class NODE_OT_SuperImport(SuperImport):
         for file_path in self.file_list:
             tex_node = nt.nodes.new("ShaderNodeTexImage")
             tex_node.location = location_X, location_Y
-            location_Y += 300
+            # tex_node.hide = True
+            location_Y += 250
 
             path = file_path
             image = bpy.data.images.load(filepath=path)
