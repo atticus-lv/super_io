@@ -57,8 +57,8 @@ class SPIO_OT_OperatorInputAction(bpy.types.Operator):
     config_list_index: IntProperty()
     prop_index: IntProperty()
     action: EnumProperty(items=[
-        ('ADD', 'Add', ''),
-        ('REMOVE', 'Remove', ''),
+        ('ADD', 'Add', 'Add Operator Prop'),
+        ('REMOVE', 'Remove', 'Remove Operator Prop'),
     ])
 
     def execute(self, context):
@@ -135,13 +135,11 @@ class PREF_UL_ConfigList(bpy.types.UIList):
     )
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        sub = layout.row(align=True)
-        row = sub.row()
-        row.prop(item, 'use_config', text='')
-        row.prop(item, 'name', text='', emboss=False)
-
-        row = sub.row()
-        row.prop(item, 'extension', text='', emboss=False)
+        row = layout.split(factor=0.5)
+        sub = row.row(align=1)
+        sub.prop(item, 'use_config', text='')
+        sub.prop(item, 'name', text='', emboss=False)
+        sub.prop(item, 'extension', text='', emboss=False)
         row.prop(item, 'bl_idname', text='', emboss=False)
 
     def draw_filter(self, context, layout):
@@ -173,8 +171,8 @@ class PREF_UL_ConfigList(bpy.types.UIList):
             if self.filter_name:
                 filtered = bpy.types.UI_UL_list.filter_items_by_name(self.filter_name, self.bitflag_filter_item, items,
                                                                      "name", reverse=self.reverse)
-
-        if filtered:
+        # invert
+        if filtered and self.reverse:
             show_flag = self.bitflag_filter_item & ~self.bitflag_filter_item
             for i, bitflag in enumerate(filtered):
                 if bitflag == show_flag:
@@ -183,11 +181,15 @@ class PREF_UL_ConfigList(bpy.types.UIList):
                     filtered[i] &= ~self.bitflag_filter_item
 
         if self.filter_type == 'EXT':
-            if self.filter_extension != '':
-                try:
-                    ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i.extension), True)
-                except:
-                    pass
+            try:
+                ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i.extension), True)
+            except:
+                pass
+        else:
+            try:
+                ordered = bpy.types.UI_UL_list.sort_items_helper(items,'name')
+            except:
+                pass
         return filtered, ordered
 
 
@@ -196,8 +198,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     # UI
     ui: EnumProperty(items=[
-        ('SETTINGS', 'Settings', ''),
-        ('CONFIG', 'Config', ''),
+        ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
+        ('CONFIG', 'Config', '', 'PRESET', 1),
     ])
     # Settings
     force_unicode: BoolProperty(name='Force Unicode',
