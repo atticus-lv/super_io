@@ -300,34 +300,31 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         row = col.row(align=True)
         if item.bl_idname != '':
-            text = 'bpy.ops.' + item.bl_idname + '(' + 'filepath:... ,' + '{prop=value})'
+            text = 'bpy.ops.' + item.bl_idname + '(' + 'filepath,' + '{prop=value})'
         else:
             text = 'No Operator Found'
 
         row.label(icon='TOOL_SETTINGS', text=text)
 
-        temp_row = col.row()
-        temp_row.alignment = 'RIGHT'
-        temp_row.separator()
-        col_text = temp_row.column(align=True)
-
-        text = []
 
         if item.bl_idname != '':
+            row = col.row()
+            if len(item.prop_list) != 0:
+                row.label(text = 'Property')
+                row.label(text = 'Value')
             for prop_index, prop_item in enumerate(item.prop_list):
-                sub = col.row(align=True)
-                sub_col = sub.column(align=True)
-                sub_col.prop(prop_item, 'name')
-                sub_col.prop(prop_item, 'value')
+                row = col.row(align=True)
+                row.prop(prop_item, 'name',text ='')
+                row.prop(prop_item, 'value',text ='')
 
-                d = sub.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
+                d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
                 d.config_list_index = self.config_list_index
                 d.prop_index = prop_index
 
                 if prop_item.name != '' and prop_item.value != '':
                     text.append(f'{prop_item.name}={prop_item.value}')
 
-        row = col.row()
+        row = col.row(align=True)
         row.alignment = 'LEFT'
         d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
         d.config_list_index = self.config_list_index
