@@ -48,18 +48,13 @@ class ExtensionOperatorProperty(PropertyGroup):
     prop_list: CollectionProperty(type=OperatorProperty)
 
 
-class SPIO_OT_OperatorInputAction(bpy.types.Operator):
-    """Add / Remove current prop"""
-    bl_idname = "wm.spio_operator_input_action"
+class OperatorPropAction:
     bl_label = "Operator Props Operate"
     bl_options = {'REGISTER', 'UNDO'}
 
     config_list_index: IntProperty()
     prop_index: IntProperty()
-    action: EnumProperty(items=[
-        ('ADD', 'Add', 'Add Operator Prop'),
-        ('REMOVE', 'Remove', 'Remove Operator Prop'),
-    ])
+    action = None
 
     def execute(self, context):
         pref = get_pref()
@@ -67,24 +62,33 @@ class SPIO_OT_OperatorInputAction(bpy.types.Operator):
 
         if self.action == 'ADD':
             item.prop_list.add()
-        else:
+        elif self.action == 'REMOVE':
             item.prop_list.remove(self.prop_index)
 
         return {'FINISHED'}
 
 
-class SPIO_OT_ExtensionListAction(bpy.types.Operator):
+class SPIO_OT_OperatorPropAdd(OperatorPropAction, bpy.types.Operator):
+    bl_idname = "wm.spio_operator_prop_add"
+    bl_label = "Add Prop"
+
+    action = 'ADD'
+
+
+class SPIO_OT_OperatorPropRemove(OperatorPropAction, bpy.types.Operator):
+    bl_idname = "wm.spio_operator_prop_remove"
+    bl_label = "Remove Prop"
+
+    action = 'REMOVE'
+
+
+class SPIO_OT_ExtensionListAction:
     """Add / Remove / Copy current config"""
-    bl_idname = "wm.spio_config_list_action"
     bl_label = "Config Operate"
     bl_options = {'REGISTER', 'UNDO'}
 
     index: IntProperty()
-    action: EnumProperty(items=[
-        ('ADD', 'Add', ''),
-        ('REMOVE', 'Remove', ''),
-        ('COPY', 'Copy', ''),
-    ])
+    action = None
 
     def execute(self, context):
         pref = get_pref()
@@ -115,6 +119,27 @@ class SPIO_OT_ExtensionListAction(bpy.types.Operator):
             pref.config_list_index = len(pref.config_list) - 1
 
         return {'FINISHED'}
+
+
+class SPIO_OT_ExtensionListAdd(SPIO_OT_ExtensionListAction,bpy.types.Operator):
+    bl_idname = "wm.spio_config_list_add"
+    bl_label = "Add Config"
+
+    action = 'ADD'
+
+
+class SPIO_OT_ExtensionListRemove(SPIO_OT_ExtensionListAction,bpy.types.Operator):
+    bl_idname = "wm.spio_config_list_remove"
+    bl_label = "Remove Config"
+
+    action = 'REMOVE'
+
+
+class SPIO_OT_ExtensionListCopy(SPIO_OT_ExtensionListAction,bpy.types.Operator):
+    bl_idname = "wm.spio_config_list_copy"
+    bl_label = "Copy Config"
+
+    action = 'COPY'
 
 
 class PREF_UL_ConfigList(bpy.types.UIList):
@@ -249,14 +274,12 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             self, "config_list",
             self, "config_list_index")
 
-        col_btn.operator('wm.spio_config_list_action', text='', icon='ADD').action = 'ADD'
+        col_btn.operator('wm.spio_config_list_add', text='', icon='ADD')
 
-        d = col_btn.operator('wm.spio_config_list_action', text='', icon='REMOVE')
-        d.action = 'REMOVE'
+        d = col_btn.operator('wm.spio_config_list_remove', text='', icon='REMOVE')
         d.index = self.config_list_index
 
-        c = col_btn.operator('wm.spio_config_list_action', text='', icon='COPY_ID')
-        c.action = 'COPY'
+        c = col_btn.operator('wm.spio_config_list_copy', text='', icon='DUPLICATE')
         c.index = self.config_list_index
 
         if len(self.config_list) == 0: return
@@ -293,12 +316,11 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         if item.bl_idname != '':
             for prop_index, prop_item in enumerate(item.prop_list):
                 sub = col.row(align=True)
-                sub_col = sub.column(align= True)
+                sub_col = sub.column(align=True)
                 sub_col.prop(prop_item, 'name')
                 sub_col.prop(prop_item, 'value')
 
-                d = sub.operator('wm.spio_operator_input_action', text='', icon='PANEL_CLOSE', emboss=False)
-                d.action = 'REMOVE'
+                d = sub.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
                 d.config_list_index = self.config_list_index
                 d.prop_index = prop_index
 
@@ -307,24 +329,27 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         row = col.row()
         row.alignment = 'LEFT'
-        d = row.operator('wm.spio_operator_input_action', text='Add Property', icon='ADD', emboss=False)
-        d.action = 'ADD'
+        d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
         d.config_list_index = self.config_list_index
 
 
+classes = [
+    OperatorProperty,
+    SPIO_OT_OperatorPropAdd, SPIO_OT_OperatorPropRemove,
+
+    ExtensionOperatorProperty,
+    SPIO_OT_ExtensionListAdd, SPIO_OT_ExtensionListRemove, SPIO_OT_ExtensionListCopy,
+
+    PREF_UL_ConfigList,
+    SPIO_Preference
+]
+
+
 def register():
-    bpy.utils.register_class(OperatorProperty)
-    bpy.utils.register_class(SPIO_OT_OperatorInputAction)
-    bpy.utils.register_class(ExtensionOperatorProperty)
-    bpy.utils.register_class(SPIO_OT_ExtensionListAction)
-    bpy.utils.register_class(PREF_UL_ConfigList)
-    bpy.utils.register_class(SPIO_Preference)
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
 
 def unregister():
-    bpy.utils.unregister_class(OperatorProperty)
-    bpy.utils.unregister_class(SPIO_OT_OperatorInputAction)
-    bpy.utils.unregister_class(ExtensionOperatorProperty)
-    bpy.utils.unregister_class(SPIO_OT_ExtensionListAction)
-    bpy.utils.unregister_class(PREF_UL_ConfigList)
-    bpy.utils.unregister_class(SPIO_Preference)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
