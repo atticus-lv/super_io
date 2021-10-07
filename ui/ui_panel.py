@@ -21,14 +21,16 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
         layout.alignment = "CENTER"
         pref = get_pref()
 
-        row = layout.split(factor=0.5, align=True)
-        row.label(text='Super IO Settings')
+        row =layout
         row = row.row(align=True)
         row.prop(pref, 'ui', expand=True, text='', emboss=False)
 
         row.separator(factor=2)
         row.operator('spio.config_import', icon='IMPORT', text='')
         row.operator('spio.config_export', icon='EXPORT', text='')
+
+        row.separator()
+        row.operator('wm.save_userpref')
 
     def draw(self, context):
         layout = self.layout
