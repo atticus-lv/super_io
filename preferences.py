@@ -118,28 +118,55 @@ class SPIO_OT_ExtensionListAction:
 
             pref.config_list_index = len(pref.config_list) - 1
 
+        elif self.action in {'UP', 'DOWN'}:
+            my_list = pref.config_list
+            index = pref.config_list_index
+            neighbor = index + (-1 if self.action == 'UP' else 1)
+            my_list.move(neighbor, index)
+            self.move_index(context)
+
         return {'FINISHED'}
 
+    def move_index(self, context):
+        pref = get_pref()
+        index = pref.config_list_index
+        new_index = index + (-1 if self.action == 'UP' else 1)
+        pref.config_list_index = max(0, min(new_index, len(pref.config_list) - 1))
 
-class SPIO_OT_ExtensionListAdd(SPIO_OT_ExtensionListAction,bpy.types.Operator):
-    bl_idname = "wm.spio_config_list_add"
+
+class SPIO_OT_ExtensionListAdd(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+    bl_idname = "spio.config_list_add"
     bl_label = "Add Config"
 
     action = 'ADD'
 
 
-class SPIO_OT_ExtensionListRemove(SPIO_OT_ExtensionListAction,bpy.types.Operator):
-    bl_idname = "wm.spio_config_list_remove"
+class SPIO_OT_ExtensionListRemove(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+    bl_idname = "spio.config_list_remove"
     bl_label = "Remove Config"
 
     action = 'REMOVE'
 
 
-class SPIO_OT_ExtensionListCopy(SPIO_OT_ExtensionListAction,bpy.types.Operator):
-    bl_idname = "wm.spio_config_list_copy"
+class SPIO_OT_ExtensionListCopy(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+    bl_idname = "spio.config_list_copy"
     bl_label = "Copy Config"
 
     action = 'COPY'
+
+
+class SPIO_OT_ExtensionListMoveUP(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+    bl_idname = "spio.config_list_move_up"
+    bl_label = 'Move Up'
+
+    action = 'UP'
+
+
+class SPIO_OT_ExtensionListMoveDown(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+    bl_idname = "spio.config_list_move_down"
+    bl_label = 'Move Down'
+
+    action = 'DOWN'
 
 
 class PREF_UL_ConfigList(bpy.types.UIList):
@@ -274,12 +301,19 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             self, "config_list",
             self, "config_list_index")
 
-        col_btn.operator('wm.spio_config_list_add', text='', icon='ADD')
+        col_btn.operator('spio.config_list_add', text='', icon='ADD')
 
-        d = col_btn.operator('wm.spio_config_list_remove', text='', icon='REMOVE')
+        d = col_btn.operator('spio.config_list_remove', text='', icon='REMOVE')
         d.index = self.config_list_index
 
-        c = col_btn.operator('wm.spio_config_list_copy', text='', icon='DUPLICATE')
+        col_btn.separator()
+
+        col_btn.operator('spio.config_list_move_up', text='', icon='TRIA_UP')
+        col_btn.operator('spio.config_list_move_down', text='', icon='TRIA_DOWN')
+
+        col_btn.separator()
+
+        c = col_btn.operator('spio.config_list_copy', text='', icon='DUPLICATE')
         c.index = self.config_list_index
 
         if len(self.config_list) == 0: return
@@ -306,16 +340,15 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         row.label(icon='TOOL_SETTINGS', text=text)
 
-
         if item.bl_idname != '':
             row = col.row()
             if len(item.prop_list) != 0:
-                row.label(text = 'Property')
-                row.label(text = 'Value')
+                row.label(text='Property')
+                row.label(text='Value')
             for prop_index, prop_item in enumerate(item.prop_list):
                 row = col.row(align=True)
-                row.prop(prop_item, 'name',text ='')
-                row.prop(prop_item, 'value',text ='')
+                row.prop(prop_item, 'name', text='')
+                row.prop(prop_item, 'value', text='')
 
                 d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
                 d.config_list_index = self.config_list_index
@@ -324,10 +357,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 if prop_item.name != '' and prop_item.value != '':
                     text.append(f'{prop_item.name}={prop_item.value}')
 
-        row = col.row(align=True)
-        row.alignment = 'LEFT'
-        d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
-        d.config_list_index = self.config_list_index
+            row = col.row(align=True)
+            row.alignment = 'LEFT'
+            d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
+            d.config_list_index = self.config_list_index
 
 
 classes = [
@@ -335,7 +368,8 @@ classes = [
     SPIO_OT_OperatorPropAdd, SPIO_OT_OperatorPropRemove,
 
     ExtensionOperatorProperty,
-    SPIO_OT_ExtensionListAdd, SPIO_OT_ExtensionListRemove, SPIO_OT_ExtensionListCopy,
+    SPIO_OT_ExtensionListAdd, SPIO_OT_ExtensionListRemove, SPIO_OT_ExtensionListCopy, SPIO_OT_ExtensionListMoveUP,
+    SPIO_OT_ExtensionListMoveDown,
 
     PREF_UL_ConfigList,
     SPIO_Preference
