@@ -354,8 +354,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 d.config_list_index = self.config_list_index
                 d.prop_index = prop_index
 
-                if prop_item.name != '' and prop_item.value != '':
-                    text.append(f'{prop_item.name}={prop_item.value}')
 
             row = col.row(align=True)
             row.alignment = 'LEFT'

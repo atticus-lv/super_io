@@ -236,7 +236,6 @@ class NODE_OT_SuperImport(SuperImport):
         )
 
     def import_default(self):
-        ext = self.ext
         nt = bpy.context.space_data.edit_tree
         location_X, location_Y = bpy.context.space_data.cursor_location
         for file_path in self.file_list:
