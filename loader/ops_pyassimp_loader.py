@@ -1,10 +1,13 @@
+import time
+
 import bpy
+import os
+
 # from .pyassimp import load, release # 相对包路径
 from pyassimp import load, release
 from bpy.props import StringProperty
 
-from bpy_extras.io_utils import unpack_list
-from bpy_extras.image_utils import load_image
+from ..ops.utils import MeasureTime
 
 
 class SPIO_OT_PureImport(bpy.types.Operator):
@@ -17,14 +20,19 @@ class SPIO_OT_PureImport(bpy.types.Operator):
     filepath: StringProperty()
 
     def execute(self, context):
-        scene = load(self.filepath)
+        with MeasureTime() as start_time:
+            scene = load(self.filepath)
+            print(f'Loading cost {time.time() - start_time}s')
+
         if len(scene.meshes) == 0: return {"CANCELLED"}
 
-        for mesh in scene.meshes[0]:
-            mesh_data = bpy.data.meshes.new('mesh_data')
-            mesh_data.from_pydata(mesh.vertices.tolist(), [], mesh.faces.tolist())
-            obj = bpy.data.objects.new('new_object', mesh_data)
-            context.collection.objects.link(obj)
+        with MeasureTime() as start_time:
+            for mesh in scene.meshes:
+                mesh_data = bpy.data.meshes.new('mesh_data')
+                mesh_data.from_pydata(mesh.vertices.tolist(), [], mesh.faces.tolist())
+                obj = bpy.data.objects.new(os.path.basename(self.filepath), mesh_data)
+                context.collection.objects.link(obj)
+            print(f'Building mesh cost {time.time() - start_time}s')
 
         release(scene)
 
