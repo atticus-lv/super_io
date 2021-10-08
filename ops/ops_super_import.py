@@ -66,6 +66,7 @@ class TEMP_UL_ConfigList(bpy.types.UIList):
 #                    )
 #     bpy.utils.register_class(opclass)
 
+
 class SuperImport(bpy.types.Operator):
     """Paste Model/Images"""
     bl_label = "Super Import"
@@ -89,6 +90,7 @@ class SuperImport(bpy.types.Operator):
         row.prop(self, 'show_urls', text=f'Import {len(self.file_list)} {self.ext} Object',
                  icon_value=import_icon.get_image_icon_id(), emboss=False)
         row.separator()
+        row.prop(self,'update')
 
         if self.show_urls:
             col = layout.column(align=True)
@@ -102,17 +104,32 @@ class SuperImport(bpy.types.Operator):
 
         item = pref.config_list[self.config_list_index]
 
-        box = layout.box().split().column(align=True)
+        box = layout.box().split().column()
 
-        box.label(text=item.name, icon='EDITMODE_HLT')
         row = box.row()
-        row.label(text='Property Name')
-        row.label(text='Property Value')
+        row.label(text=item.name, icon='EDITMODE_HLT')
+        c = row.operator('spio.config_list_copy', text='', icon='DUPLICATE')
+        c.index = self.config_list_index
 
-        for prop_item in item.prop_list:
+
+        if item.bl_idname != '':
             row = box.row()
-            row.prop(prop_item, 'name', text='')
-            row.prop(prop_item, 'value', text='')
+            if len(item.prop_list) != 0:
+                row.label(text='Property')
+                row.label(text='Value')
+            for prop_index, prop_item in enumerate(item.prop_list):
+                row = box.row()
+                row.prop(prop_item, 'name', text='')
+                row.prop(prop_item, 'value', text='')
+
+                d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
+                d.config_list_index = self.config_list_index
+                d.prop_index = prop_index
+
+        row = box.row(align=True)
+        row.alignment = 'LEFT'
+        d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
+        d.config_list_index = self.config_list_index
 
     def invoke(self, context, event):
         # restore
