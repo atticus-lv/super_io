@@ -46,6 +46,20 @@ class TEMP_UL_ConfigList(bpy.types.UIList):
 
         return filtered, ordered
 
+# import bpy
+#
+# for i in range(10):
+#     idname = "object.operator_%d" % i
+#
+#     def func(self, context):
+#         print("Hello World", self.bl_idname)
+#         return {'FINISHED'}
+#
+#     opclass = type("DynOp%d" % i,
+#                    (bpy.types.Operator, ),
+#                    {"bl_idname": idname, "bl_label": "Test", "execute": func},
+#                    )
+#     bpy.utils.register_class(opclass)
 
 class SuperImport(bpy.types.Operator):
     """Paste Model/Images"""
@@ -135,7 +149,8 @@ class SuperImport(bpy.types.Operator):
                 return self.execute(context)
 
             if len(config) > 1:
-                return context.window_manager.invoke_props_dialog(self, width=450)
+                self.config_list_index = index_list[0]
+                return context.window_manager.invoke_props_dialog(self,width=450)
 
     def execute(self, context):
         with MeasureTime() as start_time:
