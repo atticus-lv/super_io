@@ -56,6 +56,7 @@ def get_config(pref_config: CollectionProperty, check_use=False, filter=None, re
 
         ops_config = dict()
         config = {'extension': item.extension,
+                  'description': item.description,
                   'bl_idname': item.bl_idname,
                   'prop_list': ops_config}
 

@@ -81,6 +81,7 @@ class SuperImport(bpy.types.Operator):
     config_list_index: IntProperty(name='Active Index')
     # UI
     show_urls: BoolProperty(default=False, name='Show Files')
+    show_property: BoolProperty(default=False, name='Edit Property')
 
     def draw(self, context):
         layout = self.layout
@@ -90,7 +91,7 @@ class SuperImport(bpy.types.Operator):
         row.prop(self, 'show_urls', text=f'Import {len(self.file_list)} {self.ext} Object',
                  icon_value=import_icon.get_image_icon_id(), emboss=False)
         row.separator()
-        row.prop(self,'update')
+        row.prop(self, 'update')
 
         if self.show_urls:
             col = layout.column(align=True)
@@ -106,11 +107,15 @@ class SuperImport(bpy.types.Operator):
 
         box = layout.box().split().column()
 
-        row = box.row()
-        row.label(text=item.name, icon='EDITMODE_HLT')
+        row = box.split(factor=0.25)
+        row.prop(self,'show_property',icon = 'TRIA_DOWN' if self.show_property else "TRIA_RIGHT",emboss=False,text=item.name)
+        row = row.row(align=True)
+
+        row.label(text = item.description)
         c = row.operator('spio.config_list_copy', text='', icon='DUPLICATE')
         c.index = self.config_list_index
 
+        if not self.show_property: return
 
         if item.bl_idname != '':
             row = box.row()

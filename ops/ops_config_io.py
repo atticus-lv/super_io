@@ -27,6 +27,7 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
 
                     item.name = name
                     item.extension = values.pop('extension')
+                    item.description = values.pop('description')
                     item.bl_idname = values.pop('bl_idname')
 
                     for prop, prop_value in values['prop_list'].items():

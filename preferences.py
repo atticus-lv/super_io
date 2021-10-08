@@ -44,6 +44,7 @@ class ExtensionOperatorProperty(PropertyGroup):
 
     name: StringProperty(name='Preset Name', update=correct_name)
     extension: StringProperty(name='Extension')
+    description: StringProperty(name='Description',description='Show in the import option')
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
     prop_list: CollectionProperty(type=OperatorProperty)
 
@@ -109,6 +110,7 @@ class SPIO_OT_ExtensionListAction:
             item.name = cur_item.name + '_copy'
             item.use_config = cur_item.use_config
             item.extension = cur_item.extension
+            item.description = cur_item.description
             item.bl_idname = cur_item.bl_idname
 
             for cur_prop_item in cur_item.prop_list:
@@ -327,6 +329,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.use_property_split = True
         box.prop(item, 'name')
         box.prop(item, 'extension')
+        box.prop(item, 'description')
         box.prop(item, 'bl_idname')
 
         # ops props
