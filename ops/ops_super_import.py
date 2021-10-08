@@ -19,6 +19,10 @@ class TEMP_UL_ConfigList(bpy.types.UIList):
         row.prop(item, 'name', text='', emboss=False)
         row.prop(item, 'bl_idname', text='', emboss=False)
 
+    def draw_filter(self, context, layout):
+        # hide to prevent edit by user
+        pass
+
     def filter_items(self, context, data, propname):
         items = getattr(data, propname)
         ordered = []
@@ -45,6 +49,7 @@ class TEMP_UL_ConfigList(bpy.types.UIList):
             pass
 
         return filtered, ordered
+
 
 # import bpy
 #
@@ -93,7 +98,7 @@ class SuperImport(bpy.types.Operator):
         layout.template_list(
             "TEMP_UL_ConfigList", "Config List",
             pref, "config_list",
-            self, "config_list_index")
+            self, "config_list_index", rows=4)
 
         item = pref.config_list[self.config_list_index]
 
@@ -150,7 +155,7 @@ class SuperImport(bpy.types.Operator):
 
             if len(config) > 1:
                 self.config_list_index = index_list[0]
-                return context.window_manager.invoke_props_dialog(self,width=450)
+                return context.window_manager.invoke_props_dialog(self, width=450)
 
     def execute(self, context):
         with MeasureTime() as start_time:
