@@ -10,6 +10,7 @@ from bpy.props import (EnumProperty,
 from bpy.types import PropertyGroup
 
 from . import __folder_name__
+import rna_keymap_ui
 
 
 def get_pref():
@@ -254,14 +255,17 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     ui: EnumProperty(items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('CONFIG', 'Config', '', 'PRESET', 1),
+        ('KEYMAP', 'Keymap', '', 'KEYINGSET', 2),
     ])
     # Settings
     force_unicode: BoolProperty(name='Force Unicode',
                                 description='Force to use "utf-8" to decode filepath \n'
-                                            'Only enable when your system coding "utf-8"')
-    report_time: BoolProperty(name='Report time', description='Report import time', default=True)
+                                            'Only enable when your system coding "utf-8"', default=False)
+    report_time: BoolProperty(name='Report time',
+                              description='Report import time', default=True)
     # default blend import
-    simple_blend_menu: BoolProperty(name='Simple blender import menu', default=False)
+    simple_blend_menu: BoolProperty(name='Simple Menu',
+                                    description='Simple blender import menu (Default)', default=False)
 
     # Preset
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
@@ -282,6 +286,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             self.draw_settings(context, col)
         elif self.ui == 'CONFIG':
             self.draw_config(context, col)
+        elif self.ui == 'KEYMAP':
+            self.draw_keymap(context, col)
 
     def draw_import(self, context, layout):
         layout.operator('spio.config_import', icon='IMPORT')
@@ -291,6 +297,40 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         layout.use_property_split = True
         layout.prop(self, 'force_unicode')
         layout.prop(self, 'report_time')
+        layout.prop(self, 'simple_blend_menu')
+
+        # self.drawKeymap(context,layout)
+
+    def draw_keymap(self, context, layout):
+        col = layout.box().column()
+        # col.label(text="Keymap", icon="KEYINGSET")
+        km = None
+        wm = context.window_manager
+        kc = wm.keyconfigs.user
+
+        old_km_name = ""
+        get_kmi_l = []
+
+        for km_add, kmi_add in addon_keymaps:
+            for km_con in kc.keymaps:
+                if km_add.name == km_con.name:
+                    km = km_con
+                    break
+
+            for kmi_con in km.keymap_items:
+                if kmi_add.idname == kmi_con.idname and kmi_add.name == kmi_con.name:
+                    get_kmi_l.append((km, kmi_con))
+
+        get_kmi_l = sorted(set(get_kmi_l), key=get_kmi_l.index)
+
+        for km, kmi in get_kmi_l:
+            if not km.name == old_km_name:
+                col.label(text=str(km.name), icon="DOT")
+
+            col.context_pointer_set("keymap", km)
+            rna_keymap_ui.draw_kmi([], kc, km, kmi, col, 0)
+
+            old_km_name = km.name
 
     def draw_config(self, context, layout):
         row = layout.column(align=True).row()
@@ -378,12 +418,40 @@ classes = [
     SPIO_Preference
 ]
 
+addon_keymaps = []
+
+
+def add_keybind():
+    wm = bpy.context.window_manager
+    if wm.keyconfigs.addon:
+        km = wm.keyconfigs.addon.keymaps.new(name='3D View', space_type='VIEW_3D')
+        kmi = km.keymap_items.new("view3d.spio_import", 'V', 'PRESS', ctrl=True, shift=True)
+        addon_keymaps.append((km, kmi))
+
+        km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
+        kmi = km.keymap_items.new("node.spio_import", 'V', 'PRESS', ctrl=True, shift=True)
+        addon_keymaps.append((km, kmi))
+
+
+def remove_keybind():
+    wm = bpy.context.window_manager
+    kc = wm.keyconfigs.addon
+    if kc:
+        for km, kmi in addon_keymaps:
+            km.keymap_items.remove(kmi)
+
+    addon_keymaps.clear()
+
 
 def register():
+    add_keybind()
+
     for cls in classes:
         bpy.utils.register_class(cls)
 
 
 def unregister():
+    remove_keybind()
+
     for cls in classes:
         bpy.utils.unregister_class(cls)

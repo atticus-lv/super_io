@@ -37,8 +37,11 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
         pref = get_pref()
         if pref.ui == 'SETTINGS':
             SPIO_Preference.draw_settings(pref, context, layout)
-        else:
+        elif pref.ui == 'CONFIG':
             SPIO_Preference.draw_config(pref, context, layout)
+        elif pref.ui == 'KEYMAP':
+            SPIO_Preference.draw_keymap(pref, context, layout)
+
 
 class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
     bl_label = 'Super Import'
