@@ -74,17 +74,16 @@ class blenderFileDefault:
 
             elif self.data_type == 'collections':
                 data_to.collections = [name for name in data_from.collections]
-                print(data_to.collections)
 
             elif self.data_type == 'objects':
                 data_to.objects = [name for name in data_from.objects]
-                print(data_to.objects)
 
         for coll in data_to.collections:
             bpy.context.scene.collection.children.link(coll)
 
         for obj in data_to.objects:
             bpy.context.collection.objects.link(obj)
+
 
     def load_with_ui(self):
         if self.link:
