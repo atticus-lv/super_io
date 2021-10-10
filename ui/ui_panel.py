@@ -8,12 +8,16 @@ class SidebarSetup:
     bl_category = "SPIO"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
+
     # bl_options = {'DRAW_BOX'}
+
+    @classmethod
+    def pos(cls, context):
+        return get_pref().use_N_panel
 
 
 class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
     bl_label = ''
-
     bl_options = {'HEADER_LAYOUT_EXPAND'}
 
     def draw_header(self, context):
@@ -21,7 +25,7 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
         layout.alignment = "CENTER"
         pref = get_pref()
 
-        row =layout
+        row = layout
         row = row.row(align=True)
         row.prop(pref, 'ui', expand=True, text='', emboss=False)
 
@@ -46,7 +50,7 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
 class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
     bl_label = 'Super Import'
 
-    def draw(self,context):
+    def draw(self, context):
         layout = self.layout
         row = layout.row()
         row.alignment = 'CENTER'
@@ -54,6 +58,7 @@ class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
         row.separator()
         row.operator("view3d.spio_import", icon_value=import_icon.get_image_icon_id())
         row.separator()
+
 
 def register():
     bpy.utils.register_class(SPIO_PT_PrefPanel)

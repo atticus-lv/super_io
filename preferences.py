@@ -257,6 +257,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         ('CONFIG', 'Config', '', 'PRESET', 1),
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 2),
     ])
+    use_N_panel: BoolProperty(name='Use N Panel', default=True)
+
     # Settings
     force_unicode: BoolProperty(name='Force Unicode',
                                 description='Force to use "utf-8" to decode filepath \n'
@@ -296,8 +298,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     def draw_settings(self, context, layout):
         layout.use_property_split = True
         layout.prop(self, 'force_unicode')
+        layout.separator(factor=0.5)
         layout.prop(self, 'report_time')
         layout.prop(self, 'simple_blend_menu')
+        layout.prop(self, 'use_N_panel')
 
         # self.drawKeymap(context,layout)
 
