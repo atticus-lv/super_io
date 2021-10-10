@@ -44,7 +44,7 @@ class ExtensionOperatorProperty(PropertyGroup):
 
     name: StringProperty(name='Preset Name', update=correct_name)
     extension: StringProperty(name='Extension')
-    description: StringProperty(name='Description',description='Show in the import option')
+    description: StringProperty(name='Description', description='Show in the import option')
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
     prop_list: CollectionProperty(type=OperatorProperty)
 
@@ -260,6 +260,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                                 description='Force to use "utf-8" to decode filepath \n'
                                             'Only enable when your system coding "utf-8"')
     report_time: BoolProperty(name='Report time', description='Report import time', default=True)
+    # default blend import
+    simple_blend_menu: BoolProperty(name='Simple blender import menu', default=False)
+
     # Preset
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
     config_list_index: IntProperty(min=0, default=0)
@@ -356,7 +359,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
                 d.config_list_index = self.config_list_index
                 d.prop_index = prop_index
-
 
             row = col.row(align=True)
             row.alignment = 'LEFT'
