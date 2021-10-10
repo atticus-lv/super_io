@@ -1,9 +1,13 @@
 import os
+import time
+import subprocess
 
 import bpy
-import time
-
-from bpy.props import EnumProperty, CollectionProperty, StringProperty, IntProperty, BoolProperty
+from bpy.props import (EnumProperty,
+                       CollectionProperty,
+                       StringProperty,
+                       IntProperty,
+                       BoolProperty)
 
 from ..clipboard.wintypes import WintypesClipboard as Clipboard
 from .utils import get_config, is_float, get_pref, MeasureTime
@@ -84,7 +88,6 @@ class blenderFileDefault:
         for obj in data_to.objects:
             bpy.context.collection.objects.link(obj)
 
-
     def load_with_ui(self):
         if self.link:
             bpy.ops.wm.link('INVOKE_DEFAULT',
@@ -97,6 +100,7 @@ class blenderFileDefault:
 
     def invoke(self, context, event):
         self.load_all = event.alt
+        # self.link = event.shift
         return self.execute(context)
 
     def execute(self, context):
@@ -124,6 +128,19 @@ class SPIO_OT_LinkBlend(blenderFileDefault, bpy.types.Operator):
     bl_label = 'Link...'
 
     link = True
+
+
+class SPIO_OT_OpenBlend(blenderFileDefault, bpy.types.Operator):
+    """Open file with an other blender(Alt to load in current blender)"""
+    bl_idname = 'wm.spio_open_blend'
+    bl_label = 'Open...'
+
+    def invoke(self, context, event):
+        if event.alt:
+            bpy.ops.wm.open_mainfile(filepath=self.filepath)
+        else:
+            subprocess.Popen([bpy.app.binary_path,self.filepath])
+        return {"FINISHED"}
 
 
 class SuperImport(bpy.types.Operator):
@@ -352,7 +369,11 @@ class SuperImport(bpy.types.Operator):
             if pref.simple_blend_menu:
                 layout.operator('wm.spio_append_blend', icon='APPEND_BLEND')
                 layout.operator('wm.spio_link_blend', icon='LINK_BLEND')
+                layout.operator('wm.spio_open_blend', icon='ADD').filepath = path
             else:
+                layout.operator('wm.spio_open_blend', icon='ADD').filepath = path
+                layout.separator()
+
                 layout.label(text='Append...', icon='APPEND_BLEND')
                 for idx, d in enumerate(data_type):
                     col = layout.operator('wm.spio_append_blend', text=data_type_title[idx])
@@ -458,6 +479,7 @@ def register():
     bpy.utils.register_class(TEMP_UL_ConfigList)
     bpy.utils.register_class(SPIO_OT_AppendBlend)
     bpy.utils.register_class(SPIO_OT_LinkBlend)
+    bpy.utils.register_class(SPIO_OT_OpenBlend)
     bpy.utils.register_class(VIEW3D_OT_SuperImport)
     bpy.utils.register_class(NODE_OT_SuperImport)
 
@@ -476,4 +498,5 @@ def unregister():
     bpy.utils.unregister_class(VIEW3D_OT_SuperImport)
     bpy.utils.unregister_class(SPIO_OT_AppendBlend)
     bpy.utils.unregister_class(SPIO_OT_LinkBlend)
+    bpy.utils.unregister_class(SPIO_OT_OpenBlend)
     bpy.utils.unregister_class(NODE_OT_SuperImport)
