@@ -315,32 +315,34 @@ class SuperImport(bpy.types.Operator):
 
     def import_custom(self):
         """import users' custom configs"""
-        for file_path in self.file_list:
-            config_item = get_pref().config_list[self.config_list_index]
-            ops_args = dict()
+        config_item = get_pref().config_list[self.config_list_index]
+        ops_args = dict()
 
-            for prop_index, prop_item in enumerate(config_item.prop_list):
-                prop = prop_item.name
-                value = prop_item.value
+        for prop_index, prop_item in enumerate(config_item.prop_list):
+            prop = prop_item.name
+            value = prop_item.value
 
-                if prop == '' or value == '': continue
+            if prop == '' or value == '': continue
 
-                if value.isdigit():
-                    ops_args[prop] = int(value)
-                elif is_float(value):
-                    ops_args[prop] = float(value)
-                elif value in {'True', 'False'}:
-                    ops_args[prop] = eval(value)
-                else:
-                    ops_args[prop] = value
+            if value.isdigit():
+                ops_args[prop] = int(value)
+            elif is_float(value):
+                ops_args[prop] = float(value)
+            elif value in {'True', 'False'}:
+                ops_args[prop] = eval(value)
+            else:
+                ops_args[prop] = value
 
-            ops_args['filepath'] = file_path
-            bl_idname = config_item.bl_idname
+        bl_idname = config_item.bl_idname
+        op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
-            try:
-                exec(f'bpy.ops.{bl_idname}(**{ops_args})')
-            except Exception as e:
-                self.report({"ERROR"}, str(e))
+        if op_callable:
+            for file_path in self.file_list:
+                ops_args['filepath'] = file_path
+                try:
+                    op_callable(**ops_args)
+                except Exception as e:
+                    self.report({"ERROR"}, str(e))
 
     def import_default(self):
         """Import with blender's default setting"""
