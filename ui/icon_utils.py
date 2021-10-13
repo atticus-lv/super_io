@@ -13,7 +13,7 @@ class RSN_Preview():
     def register(self):
         pcoll = previews.new()
         pcoll.load(self.name, self.image, 'IMAGE')
-        self.preview_collections["rsn_icon"] = pcoll
+        self.preview_collections["spio_icon"] = pcoll
 
     def unregister(self):
         for pcoll in self.preview_collections.values():
@@ -21,7 +21,7 @@ class RSN_Preview():
         self.preview_collections.clear()
 
     def get_image(self):
-        return self.preview_collections["rsn_icon"][self.name]
+        return self.preview_collections["spio_icon"][self.name]
 
     def get_image_icon_id(self):
         image = self.get_image()

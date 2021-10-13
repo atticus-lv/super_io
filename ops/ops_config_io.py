@@ -17,7 +17,7 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
         pref = get_pref()
-        exist_config,index_list = get_config(pref.config_list)
+        exist_config, index_list = get_config(pref.config_list)
 
         with open(self.filepath, "r", encoding='utf-8') as f:
             data = json.load(f)
@@ -53,7 +53,7 @@ class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
 
     def execute(self, context):
         config_list = get_pref().config_list
-        config,index_list = get_config(config_list)
+        config, index_list = get_config(config_list)
         with open(self.filepath, "w", encoding='utf-8') as f:
             json.dump(config, f, indent=4)
             self.report({"INFO"}, f'Save config to "{self.filepath}"')
