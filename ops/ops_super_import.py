@@ -135,13 +135,13 @@ class SPIO_OT_OpenBlend(blenderFileDefault, bpy.types.Operator):
     bl_idname = 'wm.spio_open_blend'
     bl_label = 'Open...'
 
-    load:BoolProperty()
+    load: BoolProperty()
 
     def execute(self, context):
         if self.load:
             bpy.ops.wm.open_mainfile(filepath=self.filepath)
         else:
-            subprocess.Popen([bpy.app.binary_path,self.filepath])
+            subprocess.Popen([bpy.app.binary_path, self.filepath])
         return {"FINISHED"}
 
 
@@ -217,40 +217,6 @@ class SuperImport(bpy.types.Operator):
         d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
         d.config_list_index = self.config_list_index
 
-    # def register_default_blend_import(self):
-    #
-    #     def execute(append=True):
-    #         filepath = self.file_list.pop(0)
-    #         if append:
-    #             bpy.ops.wm.append('INVOKE_DEFAULT', filepath=filepath)
-    #         else:
-    #             bpy.ops.wm.link('INVOKE_DEFAULT', filepath=filepath)
-    #
-    #     def append(cls, context):
-    #         execute(append=True)
-    #         return {'FINISHED'}
-    #
-    #     def link(cls, context):
-    #         execute(append=False)
-    #         return {'FINISHED'}
-    #
-    #     append_cls = type("DynOp",
-    #                       (bpy.types.Operator,),
-    #                       {"bl_idname": 'wm.spio_append_blend', "bl_label": "Append", "execute": append},
-    #                       )
-    #
-    #     link_cls = type("DynOp",
-    #                     (bpy.types.Operator,),
-    #                     {"bl_idname": 'wm.spio_link_blend', "bl_label": "Link", "execute": link},
-    #                     )
-    #
-    #     self.dep_classes.clear()
-    #     self.dep_classes.append(append_cls)
-    #     self.dep_classes.append(link_cls)
-    #
-    #     for cls in self.dep_classes:
-    #         bpy.utils.register_class(cls)
-
     def invoke(self, context, event):
         # restore
         self.file_list.clear()
@@ -298,7 +264,9 @@ class SuperImport(bpy.types.Operator):
 
             elif len(config) > 1:
                 self.config_list_index = index_list[0]
-                return context.window_manager.invoke_props_dialog(self, width=450)
+                if get_pref().import_style == 'PANEL':
+                    return context.window_manager.invoke_props_dialog(self, width=450)
+            return self.import_custom_dynamic(context, index_list)
 
     def execute(self, context):
         with MeasureTime() as start_time:
@@ -314,6 +282,83 @@ class SuperImport(bpy.types.Operator):
         #     bpy.utils.unregister_class(cls)
 
         return {"FINISHED"}
+
+    def import_custom_dynamic(self, context, index_list):
+        # clear
+        for cls in self.dep_classes:
+            bpy.utils.unregister_class(cls)
+        self.dep_classes.clear()
+
+        file_list = self.file_list
+
+        for index in index_list:
+            config_item = get_pref().config_list[index]
+
+            def execute(self, context):
+                config_item = get_pref().config_list[index]
+                ops_args = dict()
+
+                for prop_item in config_item.prop_list:
+
+                    prop = prop_item.name
+                    value = prop_item.value
+
+                    print(prop, value)
+
+                    if prop == '' or value == '': continue
+
+                    if value.isdigit():
+                        ops_args[prop] = int(value)
+                    elif is_float(value):
+                        ops_args[prop] = float(value)
+                    elif value in {'True', 'False'}:
+                        ops_args[prop] = eval(value)
+                    else:
+                        ops_args[prop] = value
+
+                bl_idname = config_item.bl_idname
+                op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+
+                if op_callable:
+                    for file_path in file_list:
+                        ops_args['filepath'] = file_path
+                        try:
+                            op_callable(**ops_args)
+                        except Exception as e:
+                            self.report({"ERROR"}, str(e))
+                else:
+                    self.report({"ERROR"}, f'{op_callable} Error!!!')
+
+                return {"FINISHED"}
+
+            op_cls = type("DynOp",
+                          (bpy.types.Operator,),
+                          {"bl_idname": f'wm.spio_config_{index}',
+                           "bl_label": config_item.name,
+                           "bl_description": config_item.description,
+                           "execute": execute, },
+                          )
+
+            self.dep_classes.append(op_cls)
+
+
+
+
+
+        for cls in self.dep_classes:
+            bpy.utils.register_class(cls)
+
+        import_op = self
+
+        def draw_custom_menu(self, context):
+            for cls in import_op.dep_classes:
+                self.layout.operator(cls.bl_idname)
+
+        context.window_manager.popup_menu(draw_custom_menu,
+                                          title='Super Import Custom',
+                                          icon='FILE')
+
+        return {'FINISHED'}
 
     def import_custom(self):
         """import users' custom configs"""
@@ -377,7 +422,7 @@ class SuperImport(bpy.types.Operator):
                 open = layout.operator('wm.spio_open_blend', icon='ADD')
                 open.filepath = path
                 open.load = False
-                open = layout.operator('wm.spio_open_blend', icon='FILE_TICK',text= 'Load')
+                open = layout.operator('wm.spio_open_blend', icon='FILE_TICK', text='Load')
                 open.filepath = path
                 open.load = True
             else:
@@ -399,7 +444,6 @@ class SuperImport(bpy.types.Operator):
                     ops.filepath = path
                     ops.sub_path = data_type_title[idx]
                     ops.data_type = data_type_s[idx]
-
 
                 col.separator()
                 col.label(text='Link...', icon='LINK_BLEND')

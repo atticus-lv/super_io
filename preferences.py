@@ -268,7 +268,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     # default blend import
     simple_blend_menu: BoolProperty(name='Simple Menu',
                                     description='Simple blender import menu (Default)', default=False)
-
+    import_style: EnumProperty(items=[
+        ('PANEL', 'Panel', ''), ('MENU', 'Menu', '')],
+        default='MENU')
     # Preset
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
     config_list_index: IntProperty(min=0, default=0)
@@ -299,9 +301,11 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         layout.use_property_split = True
         layout.prop(self, 'force_unicode')
         layout.separator(factor=0.5)
-        layout.prop(self, 'report_time')
-        layout.prop(self, 'simple_blend_menu')
-        layout.prop(self, 'use_N_panel')
+        col = layout.column()
+        col.prop(self, 'import_style')
+        col.prop(self, 'simple_blend_menu')
+        col.prop(self, 'use_N_panel')
+        col.prop(self, 'report_time')
 
         # self.drawKeymap(context,layout)
 
