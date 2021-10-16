@@ -2,7 +2,7 @@ bl_info = {
     "name": "Super IO (SPIO)",
     "author": "Atticus",
     "blender": (2, 93, 0),
-    "version": (0, 6),
+    "version": (0, 7),
     "category": "Import-Export",
     "support": "COMMUNITY",
     "doc_url": "",
