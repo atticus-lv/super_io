@@ -2,7 +2,7 @@ import bpy
 import json
 import os
 
-from .utils import get_config, get_pref
+from .utils import ConfigHelper, get_pref
 from bpy_extras.io_utils import ExportHelper, ImportHelper
 
 
@@ -17,7 +17,8 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
         pref = get_pref()
-        exist_config, index_list = get_config(pref.config_list)
+        CONFIG = ConfigHelper()
+        exist_config, index_list = CONFIG.config_list, CONFIG.index_list
 
         with open(self.filepath, "r", encoding='utf-8') as f:
             data = json.load(f)
@@ -52,8 +53,8 @@ class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
     # use_filter_folder = True
 
     def execute(self, context):
-        config_list = get_pref().config_list
-        config, index_list = get_config(config_list)
+        CONFIG = ConfigHelper()
+        config, index_list = CONFIG.config_list, CONFIG.index_list
         with open(self.filepath, "w", encoding='utf-8') as f:
             json.dump(config, f, indent=4)
             self.report({"INFO"}, f'Save config to "{self.filepath}"')

@@ -10,7 +10,8 @@ from bpy.props import (EnumProperty,
                        BoolProperty)
 
 from ..clipboard.wintypes import WintypesClipboard as Clipboard
-from .utils import get_config, is_float, get_pref, MeasureTime
+from .utils import ConfigHelper, MeasureTime
+from .utils import is_float, get_pref, convert_value
 
 from ..ui.icon_utils import RSN_Preview
 
@@ -155,6 +156,7 @@ class SuperImport(bpy.types.Operator):
     # data
     clipboard = None
     file_list = []
+    CONFIG = None
     ext = ''
     # state
     use_custom_config = False
@@ -223,6 +225,7 @@ class SuperImport(bpy.types.Operator):
         self.clipboard = None
         self.ext = None
 
+        # get Clipboard
         self.clipboard = Clipboard()
         self.file_list = self.clipboard.push(force_unicode=get_pref().force_unicode)
 
@@ -240,13 +243,14 @@ class SuperImport(bpy.types.Operator):
                 self.report({"ERROR"}, "Only one type of file can be imported at a time")
                 return {"CANCELLED"}
 
-        # get extension
+        # set extension filter for ui panel
         context.scene.spio_ext = self.ext
 
-        config, index_list = get_config(get_pref().config_list, check_use=True, filter=context.scene.spio_ext,
-                                        return_index=True)
+        self.CONFIG = ConfigHelper(check_use=True, filter=context.scene.spio_ext)
+        config, index_list = self.CONFIG.config_list, self.CONFIG.index_list
+
         # import default if not custom config for this file extension
-        if len(config) == 0:
+        if self.CONFIG.is_empty():
             self.use_custom_config = False
 
             if self.ext == 'blend':
@@ -255,20 +259,20 @@ class SuperImport(bpy.types.Operator):
             else:
                 return self.execute(context)
 
-        elif len(config) >= 1:
-            self.use_custom_config = True
-            # when there is only one config, regard it as the default setting
-            if len(config) == 1:
-                self.config_list_index = index_list[0]
-                return self.execute(context)
-            # when there is more than one config, set up a panel / menu for user to select
-            elif len(config) > 1:
-                # set default index to prevent default index is not in the filter list ui
-                self.config_list_index = index_list[0]
+        self.use_custom_config = True
+        # set default index to prevent default index is not in the filter list ui
+        self.config_list_index = index_list[0]
 
-                if get_pref().import_style == 'PANEL':
-                    return context.window_manager.invoke_props_dialog(self, width=450)
-                return self.import_custom_dynamic(context, index_list)
+        # when there is only one config, regard it as the default setting
+        if self.CONFIG.is_only_one_config():
+            return self.execute(context)
+
+        # when there is more than one config, set up a panel / menu for user to select
+        elif self.CONFIG.is_more_than_one_config():
+            self.config_list_index = index_list[0]
+            if get_pref().import_style == 'PANEL':
+                return context.window_manager.invoke_props_dialog(self, width=450)
+            return self.import_custom_dynamic(context)
 
     def execute(self, context):
         with MeasureTime() as start_time:
@@ -277,14 +281,17 @@ class SuperImport(bpy.types.Operator):
             else:
                 self.import_custom()
 
-            if get_pref().report_time: self.report({"INFO"},
-                                                   f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
+            self.report_time(start_time)
 
         return {"FINISHED"}
 
+    def report_time(self, start_time):
+        if get_pref().report_time: self.report({"INFO"},
+                                               f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
+
     # menu
     ##############
-    def import_custom_dynamic(self, context, index_list):
+    def import_custom_dynamic(self, context):
         # clear
         for cls in self.dep_classes:
             bpy.utils.unregister_class(cls)
@@ -292,7 +299,7 @@ class SuperImport(bpy.types.Operator):
 
         file_list = self.file_list
 
-        for index in index_list:
+        for index in self.CONFIG.index_list:
             # set config for register
             config_item = get_pref().config_list[index]
 
@@ -301,34 +308,27 @@ class SuperImport(bpy.types.Operator):
             def execute(self, context):
                 # use pre-define index to call config
                 config_item = get_pref().config_list[self.idx]
+                bl_idname = config_item.bl_idname
+                op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
                 ops_args = dict()
 
                 for prop_item in config_item.prop_list:
-                    prop = prop_item.name
-                    value = prop_item.value
-
+                    prop, value = prop_item.name, prop_item.value
                     if prop == '' or value == '': continue
-
-                    if value.isdigit():
-                        ops_args[prop] = int(value)
-                    elif is_float(value):
-                        ops_args[prop] = float(value)
-                    elif value in {'True', 'False'}:
-                        ops_args[prop] = eval(value)
-                    else:
-                        ops_args[prop] = value
-
-                bl_idname = config_item.bl_idname
-                op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+                    ops_args[prop] = convert_value(value)
 
                 if op_callable:
-                    for file_path in file_list:
-                        ops_args['filepath'] = file_path
-                        try:
-                            op_callable(**ops_args)
-                        except Exception as e:
-                            self.report({"ERROR"}, str(e))
+                    with MeasureTime() as start_time:
+                        for file_path in file_list:
+                            ops_args['filepath'] = file_path
+                            try:
+                                op_callable(**ops_args)
+                            except Exception as e:
+                                self.report({"ERROR"}, str(e))
+
+                        if get_pref().report_time: self.report({"INFO"},
+                                                               f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
                 else:
                     self.report({"ERROR"}, f'{op_callable} Error!!!')
 
@@ -339,8 +339,10 @@ class SuperImport(bpy.types.Operator):
                           {"bl_idname": f'wm.spio_config_{index}',
                            "bl_label": config_item.name,
                            "bl_description": config_item.description,
+                           "execute": execute,
+                           # custom
                            'idx': index,
-                           "execute": execute, },
+                           'CONFIG': self.CONFIG, },
                           )
 
             self.dep_classes.append(op_cls)
@@ -356,7 +358,8 @@ class SuperImport(bpy.types.Operator):
             for cls in import_op.dep_classes:
                 self.layout.operator(cls.bl_idname)
 
-        context.window_manager.popup_menu(draw_custom_menu, title='Super Import Custom', icon='FILE')
+        context.window_manager.popup_menu(draw_custom_menu, title=f'Super Import {self.ext.upper()}',
+                                          icon='FILEBROWSER')
 
         return {'FINISHED'}
 
@@ -426,25 +429,14 @@ class SuperImport(bpy.types.Operator):
     def import_custom(self):
         """import users' custom configs"""
         config_item = get_pref().config_list[self.config_list_index]
+        bl_idname = config_item.bl_idname
+        op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
         ops_args = dict()
 
         for prop_index, prop_item in enumerate(config_item.prop_list):
-            prop = prop_item.name
-            value = prop_item.value
-
+            prop, value = prop_item.name, prop_item.value
             if prop == '' or value == '': continue
-
-            if value.isdigit():
-                ops_args[prop] = int(value)
-            elif is_float(value):
-                ops_args[prop] = float(value)
-            elif value in {'True', 'False'}:
-                ops_args[prop] = eval(value)
-            else:
-                ops_args[prop] = value
-
-        bl_idname = config_item.bl_idname
-        op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+            ops_args[prop] = convert_value(value)
 
         if op_callable:
             for file_path in self.file_list:

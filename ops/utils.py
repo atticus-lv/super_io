@@ -31,54 +31,70 @@ def is_float(s) -> bool:
     return False
 
 
-def get_config(pref_config: CollectionProperty, check_use=False, filter=None, return_index=False):
-    """
-    :return:{
-        name[str]:{
-        'extension':extension[str],
-        'bl_idname':bl_idname[str],
-        'prop_list':**args[dict],
-        },
-        ...
-    }
-    """
-    config_list = dict()
-    index_list = []
-    for config_list_index, item in enumerate(pref_config):
+def convert_value(value):
+    if value.isdigit():
+        return int(value)
+    elif is_float(value):
+        return float(value)
+    elif value in {'True', 'False'}:
+        return eval(value)
+    else:
+        return value
 
-        if True in (item.name == '',
-                    item.bl_idname == '',
-                    item.extension == ''): continue
-        if check_use and item.use_config is False: continue
 
-        if filter:
-            if item.extension != filter: continue
+class ConfigHelper():
+    def __init__(self, check_use=False, filter=None):
+        pref_config = get_pref().config_list
 
-        ops_config = dict()
-        config = {'extension': item.extension,
-                  'description': item.description,
-                  'bl_idname': item.bl_idname,
-                  'prop_list': ops_config}
+        config_list = dict()
+        index_list = []
 
-        index_list.append(config_list_index)
+        for config_list_index, item in enumerate(pref_config):
 
-        if len(item.prop_list) != 0:
-            for prop_index, prop_item in enumerate(item.prop_list):
-                prop = prop_item.name
-                value = prop_item.value
+            if True in (item.name == '',
+                        item.bl_idname == '',
+                        item.extension == ''): continue
+            if check_use and item.use_config is False: continue
 
-                if prop == '' or value == '': continue
+            if filter:
+                if item.extension != filter: continue
 
-                # change string to value
-                if value.isdigit():
-                    ops_config[prop] = int(value)
-                elif is_float(value):
-                    ops_config[prop] = float(value)
-                elif value in {'True', 'False'}:
-                    ops_config[prop] = eval(value)
-                else:
-                    ops_config[prop] = value
+            ops_config = dict()
+            config = {'extension': item.extension,
+                      'description': item.description,
+                      'bl_idname': item.bl_idname,
+                      'prop_list': ops_config}
 
-        config_list[item.name] = config
+            index_list.append(config_list_index)
 
-    return config_list if not return_index else config_list, index_list
+            if len(item.prop_list) != 0:
+                for prop_index, prop_item in enumerate(item.prop_list):
+                    prop, value = prop_item.name, prop_item.value
+
+                    # skip if the prop is not filled
+                    if prop == '' or value == '': continue
+
+                    ops_config[prop] = convert_value(value)
+
+            config_list[item.name] = config
+
+        self.config_list = config_list
+        self.index_list = index_list
+
+    def get_prop_list_from_index(self, index):
+        if index > len(self.config_list) - 1: return None
+
+        config_item = self.config_list[index]
+        return config_item.get('prop_list')
+
+    def is_empty(self):
+        return len(self.config_list) == 0
+
+    def is_only_one_config(self):
+        return len(self.config_list) == 1
+
+    def is_more_than_one_config(self):
+        return len(self.config_list) > 1
+
+
+
