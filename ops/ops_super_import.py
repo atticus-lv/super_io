@@ -257,16 +257,18 @@ class SuperImport(bpy.types.Operator):
 
         elif len(config) >= 1:
             self.use_custom_config = True
-
+            # when there is only one config, regard it as the default setting
             if len(config) == 1:
                 self.config_list_index = index_list[0]
                 return self.execute(context)
-
+            # when there is more than one config, set up a panel / menu for user to select
             elif len(config) > 1:
+                # set default index to prevent default index is not in the filter list ui
                 self.config_list_index = index_list[0]
+
                 if get_pref().import_style == 'PANEL':
                     return context.window_manager.invoke_props_dialog(self, width=450)
-            return self.import_custom_dynamic(context, index_list)
+                return self.import_custom_dynamic(context, index_list)
 
     def execute(self, context):
         with MeasureTime() as start_time:
@@ -277,12 +279,11 @@ class SuperImport(bpy.types.Operator):
 
             if get_pref().report_time: self.report({"INFO"},
                                                    f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
-        # unregister dynamic class
-        # for cls in self.dep_classes:
-        #     bpy.utils.unregister_class(cls)
 
         return {"FINISHED"}
 
+    # menu
+    ##############
     def import_custom_dynamic(self, context, index_list):
         # clear
         for cls in self.dep_classes:
@@ -292,18 +293,20 @@ class SuperImport(bpy.types.Operator):
         file_list = self.file_list
 
         for index in index_list:
+            # set config for register
             config_item = get_pref().config_list[index]
 
+            # dynamic operator
+            ##################
             def execute(self, context):
-                config_item = get_pref().config_list[index]
+                # use pre-define index to call config
+                config_item = get_pref().config_list[self.idx]
+
                 ops_args = dict()
 
                 for prop_item in config_item.prop_list:
-
                     prop = prop_item.name
                     value = prop_item.value
-
-                    print(prop, value)
 
                     if prop == '' or value == '': continue
 
@@ -336,30 +339,90 @@ class SuperImport(bpy.types.Operator):
                           {"bl_idname": f'wm.spio_config_{index}',
                            "bl_label": config_item.name,
                            "bl_description": config_item.description,
+                           'idx': index,
                            "execute": execute, },
                           )
 
             self.dep_classes.append(op_cls)
 
-
-
-
-
+        # register
         for cls in self.dep_classes:
             bpy.utils.register_class(cls)
 
+        # set draw menu
         import_op = self
 
         def draw_custom_menu(self, context):
             for cls in import_op.dep_classes:
                 self.layout.operator(cls.bl_idname)
 
-        context.window_manager.popup_menu(draw_custom_menu,
-                                          title='Super Import Custom',
-                                          icon='FILE')
+        context.window_manager.popup_menu(draw_custom_menu, title='Super Import Custom', icon='FILE')
 
         return {'FINISHED'}
 
+    def import_blend_default(self, context):
+        # self.register_default_blend_import()
+
+        path = self.file_list[0]
+
+        data_type = [
+            'collection',
+            'material',
+            'world',
+            'object'
+        ]
+
+        data_type_title = [d.title() for d in data_type]
+        data_type_s = [d + 's' for d in data_type]
+
+        def draw_blend_menu(cls, context):
+            pref = get_pref()
+            layout = cls.layout
+            layout.operator_context = "INVOKE_DEFAULT"
+
+            if pref.simple_blend_menu:
+                layout.operator('wm.spio_append_blend', icon='APPEND_BLEND')
+                layout.operator('wm.spio_link_blend', icon='LINK_BLEND')
+
+                open = layout.operator('wm.spio_open_blend', icon='ADD')
+                open.filepath = path
+                open.load = False
+                open = layout.operator('wm.spio_open_blend', icon='FILE_TICK', text='Load')
+                open.filepath = path
+                open.load = True
+            else:
+                col = layout.column()
+
+                open = col.operator('wm.spio_open_blend', icon='ADD')
+                open.filepath = path
+                open.load = False
+
+                open = col.operator('wm.spio_open_blend', icon='FILE_TICK', text='Load')
+                open.filepath = path
+                open.load = True
+
+                col.separator()
+                col.label(text='Append...', icon='APPEND_BLEND')
+                for idx, d in enumerate(data_type):
+                    ops = col.operator('wm.spio_append_blend', text=data_type_title[idx])
+                    ops.filepath = path
+                    ops.sub_path = data_type_title[idx]
+                    ops.data_type = data_type_s[idx]
+
+                col.separator()
+                col.label(text='Link...', icon='LINK_BLEND')
+                for idx, d in enumerate(data_type):
+                    ops = col.operator('wm.spio_link_blend', text=data_type_title[idx])
+                    ops.filepath = path
+                    ops.sub_path = data_type_title[idx]
+                    ops.data_type = data_type_s[idx]
+
+        context.window_manager.popup_menu(draw_blend_menu,
+                                          title='Super Import Blend',
+                                          icon='FILE_BLEND')
+
+    # Advance Panel
+    ################
     def import_custom(self):
         """import users' custom configs"""
         config_item = get_pref().config_list[self.config_list_index]
@@ -394,68 +457,6 @@ class SuperImport(bpy.types.Operator):
     def import_default(self):
         """Import with blender's default setting"""
         pass
-
-    def import_blend_default(self, context):
-        # self.register_default_blend_import()
-
-        path = self.file_list[0]
-
-        data_type = [
-            'collection',
-            'material',
-            'world',
-            'object'
-        ]
-
-        data_type_title = [d.title() for d in data_type]
-        data_type_s = [d + 's' for d in data_type]
-
-        def draw_blend_menu(cls, context):
-            pref = get_pref()
-            layout = cls.layout
-            layout.operator_context = "INVOKE_DEFAULT"
-
-            if pref.simple_blend_menu:
-                layout.operator('wm.spio_append_blend', icon='APPEND_BLEND')
-                layout.operator('wm.spio_link_blend', icon='LINK_BLEND')
-
-                open = layout.operator('wm.spio_open_blend', icon='ADD')
-                open.filepath = path
-                open.load = False
-                open = layout.operator('wm.spio_open_blend', icon='FILE_TICK', text='Load')
-                open.filepath = path
-                open.load = True
-            else:
-
-                col = layout.column()
-
-                open = col.operator('wm.spio_open_blend', icon='ADD')
-                open.filepath = path
-                open.load = False
-
-                open = col.operator('wm.spio_open_blend', icon='FILE_TICK', text='Load')
-                open.filepath = path
-                open.load = True
-
-                col.separator()
-                col.label(text='Append...', icon='APPEND_BLEND')
-                for idx, d in enumerate(data_type):
-                    ops = col.operator('wm.spio_append_blend', text=data_type_title[idx])
-                    ops.filepath = path
-                    ops.sub_path = data_type_title[idx]
-                    ops.data_type = data_type_s[idx]
-
-                col.separator()
-                col.label(text='Link...', icon='LINK_BLEND')
-                for idx, d in enumerate(data_type):
-                    ops = col.operator('wm.spio_link_blend', text=data_type_title[idx])
-                    ops.filepath = path
-                    ops.sub_path = data_type_title[idx]
-                    ops.data_type = data_type_s[idx]
-
-        context.window_manager.popup_menu(draw_blend_menu,
-                                          title='Super Import Blend',
-                                          icon='FILE_BLEND')
 
 
 class VIEW3D_OT_SuperImport(SuperImport):
@@ -546,7 +547,9 @@ def register():
     bpy.utils.register_class(VIEW3D_OT_SuperImport)
     bpy.utils.register_class(NODE_OT_SuperImport)
 
+    # Global ext
     bpy.types.Scene.spio_ext = StringProperty(name='Filter extension', default='')
+    # Menu append
     bpy.types.TOPBAR_MT_file_context_menu.prepend(file_context_menu)
     bpy.types.NODE_MT_context_menu.prepend(node_context_menu)
 
