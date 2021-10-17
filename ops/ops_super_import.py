@@ -165,6 +165,8 @@ class SuperImport(bpy.types.Operator):
     file_list = []
     CONFIG = None
     ext = ''
+    # action
+    load_image_as_plane = False
     # state
     use_custom_config = False
     config_list_index: IntProperty(name='Active Index')
@@ -231,6 +233,7 @@ class SuperImport(bpy.types.Operator):
         self.file_list.clear()
         self.clipboard = None
         self.ext = None
+        self.load_image_as_plane = event.alt
 
         # get Clipboard
         self.clipboard = Clipboard()
@@ -451,6 +454,10 @@ class SuperImport(bpy.types.Operator):
 
 
 class VIEW3D_OT_SuperImport(SuperImport):
+    """Load files/models/images from clipboard
+Allow to load one format at the same time
+Support batch load all models/images (Alt click to call import image as plane)
+Blend file is only allow to load only one(as library)"""
     bl_idname = "view3d.spio_import"
     bl_label = "Super Import View3D"
 
@@ -487,10 +494,17 @@ class VIEW3D_OT_SuperImport(SuperImport):
             elif ext == 'svg':
                 bpy.ops.import_curve.svg(filepath=path)
             else:
-                bpy.ops.object.load_reference_image(filepath=path)
+                if self.load_image_as_plane:
+                    from addon_utils import enable
+                    enable("io_import_images_as_planes")
+                    bpy.ops.import_image.to_plane(files=[{"name": path}])
+                else:
+                    bpy.ops.object.load_reference_image(filepath=path)
 
 
 class NODE_OT_SuperImport(SuperImport):
+    """Load files/images from clipboard
+Allow to load one format at the same time"""
     bl_idname = "node.spio_import"
     bl_label = "Super Import ShaderNodeTree"
 
