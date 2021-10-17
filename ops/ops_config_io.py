@@ -2,6 +2,7 @@ import bpy
 import json
 import os
 
+from bpy.props import StringProperty
 from .utils import ConfigHelper, get_pref
 from bpy_extras.io_utils import ExportHelper, ImportHelper
 
@@ -14,6 +15,11 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
     bl_options = {"REGISTER", "UNDO"}
 
     filename_ext = ".json"
+
+    filter_glob: StringProperty(
+        default="*.json",
+        options={'HIDDEN'}
+    )
 
     def execute(self, context):
         pref = get_pref()
@@ -49,6 +55,11 @@ class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
     bl_options = {"REGISTER", "UNDO"}
 
     filename_ext = ".json"
+
+    filter_glob: StringProperty(
+        default="*.json",
+        options={'HIDDEN'}
+    )
 
     # use_filter_folder = True
 
