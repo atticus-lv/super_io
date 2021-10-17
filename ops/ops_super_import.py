@@ -116,7 +116,8 @@ class blenderFileDefault:
 
 
 class SPIO_OT_AppendBlend(blenderFileDefault, bpy.types.Operator):
-    """Alt to load all from this data type"""
+    """Append files for clipboard blend file
+Alt to append all data of the type"""
     bl_idname = 'wm.spio_append_blend'
     bl_label = 'Append...'
 
@@ -124,7 +125,8 @@ class SPIO_OT_AppendBlend(blenderFileDefault, bpy.types.Operator):
 
 
 class SPIO_OT_LinkBlend(blenderFileDefault, bpy.types.Operator):
-    """Alt to load all from this data type"""
+    """Link files for clipboard blend file
+Alt to link all data of the type"""
     bl_idname = 'wm.spio_link_blend'
     bl_label = 'Link...'
 
@@ -132,17 +134,22 @@ class SPIO_OT_LinkBlend(blenderFileDefault, bpy.types.Operator):
 
 
 class SPIO_OT_OpenBlend(blenderFileDefault, bpy.types.Operator):
-    """Open/Load file with an other blender"""
+    """Open file with current blender"""
     bl_idname = 'wm.spio_open_blend'
     bl_label = 'Open...'
 
-    load: BoolProperty()
+    def execute(self, context):
+        bpy.ops.wm.open_mainfile(filepath=self.filepath)
+        return {"FINISHED"}
+
+
+class SPIO_OT_OpenBlendExtra(blenderFileDefault, bpy.types.Operator):
+    """Open file with another blender"""
+    bl_idname = 'wm.spio_open_blend_extra'
+    bl_label = 'Open'
 
     def execute(self, context):
-        if self.load:
-            bpy.ops.wm.open_mainfile(filepath=self.filepath)
-        else:
-            subprocess.Popen([bpy.app.binary_path, self.filepath])
+        subprocess.Popen([bpy.app.binary_path, self.filepath])
         return {"FINISHED"}
 
 
@@ -383,42 +390,34 @@ class SuperImport(bpy.types.Operator):
             layout = cls.layout
             layout.operator_context = "INVOKE_DEFAULT"
 
+            open = layout.operator('wm.spio_open_blend', icon='FILEBROWSER')
+            open.filepath = path
+
+            open = layout.operator('wm.spio_open_blend_extra', icon='ADD')
+            open.filepath = path
+
             if pref.simple_blend_menu:
                 layout.operator('wm.spio_append_blend', icon='APPEND_BLEND')
                 layout.operator('wm.spio_link_blend', icon='LINK_BLEND')
+                return None
 
-                open = layout.operator('wm.spio_open_blend', icon='ADD')
-                open.filepath = path
-                open.load = False
-                open = layout.operator('wm.spio_open_blend', icon='FILE_TICK', text='Load')
-                open.filepath = path
-                open.load = True
-            else:
-                col = layout.column()
+            col = layout.column()
 
-                open = col.operator('wm.spio_open_blend', icon='ADD')
-                open.filepath = path
-                open.load = False
+            col.separator()
+            col.operator('wm.spio_append_blend', icon='APPEND_BLEND')
+            for idx, d in enumerate(data_type):
+                ops = col.operator('wm.spio_append_blend', text=data_type_title[idx])
+                ops.filepath = path
+                ops.sub_path = data_type_title[idx]
+                ops.data_type = data_type_s[idx]
 
-                open = col.operator('wm.spio_open_blend', icon='FILE_TICK', text='Load')
-                open.filepath = path
-                open.load = True
-
-                col.separator()
-                col.label(text='Append...', icon='APPEND_BLEND')
-                for idx, d in enumerate(data_type):
-                    ops = col.operator('wm.spio_append_blend', text=data_type_title[idx])
-                    ops.filepath = path
-                    ops.sub_path = data_type_title[idx]
-                    ops.data_type = data_type_s[idx]
-
-                col.separator()
-                col.label(text='Link...', icon='LINK_BLEND')
-                for idx, d in enumerate(data_type):
-                    ops = col.operator('wm.spio_link_blend', text=data_type_title[idx])
-                    ops.filepath = path
-                    ops.sub_path = data_type_title[idx]
-                    ops.data_type = data_type_s[idx]
+            col.separator()
+            col.operator('wm.spio_link_blend', icon='LINK_BLEND')
+            for idx, d in enumerate(data_type):
+                ops = col.operator('wm.spio_link_blend', text=data_type_title[idx])
+                ops.filepath = path
+                ops.sub_path = data_type_title[idx]
+                ops.data_type = data_type_s[idx]
 
         context.window_manager.popup_menu(draw_blend_menu,
                                           title='Super Import Blend',
@@ -536,6 +535,7 @@ def register():
     bpy.utils.register_class(SPIO_OT_AppendBlend)
     bpy.utils.register_class(SPIO_OT_LinkBlend)
     bpy.utils.register_class(SPIO_OT_OpenBlend)
+    bpy.utils.register_class(SPIO_OT_OpenBlendExtra)
     bpy.utils.register_class(VIEW3D_OT_SuperImport)
     bpy.utils.register_class(NODE_OT_SuperImport)
 
@@ -556,5 +556,6 @@ def unregister():
     bpy.utils.unregister_class(VIEW3D_OT_SuperImport)
     bpy.utils.unregister_class(SPIO_OT_AppendBlend)
     bpy.utils.unregister_class(SPIO_OT_LinkBlend)
+    bpy.utils.unregister_class(SPIO_OT_OpenBlendExtra)
     bpy.utils.unregister_class(SPIO_OT_OpenBlend)
     bpy.utils.unregister_class(NODE_OT_SuperImport)

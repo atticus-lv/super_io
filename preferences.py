@@ -270,8 +270,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                                     description='Simple blender import menu (Default)', default=False)
     import_style: EnumProperty(name='Import Popup',
                                items=[
-                                   ('PANEL', 'Panel (Complex)', ''),
-                                   ('MENU', 'Menu (Simple)', '')],
+                                   ('PANEL', 'Complex', ''),
+                                   ('MENU', 'Simple', '')],
                                default='MENU')
     # Preset
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
