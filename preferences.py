@@ -38,16 +38,79 @@ def correct_name(self, context):
 
 
 class ExtensionOperatorProperty(PropertyGroup):
-    # UI
-    expand_panel: BoolProperty(name='Expand Panel', default=True)
     # USE
     use_config: BoolProperty(name='Use', default=True)
-
+    # information
     name: StringProperty(name='Preset Name', update=correct_name)
-
-    extension: StringProperty(name='Extension')
-
     description: StringProperty(name='Description', description='Show in the import option')
+    # extension
+    extension: StringProperty(name='Extension')
+    # custom match rule
+    match_rule: EnumProperty(name='Match Rule',
+                             items=[('NONE', 'None', ''),
+                                    ('STARTSWITH', 'Startswith', ''),
+                                    ('ENDSWITH', 'Endswith', ''),
+                                    ('IN', 'Contain', ''),
+                                    ('REGEX', 'Regex (WIP)', ''), ],
+                             default='NONE', description='matching rule of the name')
+
+    rule: StringProperty(name='Match Rule Value', default='')
+
+    operator_type: EnumProperty(name='Operator Type',
+                                items=[("", "Blend File", "", "BLENDER", 0),
+                                       ('APPEND_BLEND', 'Append',
+                                        'Support only one file a time', 'APPEND_BLEND', 97),
+                                       ('LINK_BLEND', 'Link',
+                                        'Support only one file a time (No batch mode)',
+                                        'LINK_BLEND', 98),
+                                       ('OPEN_BLEND', 'Open...',
+                                        'Open in current blender', 'FILEBROWSER', 99),
+                                       ('OPEN_BLEND_NEW', 'Open +',
+                                        'Open in new blender.exe', 'ADD', 100),
+
+                                       ("", "Append", "", "APPEND_BLEND", 0),
+                                       ('APPEND_BLEND_MAT', 'Materials', 'Load All', 'MATERIAL',
+                                        1),
+                                       ('APPEND_BLEND_COLLECTION', 'Collections', 'Load All',
+                                        'OUTLINER_COLLECTION', 2),
+                                       ('APPEND_BLEND_OBJECT', 'Objects', 'Load All',
+                                        'OBJECT_DATA', 3),
+                                       ('APPEND_BLEND_WORLD', 'Worlds', 'Load All', 'WORLD', 4),
+                                       (
+                                           'APPEND_BLEND_NODE', 'Node Groups', 'Load All', 'NODETREE',
+                                           5),
+
+                                       ("", "Link", "", "LINK_BLEND", 0),
+                                       (
+                                           'LINK_BLEND_MAT', 'Materials', 'Load All', 'MATERIAL', 11),
+                                       ('LINK_BLEND_COLLECTION', 'Collections', 'Load All',
+                                        'OUTLINER_COLLECTION', 12),
+                                       ('LINK_BLEND_OBJECT', 'Objects', 'Load All', 'OBJECT_DATA',
+                                        13),
+                                       ('LINK_BLEND_WORLD', 'Worlds', 'Load All', 'WORLD', 14),
+                                       ('LINK_BLEND_NODE', 'Node Groups', 'Load All', 'NODETREE',
+                                        15),
+
+                                       ("", "Default", ""),
+                                       ('DEFAULT_DAE', 'Collada (.dae)', ''),
+                                       ('DEFAULT_ABC', 'Alembic (.abc)', ''),
+                                       ('DEFAULT_USD', 'USD (.usd/.usda/.usdc)', ''),
+                                       ('DEFAULT_SVG', 'Grease Pencil (.svg)', ''),
+                                       ('DEFAULT_PLY', 'Stanford (.ply)', ''),
+                                       ('DEFAULT_STL', 'Stl (.stl)', ''),
+                                       ('DEFAULT_FBX', 'FBX (.fbx)', ''),
+                                       ('DEFAULT_GLTF', 'glTF 2.0 (.gltf/.glb)', ''),
+                                       ('DEFAULT_OBJ', 'Wavefront (.obj)', ''),
+                                       ('DEFAULT_X3D', 'X3D (.x3d/.wrl)', ''),
+
+                                       ("", "Add-ons", ""),
+                                       ('ADDON_SVG', 'SVG (.svg)', ''),
+                                       ('ADDON_IMG_AS_PLANE', 'Image as plane', ''),
+                                       None,
+                                       ('CUSTOM', 'Custom', ''),],
+                                       default = 'DEFAULT_OBJ',)
+
+    # custom operator
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
     prop_list: CollectionProperty(type=OperatorProperty)
 
@@ -176,8 +239,8 @@ class SPIO_OT_ExtensionListMoveDown(SPIO_OT_ExtensionListAction, bpy.types.Opera
 
 class PREF_UL_ConfigList(bpy.types.UIList):
     filter_type: EnumProperty(name='Filter Type', items=[
-        ('NAME', 'Name', ''),
-        ('EXT', 'Extension', ''),
+        ('name', 'Name', ''),
+        ('extension', 'Extension', ''),
     ])
 
     filter_extension: StringProperty(
@@ -197,7 +260,6 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         sub.prop(item, 'use_config', text='')
         sub.prop(item, 'name', text='', emboss=False)
         sub.prop(item, 'extension', text='', emboss=False)
-        row.prop(item, 'bl_idname', text='', emboss=False)
 
     def draw_filter(self, context, layout):
         """UI code for the filtering/sorting/search area."""
@@ -382,40 +444,50 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.label(text=item.name, icon='EDITMODE_HLT')
 
         box.use_property_split = True
-        box.prop(item, 'name')
-        box.prop(item, 'extension')
-        box.prop(item, 'description')
-        box.prop(item, 'bl_idname')
+        box1 = box.box()
+        box1.prop(item, 'name')
+        box1.prop(item, 'extension')
+        box1.prop(item, 'description')
 
-        # ops props
-        col = box.box().column()
+        box2 = box.box()
+        box2.prop(item, 'match_rule')
+        if item.match_rule != 'NONE':
+            box2.prop(item, 'rule')
 
-        row = col.row(align=True)
-        if item.bl_idname != '':
-            text = 'bpy.ops.' + item.bl_idname + '(' + 'filepath,' + '{prop=value})'
-        else:
-            text = 'No Operator Found'
+        box3 = box.box()
+        box3.prop(item, 'operator_type')
+        if item.operator_type == 'CUSTOM':
+            box3.prop(item, 'bl_idname')
 
-        row.label(icon='TOOL_SETTINGS', text=text)
-
-        if item.bl_idname != '':
-            row = col.row()
-            if len(item.prop_list) != 0:
-                row.label(text='Property')
-                row.label(text='Value')
-            for prop_index, prop_item in enumerate(item.prop_list):
-                row = col.row(align=True)
-                row.prop(prop_item, 'name', text='')
-                row.prop(prop_item, 'value', text='')
-
-                d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
-                d.config_list_index = self.config_list_index
-                d.prop_index = prop_index
+            # ops props
+            col = box3.box().column()
 
             row = col.row(align=True)
-            row.alignment = 'LEFT'
-            d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
-            d.config_list_index = self.config_list_index
+            if item.bl_idname != '':
+                text = 'bpy.ops.' + item.bl_idname + '(' + 'filepath,' + '{prop=value})'
+            else:
+                text = 'No Operator Found'
+
+            row.label(icon='TOOL_SETTINGS', text=text)
+
+            if item.bl_idname != '':
+                row = col.row()
+                if len(item.prop_list) != 0:
+                    row.label(text='Property')
+                    row.label(text='Value')
+                for prop_index, prop_item in enumerate(item.prop_list):
+                    row = col.row(align=True)
+                    row.prop(prop_item, 'name', text='')
+                    row.prop(prop_item, 'value', text='')
+
+                    d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
+                    d.config_list_index = self.config_list_index
+                    d.prop_index = prop_index
+
+                row = col.row(align=True)
+                row.alignment = 'LEFT'
+                d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
+                d.config_list_index = self.config_list_index
 
 
 classes = [
@@ -461,6 +533,11 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    try:
+        for key in get_pref().config_list.__annotations__.keys():
+            the_value = getattr(ExtensionOperatorProperty, key)
+            print(key, the_value)
+    except Exception as e: print(e)
 
 def unregister():
     remove_keybind()
