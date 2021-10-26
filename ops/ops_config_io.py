@@ -28,19 +28,19 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
 
         with open(self.filepath, "r", encoding='utf-8') as f:
             data = json.load(f)
-            for name, values in data.items():
+            for name, config_dict in data.items():
                 if name not in exist_config:
                     item = pref.config_list.add()
 
-                    item.name = name
-                    item.extension = values.pop('extension')
-                    item.description = values.pop('description')
-                    item.bl_idname = values.pop('bl_idname')
-
-                    for prop, prop_value in values['prop_list'].items():
-                        prop_item = item.prop_list.add()
-                        prop_item.name = prop
-                        prop_item.value = str(prop_value)
+                    for key, value in config_dict.items():
+                        # apply normal attribute
+                        if key != 'prop_list':
+                            setattr(item, key, config_dict.get(key))
+                        # apply prop list
+                        for prop, prop_value in config_dict.get('prop_list').items():
+                            prop_item = item.prop_list.add()
+                            prop_item.name = prop
+                            prop_item.value = str(prop_value)
 
             self.report({"INFO"}, f'Load config from "{self.filepath}"')
 

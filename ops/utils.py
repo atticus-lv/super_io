@@ -50,34 +50,35 @@ class ConfigHelper():
         index_list = []
 
         for config_list_index, item in enumerate(pref_config):
+            # config dict
+            config = dict()
+            # get define property
+            for key in item.__annotations__.keys():
+                value = getattr(item, key)
+                if key != 'prop_list':
+                    config[key] = value
+                    print(config)
+                # prop list
+                ops_config = dict()
+                if len(item.prop_list) != 0:
+                    for prop_index, prop_item in enumerate(item.prop_list):
+                        prop, value = prop_item.name, prop_item.value
+                        # skip if the prop is not filled
+                        if prop == '' or value == '': continue
+                        ops_config[prop] = convert_value(value)
+                config['prop_list'] = ops_config
 
-            if True in (item.name == '',
-                        item.bl_idname == '',
-                        item.extension == ''): continue
-            if check_use and item.use_config is False: continue
-
-            if filter:
-                if item.extension != filter: continue
-
-            ops_config = dict()
-            config = {'extension': item.extension,
-                      'description': item.description,
-                      'bl_idname': item.bl_idname,
-                      'prop_list': ops_config}
+            # check config dict
+            if True in (config.get('name') == '',
+                        config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '',
+                        config.get('extension') == '',
+                        filter and config.get('extension') != filter,
+                        check_use and config.get('use_config') is False,
+                        ): continue
 
             index_list.append(config_list_index)
-
-            if len(item.prop_list) != 0:
-                for prop_index, prop_item in enumerate(item.prop_list):
-                    prop, value = prop_item.name, prop_item.value
-
-                    # skip if the prop is not filled
-                    if prop == '' or value == '': continue
-
-                    ops_config[prop] = convert_value(value)
-
             config_list[item.name] = config
-
+            print(config_list)
         self.config_list = config_list
         self.index_list = index_list
 
@@ -95,6 +96,3 @@ class ConfigHelper():
 
     def is_more_than_one_config(self):
         return len(self.config_list) > 1
-
-
-
