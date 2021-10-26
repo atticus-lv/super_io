@@ -44,7 +44,9 @@ class ExtensionOperatorProperty(PropertyGroup):
     use_config: BoolProperty(name='Use', default=True)
 
     name: StringProperty(name='Preset Name', update=correct_name)
+
     extension: StringProperty(name='Extension')
+
     description: StringProperty(name='Description', description='Show in the import option')
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
     prop_list: CollectionProperty(type=OperatorProperty)

@@ -512,22 +512,31 @@ Allow to load one format at the same time"""
     def poll(_cls, context):
         return (
                 context.area.type == "NODE_EDITOR"
-                and context.area.ui_type == "ShaderNodeTree"
+                and context.area.ui_type in {'GeometryNodeTree', "ShaderNodeTree"}
                 and context.space_data.edit_tree is not None
         )
 
     def import_default(self):
         nt = bpy.context.space_data.edit_tree
         location_X, location_Y = bpy.context.space_data.cursor_location
+
+        if bpy.context.area.ui_type == 'ShaderNodeTree':
+            node_type = 'ShaderNodeTexImage'
+        elif bpy.context.area.ui_type == 'GeometryNodeTree':
+            node_type = 'GeometryNodeImageTexture'
+
         for file_path in self.file_list:
-            tex_node = nt.nodes.new("ShaderNodeTexImage")
+            tex_node = nt.nodes.new(node_type)
             tex_node.location = location_X, location_Y
             # tex_node.hide = True
             location_Y += 250
 
             path = file_path
-            image = bpy.data.images.load(filepath=path)
-            tex_node.image = image
+            image_name = os.path.basename(path)
+            image = bpy.data.images.get(image_name) if image_name in bpy.data.images else bpy.data.images.load(filepath=path)
+
+            if node_type == 'ShaderNodeTexImage': tex_node.image = image
+            elif node_type == 'GeometryNodeImageTexture': tex_node.inputs['Image'].default_value = image
 
 
 def file_context_menu(self, context):
@@ -556,14 +565,12 @@ def register():
     # Global ext
     bpy.types.Scene.spio_ext = StringProperty(name='Filter extension', default='')
     # Menu append
-    bpy.types.TOPBAR_MT_file_context_menu.prepend(file_context_menu)
     bpy.types.NODE_MT_context_menu.prepend(node_context_menu)
 
 
 def unregister():
     import_icon.unregister()
 
-    bpy.types.TOPBAR_MT_file_context_menu.remove(file_context_menu)
     bpy.types.NODE_MT_context_menu.remove(node_context_menu)
 
     bpy.utils.unregister_class(TEMP_UL_ConfigList)
