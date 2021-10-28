@@ -3,7 +3,7 @@ import subprocess
 
 import json
 
-from bpy.props import StringProperty, BoolProperty
+from bpy.props import StringProperty, BoolProperty, EnumProperty
 from ..loader.default_blend import blenderFileDefault
 
 
@@ -29,7 +29,12 @@ class SPIO_OT_BatchImportBlend(bpy.types.Operator):
     bl_idname = 'wm.spio_batch_import_blend'
     bl_label = 'Batch Import'
 
-    link: BoolProperty()
+    # action
+    action: EnumProperty(items=[
+        ('LINK', 'Link', ''),
+        ('APPEND', 'Append', ''),
+        ('OPEN', 'Open Extra', ''),
+    ])
     # filepath join with $$
     files: StringProperty()
 
@@ -40,10 +45,12 @@ class SPIO_OT_BatchImportBlend(bpy.types.Operator):
 
     def execute(self, context):
         for filepath in self.files.split('$$'):
-            if self.link:
+            if self.action == 'LINK':
                 bpy.ops.wm.spio_link_blend(filepath=filepath, data_type=self.data_type, load_all=self.load_all)
-            else:
+            elif self.action == 'APPEND':
                 bpy.ops.wm.spio_append_blend(filepath=filepath, data_type=self.data_type, load_all=self.load_all)
+            elif self.action == 'OPEN':
+                bpy.ops.wm.spio_open_blend_extra(filepath=filepath)
 
         return {'FINISHED'}
 

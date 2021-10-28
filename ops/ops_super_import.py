@@ -311,35 +311,39 @@ class SuperImport(bpy.types.Operator):
                 col.separator()
                 col.operator('wm.spio_append_blend', icon='APPEND_BLEND')
                 for dir, lib in blend_lib.items():
-                    ops = col.operator('wm.spio_append_blend', text=dir)
-                    ops.filepath = path
-                    ops.sub_path = dir
-                    ops.data_type = lib
+                    op = col.operator('wm.spio_append_blend', text=dir)
+                    op.filepath = path
+                    op.sub_path = dir
+                    op.data_type = lib
 
                 col.separator()
                 col.operator('wm.spio_link_blend', icon='LINK_BLEND')
                 for dir, lib in blend_lib.items():
-                    ops = col.operator('wm.spio_link_blend', text=dir)
-                    ops.filepath = path
-                    ops.sub_path = dir
-                    ops.data_type = lib
+                    op = col.operator('wm.spio_link_blend', text=dir)
+                    op.filepath = path
+                    op.sub_path = dir
+                    op.data_type = lib
 
             else:
                 col = layout.column()
+                op = col.operator('wm.spio_batch_import_blend', text=f'Batch Open')
+                op.action = 'OPEN'
+                op.files = join_paths
+
                 for dir, lib in blend_lib.items():
-                    ops = col.operator('wm.spio_batch_import_blend', text=f'Batch Append {dir}')
-                    ops.link = False
-                    ops.files = join_paths
-                    ops.sub_path = dir
-                    ops.data_type = lib
+                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Append {dir}')
+                    op.action = 'APPEND'
+                    op.files = join_paths
+                    op.sub_path = dir
+                    op.data_type = lib
 
                 col.separator()
                 for dir, lib in blend_lib.items():
-                    ops = col.operator('wm.spio_batch_import_blend', text=f'Batch Link {dir}')
-                    ops.link = True
-                    ops.files = join_paths
-                    ops.sub_path = dir
-                    ops.data_type = lib
+                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Link {dir}')
+                    op.action = 'LINK'
+                    op.files = join_paths
+                    op.sub_path = dir
+                    op.data_type = lib
 
         context.window_manager.popup_menu(draw_blend_menu,
                                           title=f'Super Import Blend ({len(self.file_list)} files)',
