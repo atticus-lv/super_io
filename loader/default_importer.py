@@ -1,4 +1,3 @@
-import bpy
 
 model_lib = {
     'usd': 'wm.usd_import',
