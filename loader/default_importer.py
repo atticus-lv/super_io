@@ -18,6 +18,5 @@ model_lib = {
     'x3d': 'import_scene.x3d',
     'wrl': 'import_scene.x3d',
 
-    'svg2': 'import_curve.svg',
-    'svg': 'gpencil_import_svg',
+    'svg': 'import_curve.svg',
 }

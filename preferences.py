@@ -56,6 +56,7 @@ class ExtensionOperatorProperty(PropertyGroup):
 
     rule: StringProperty(name='Match Rule Value', default='')
 
+    # remove grease pencil from default because this design is only allow one default importer
     operator_type: EnumProperty(
         name='Operator Type',
         items=[
@@ -64,8 +65,7 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('DEFAULT_DAE', 'Collada (.dae)', '', 'CUBE', 99),
             ('DEFAULT_ABC', 'Alembic (.abc)', '', 'CUBE', 98),
             ('DEFAULT_USD', 'USD (.usd/.usda/.usdc)', '', 'CUBE', 97),
-            ('DEFAULT_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 96),
-            ('DEFAULT_SVG_2', 'SVG (.svg)', '', 'GP_SELECT_POINTS', 89),
+            ('DEFAULT_SVG', 'SVG (.svg)', '', 'GP_SELECT_POINTS', 96),
             ('DEFAULT_PLY', 'Stanford (.ply)', '', 'CUBE', 95),
             ('DEFAULT_STL', 'Stl (.stl)', '', 'CUBE', 94),
             ('DEFAULT_FBX', 'FBX (.fbx)', '', 'CUBE', 93),
@@ -92,7 +92,9 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('LINK_BLEND_NODE', 'Link Node Groups', 'Load All', 'NODETREE',
              15),
 
-            ("", "Custom", "Custom operator and properties input", "USER", 0),
+            ("", "Add-ons", "Custom operator and properties input", "USER", 0),
+            # ('ADDONS_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 89),
+            None,
             ('CUSTOM', 'Custom', '', 'USER', 101),
         ],
         default='DEFAULT_OBJ', )
