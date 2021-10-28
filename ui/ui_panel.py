@@ -59,7 +59,7 @@ class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
         row.alignment = 'CENTER'
         row.scale_y = 1.5
         row.separator()
-        row.operator("view3d.spio_import", icon_value=import_icon.get_image_icon_id())
+        row.operator("wm.spio_import", icon_value=import_icon.get_image_icon_id())
         row.separator()
 
 
