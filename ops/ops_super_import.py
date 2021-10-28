@@ -20,6 +20,104 @@ from ..loader.default_blend import blend_subpath_lib
 import_icon = RSN_Preview(image='import.bip', name='import_icon')
 
 
+class PopupMenu():
+    def __init__(self, file_list, context):
+        self.file_list = file_list
+        self.context = context
+
+    def default_image_menu(self, return_menu=False):
+        context = self.context
+        join_paths = '$$'.join(self.file_list)
+
+        if context.area.type == "VIEW_3D":
+            def draw_3dview_menu(cls, context):
+                layout = cls.layout
+                layout.operator_context = "INVOKE_DEFAULT"
+                # only one blend need to deal with
+                col = layout.column()
+                op = col.operator('wm.spio_import_image', text=f'Import as reference')
+                op.action = 'REF'
+                op.files = join_paths
+
+                op = col.operator('wm.spio_import_image', text=f'Import as Plane')
+                op.action = 'PLANE'
+                op.files = join_paths
+
+            if return_menu:
+                return draw_3dview_menu
+
+            context.window_manager.popup_menu(draw_3dview_menu,
+                                              title=f'Super Import Image ({len(self.file_list)} files)',
+                                              icon='IMAGE_DATA')
+        elif context.area.type == "NODE_EDITOR":
+            bpy.ops.wm.spio_import_image(action='NODES', files=join_paths)
+
+    def default_blend_menu(self, return_menu=False):
+        context = self.context
+
+        path = self.file_list[0]
+        join_paths = '$$'.join(self.file_list)
+
+        def draw_blend_menu(cls, context):
+            pref = get_pref()
+            layout = cls.layout
+            layout.operator_context = "INVOKE_DEFAULT"
+            # only one blend need to deal with
+            if len(self.file_list) == 1:
+                open = layout.operator('wm.spio_open_blend', icon='FILEBROWSER')
+                open.filepath = path
+
+                open = layout.operator('wm.spio_open_blend_extra', icon='ADD')
+                open.filepath = path
+
+                col = layout.column()
+
+                col.separator()
+                col.operator('wm.spio_append_blend', icon='APPEND_BLEND')
+                for subpath, lib in blend_subpath_lib.items():
+                    op = col.operator('wm.spio_append_blend', text=subpath)
+                    op.filepath = path
+                    op.sub_path = subpath
+                    op.data_type = lib
+
+                col.separator()
+                col.operator('wm.spio_link_blend', icon='LINK_BLEND')
+                for subpath, lib in blend_subpath_lib.items():
+                    op = col.operator('wm.spio_link_blend', text=subpath)
+                    op.filepath = path
+                    op.sub_path = subpath
+                    op.data_type = lib
+
+            else:
+                col = layout.column()
+                op = col.operator('wm.spio_batch_import_blend', text=f'Batch Open')
+                op.action = 'OPEN'
+                op.files = join_paths
+
+                for subpath, lib in blend_subpath_lib.items():
+                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Append {subpath}')
+                    op.action = 'APPEND'
+                    op.files = join_paths
+                    op.sub_path = subpath
+                    op.data_type = lib
+
+                col.separator()
+                for subpath, lib in blend_subpath_lib.items():
+                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Link {subpath}')
+                    op.action = 'LINK'
+                    op.files = join_paths
+                    op.sub_path = subpath
+                    op.data_type = lib
+
+        # return for combine drawing
+        if return_menu:
+            return draw_blend_menu
+        # popup
+        context.window_manager.popup_menu(draw_blend_menu,
+                                          title=f'Super Import Blend ({len(self.file_list)} files)',
+                                          icon='FILE_BLEND')
+
+
 class SuperImport(bpy.types.Operator):
     """Paste Model/Images"""
     bl_label = "Super Import"
@@ -84,24 +182,13 @@ class SuperImport(bpy.types.Operator):
 
         self.use_custom_config = True
         # set default index to prevent default index is not in the filter list ui
+
         self.config_list_index = index_list[0]
-
-        # when there is only one config, regard it as the default setting
-        if self.CONFIGS.is_only_one_config():
-            return self.execute(context)
-
-        # when there is more than one config, set up a  menu for user to select
-        elif self.CONFIGS.is_more_than_one_config():
-            self.config_list_index = index_list[0]
-            return self.import_custom_dynamic(context)
+        return self.import_custom_dynamic(context)
 
     def execute(self, context):
         with MeasureTime() as start_time:
-            if self.use_custom_config is False:
-                self.import_default(context)
-            else:
-                self.import_custom(context)
-
+            self.import_default(context)
             self.report_time(start_time)
 
         return {"FINISHED"}
@@ -215,82 +302,48 @@ class SuperImport(bpy.types.Operator):
                         self.report({"ERROR"}, str(e))
 
                 if get_pref().report_time: self.report_time(start_time)
+
         # then popup menu to select the remain not matching file
-        # TODO need join the default import popup menu with remain operator's menu
-        remain = len(file_list) - len(match_file_op_dict)
-        if len(self.dep_classes) > 0 and remain > 0:
+        remain_list = [file for file in file_list if file not in match_file_op_dict]
+        if len(match_file_op_dict) > 0:
+            title = f'Match {self.ext.upper()} import finish (Import {len(match_file_op_dict)} files)'
+        else:
+            title = f'Super Import {self.ext.upper()} ({len(remain_list)} files)'
+
+        if len(self.dep_classes) > 0 and len(remain_list) > 0:
             # set draw menu
             import_op = self
+            ext = self.ext
 
             def draw_custom_menu(self, context):
-                self.layout.label(text=f'Remain {remain} files')
-                for cls in import_op.dep_classes:
-                    self.layout.operator(cls.bl_idname)
+                layout = self.layout
+                if len(match_file_op_dict) > 0:
+                    layout.label(text=f'Remain {len(remain_list)} files')
 
-            context.window_manager.popup_menu(draw_custom_menu, title=f'Super Import {self.ext.upper()}',
-                                              icon='FILEBROWSER')
+                for cls in import_op.dep_classes:
+                    layout.operator(cls.bl_idname)
+
+                layout.separator()
+                # default popup
+                if ext in model_lib:
+                    layout.operator('wm.spio_import_model').files = '$$'.join(
+                        remain_list)
+                elif ext == 'blend':
+                    pop = PopupMenu(file_list=remain_list, context=context)
+                    menu = pop.default_blend_menu(return_menu=True)
+                    menu(self, context)
+                else:
+                    pop = PopupMenu(file_list=remain_list, context=context)
+                    menu = pop.default_image_menu(return_menu=True)
+                    menu(self, context)
+
+            context.window_manager.popup_menu(draw_custom_menu, title=title, icon='FILEBROWSER')
 
         return {'FINISHED'}
 
     def import_blend_default(self, context):
-
-        path = self.file_list[0]
-        join_paths = '$$'.join(self.file_list)
-
-        def draw_blend_menu(cls, context):
-            pref = get_pref()
-            layout = cls.layout
-            layout.operator_context = "INVOKE_DEFAULT"
-            # only one blend need to deal with
-            if len(self.file_list) == 1:
-                open = layout.operator('wm.spio_open_blend', icon='FILEBROWSER')
-                open.filepath = path
-
-                open = layout.operator('wm.spio_open_blend_extra', icon='ADD')
-                open.filepath = path
-
-                col = layout.column()
-
-                col.separator()
-                col.operator('wm.spio_append_blend', icon='APPEND_BLEND')
-                for subpath, lib in blend_subpath_lib.items():
-                    op = col.operator('wm.spio_append_blend', text=subpath)
-                    op.filepath = path
-                    op.sub_path = subpath
-                    op.data_type = lib
-
-                col.separator()
-                col.operator('wm.spio_link_blend', icon='LINK_BLEND')
-                for subpath, lib in blend_subpath_lib.items():
-                    op = col.operator('wm.spio_link_blend', text=subpath)
-                    op.filepath = path
-                    op.sub_path = subpath
-                    op.data_type = lib
-
-            else:
-                col = layout.column()
-                op = col.operator('wm.spio_batch_import_blend', text=f'Batch Open')
-                op.action = 'OPEN'
-                op.files = join_paths
-
-                for subpath, lib in blend_subpath_lib.items():
-                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Append {subpath}')
-                    op.action = 'APPEND'
-                    op.files = join_paths
-                    op.sub_path = subpath
-                    op.data_type = lib
-
-                col.separator()
-                for subpath, lib in blend_subpath_lib.items():
-                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Link {subpath}')
-                    op.action = 'LINK'
-                    op.files = join_paths
-                    op.sub_path = subpath
-                    op.data_type = lib
-
-        context.window_manager.popup_menu(draw_blend_menu,
-                                          title=f'Super Import Blend ({len(self.file_list)} files)',
-                                          icon='FILE_BLEND')
+        popup = PopupMenu(file_list=self.file_list, context=context)
+        popup.default_blend_menu()
 
     def import_default(self, context):
         """Import with blender's default setting"""
@@ -310,27 +363,8 @@ class WM_OT_SuperImport(SuperImport):
                 op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
                 op_callable(filepath=file_path)
         else:
-            join_paths = '$$'.join(self.file_list)
-
-            if context.area.type == "VIEW_3D":
-                def draw_3dview_menu(cls, context):
-                    layout = cls.layout
-                    layout.operator_context = "INVOKE_DEFAULT"
-                    # only one blend need to deal with
-                    col = layout.column()
-                    op = col.operator('wm.spio_import_image', text=f'Import as reference')
-                    op.action = 'REF'
-                    op.files = join_paths
-
-                    op = col.operator('wm.spio_import_image', text=f'Import as Plane')
-                    op.action = 'PLANE'
-                    op.files = join_paths
-
-                context.window_manager.popup_menu(draw_3dview_menu,
-                                                  title=f'Super Import Image ({len(self.file_list)} files)',
-                                                  icon='IMAGE_DATA')
-            elif context.area.type == "NODE_EDITOR":
-                bpy.ops.wm.spio_import_image(action='NODES', files=join_paths)
+            popup = PopupMenu(self.file_list, context)
+            popup.default_image_menu()
 
 
 def file_context_menu(self, context):
