@@ -249,11 +249,6 @@ class SuperImport(bpy.types.Operator):
                 open = layout.operator('wm.spio_open_blend_extra', icon='ADD')
                 open.filepath = path
 
-                if pref.simple_blend_menu:
-                    layout.operator('wm.spio_append_blend', icon='APPEND_BLEND')
-                    layout.operator('wm.spio_link_blend', icon='LINK_BLEND')
-                    return None
-
                 col = layout.column()
 
                 col.separator()

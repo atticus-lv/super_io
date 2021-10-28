@@ -321,9 +321,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                                             'Only enable when your system coding "utf-8"', default=False)
     report_time: BoolProperty(name='Report time',
                               description='Report import time', default=True)
-    # default blend import
-    simple_blend_menu: BoolProperty(name='Simple Menu',
-                                    description='Simple blender import menu (Default)', default=False)
 
     disable_warning_rules: BoolProperty(name='Close Waring Rules', default=False)
     # Preset
@@ -357,7 +354,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         layout.prop(self, 'force_unicode')
         layout.separator(factor=0.5)
         col = layout.column()
-        col.prop(self, 'simple_blend_menu')
         col.prop(self, 'use_N_panel')
         col.prop(self, 'report_time')
         col.prop(self, 'disable_warning_rules')
