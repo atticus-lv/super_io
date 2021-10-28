@@ -3,7 +3,7 @@ from bpy.props import StringProperty, BoolProperty
 
 import os
 
-blend_lib = {
+blend_subpath_lib = {
     'Collection': 'collections',
     'Material': 'material',
     'World': 'worlds',

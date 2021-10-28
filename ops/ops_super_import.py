@@ -15,7 +15,7 @@ from .utils import is_float, get_pref, convert_value
 
 from ..ui.icon_utils import RSN_Preview
 from ..loader.default_importer import model_lib
-from ..loader.default_blend import blend_lib
+from ..loader.default_blend import blend_subpath_lib
 
 import_icon = RSN_Preview(image='import.bip', name='import_icon')
 
@@ -216,6 +216,7 @@ class SuperImport(bpy.types.Operator):
 
                 if get_pref().report_time: self.report_time(start_time)
         # then popup menu to select the remain not matching file
+        # TODO need join the default import popup menu with remain operator's menu
         remain = len(file_list) - len(match_file_op_dict)
         if len(self.dep_classes) > 0 and remain > 0:
             # set draw menu
@@ -257,18 +258,18 @@ class SuperImport(bpy.types.Operator):
 
                 col.separator()
                 col.operator('wm.spio_append_blend', icon='APPEND_BLEND')
-                for dir, lib in blend_lib.items():
-                    op = col.operator('wm.spio_append_blend', text=dir)
+                for subpath, lib in blend_subpath_lib.items():
+                    op = col.operator('wm.spio_append_blend', text=subpath)
                     op.filepath = path
-                    op.sub_path = dir
+                    op.sub_path = subpath
                     op.data_type = lib
 
                 col.separator()
                 col.operator('wm.spio_link_blend', icon='LINK_BLEND')
-                for dir, lib in blend_lib.items():
-                    op = col.operator('wm.spio_link_blend', text=dir)
+                for subpath, lib in blend_subpath_lib.items():
+                    op = col.operator('wm.spio_link_blend', text=subpath)
                     op.filepath = path
-                    op.sub_path = dir
+                    op.sub_path = subpath
                     op.data_type = lib
 
             else:
@@ -277,56 +278,24 @@ class SuperImport(bpy.types.Operator):
                 op.action = 'OPEN'
                 op.files = join_paths
 
-                for dir, lib in blend_lib.items():
-                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Append {dir}')
+                for subpath, lib in blend_subpath_lib.items():
+                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Append {subpath}')
                     op.action = 'APPEND'
                     op.files = join_paths
-                    op.sub_path = dir
+                    op.sub_path = subpath
                     op.data_type = lib
 
                 col.separator()
-                for dir, lib in blend_lib.items():
-                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Link {dir}')
+                for subpath, lib in blend_subpath_lib.items():
+                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Link {subpath}')
                     op.action = 'LINK'
                     op.files = join_paths
-                    op.sub_path = dir
+                    op.sub_path = subpath
                     op.data_type = lib
 
         context.window_manager.popup_menu(draw_blend_menu,
                                           title=f'Super Import Blend ({len(self.file_list)} files)',
                                           icon='FILE_BLEND')
-
-    # Advance Panel
-    ################
-    def import_custom(self, context):
-        """import users' custom configs"""
-        config_item = get_pref().config_list[self.config_list_index]
-        ITEM = ConfigItemHelper(config_item)
-
-        # get match rule, if rule is match, execute the operator, else popup menu/panel
-        match_rule = ITEM.match_rule
-        rule = ITEM.rule
-        operator_type = ITEM.operator_type
-
-        # custom operator
-        if operator_type == 'CUSTOM':
-            # custom operator
-            bl_idname = ITEM.bl_idname
-            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
-            ops_args = ITEM.prop_list
-        # default operator
-        elif operator_type.startswith('DEFAULT'):
-            bl_idname = model_lib.get(operator_type.removeprefix('DEFAULT_').lower())
-            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
-            ops_args = dict()
-
-        if op_callable:
-            for file_path in self.file_list:
-                ops_args['filepath'] = file_path
-                try:
-                    op_callable(**ops_args)
-                except Exception as e:
-                    self.report({"ERROR"}, str(e))
 
     def import_default(self, context):
         """Import with blender's default setting"""

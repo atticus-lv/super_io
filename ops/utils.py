@@ -43,7 +43,7 @@ def convert_value(value):
 
 
 from ..loader.default_importer import model_lib
-from ..loader.default_blend import blend_lib
+from ..loader.default_blend import blend_subpath_lib
 
 
 class ConfigItemHelper():
@@ -67,6 +67,7 @@ class ConfigItemHelper():
         op_callable = None
         ops_args = dict()
         operator_type = self.operator_type
+
         # custom operator
         if operator_type == 'CUSTOM':
             # custom operator
@@ -78,6 +79,22 @@ class ConfigItemHelper():
         elif operator_type.startswith('DEFAULT'):
             bl_idname = model_lib.get(operator_type.removeprefix('DEFAULT_').lower())
             op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+
+        elif operator_type.startswith('APPEND_BLEND'):
+            subpath = operator_type.removeprefix('APPEND_BLEND_').title()
+            data_type = blend_subpath_lib.get(subpath)
+            op_callable = bpy.ops.wm.spio_append_blend
+            ops_args = {'sub_path': subpath,
+                        'data_type': data_type,
+                        'load_all': True}
+
+        elif operator_type.startswith('LINK_BLEND'):
+            subpath = operator_type.removeprefix('LINK_BLEND_').title()
+            data_type = blend_subpath_lib.get(subpath)
+            op_callable = bpy.ops.wm.spio_link_blend
+            ops_args = {'sub_path': subpath,
+                        'data_type': data_type,
+                        'load_all': True}
 
         return op_callable, ops_args
 
