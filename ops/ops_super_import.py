@@ -14,6 +14,8 @@ from .utils import ConfigHelper, MeasureTime, ConfigItemHelper
 from .utils import is_float, get_pref, convert_value
 
 from ..ui.icon_utils import RSN_Preview
+from ..loader.default_importer import model_lib
+from ..loader.default_blend import blend_lib
 
 import_icon = RSN_Preview(image='import.bip', name='import_icon')
 
@@ -197,9 +199,9 @@ class SuperImport(bpy.types.Operator):
     def execute(self, context):
         with MeasureTime() as start_time:
             if self.use_custom_config is False:
-                self.import_default()
+                self.import_default(context)
             else:
-                self.import_custom()
+                self.import_custom(context)
 
             self.report_time(start_time)
 
@@ -228,15 +230,25 @@ class SuperImport(bpy.types.Operator):
             def execute(self, context):
                 # use pre-define index to call config
                 config_item = get_pref().config_list[self.idx]
-                bl_idname = config_item.bl_idname
-                op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+                ITEM = ConfigItemHelper(config_item)
 
-                ops_args = dict()
+                # get match rule, if rule is match, execute the operator, else popup menu/panel
+                match_rule = ITEM.match_rule
+                rule = ITEM.rule
+                operator_type = ITEM.operator_type
 
-                for prop_item in config_item.prop_list:
-                    prop, value = prop_item.name, prop_item.value
-                    if prop == '' or value == '': continue
-                    ops_args[prop] = convert_value(value)
+                # custom operator
+                if operator_type == 'CUSTOM':
+                    # custom operator
+                    bl_idname = ITEM.bl_idname
+                    op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+                    ops_args = ITEM.prop_list
+
+                # default operator
+                elif operator_type.startswith('DEFAULT'):
+                    bl_idname = model_lib.get(operator_type.removeprefix('DEFAULT_').lower())
+                    op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+                    ops_args = dict()
 
                 if op_callable:
                     with MeasureTime() as start_time:
@@ -284,7 +296,6 @@ class SuperImport(bpy.types.Operator):
         return {'FINISHED'}
 
     def import_blend_default(self, context):
-        from ..loader.default_blend import blend_lib
 
         path = self.file_list[0]
         join_paths = '$$'.join(self.file_list)
@@ -351,7 +362,7 @@ class SuperImport(bpy.types.Operator):
 
     # Advance Panel
     ################
-    def import_custom(self):
+    def import_custom(self,context):
         """import users' custom configs"""
         config_item = get_pref().config_list[self.config_list_index]
         ITEM = ConfigItemHelper(config_item)
@@ -361,12 +372,17 @@ class SuperImport(bpy.types.Operator):
         rule = ITEM.rule
         operator_type = ITEM.operator_type
 
-        # default operator
-
         # custom operator
-        bl_idname = ITEM.bl_idname
-        op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
-        ops_args = ITEM.prop_list
+        if operator_type == 'CUSTOM':
+            # custom operator
+            bl_idname = ITEM.bl_idname
+            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+            ops_args = ITEM.prop_list
+        # default operator
+        elif operator_type.startswith('DEFAULT'):
+            bl_idname = model_lib.get(operator_type.removeprefix('DEFAULT_').lower())
+            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+            ops_args = dict()
 
         if op_callable:
             for file_path in self.file_list:
@@ -376,96 +392,50 @@ class SuperImport(bpy.types.Operator):
                 except Exception as e:
                     self.report({"ERROR"}, str(e))
 
-    def import_default(self):
+    def import_default(self, context):
         """Import with blender's default setting"""
         pass
 
 
-from ..loader.default_importer import default_model_import_dict as model
+class WM_OT_SuperImport(SuperImport):
+    """Load files/models/images from clipboard"""
+    bl_idname = "wm.spio_import"
+    bl_label = "Super Import"
 
-
-class VIEW3D_OT_SuperImport(SuperImport):
-    """Load files/models/images from clipboard
-Allow to load one format at the same time
-Support batch load all models/images (Alt click to call import image as plane)
-Blend file is only allow to load only one(as library)"""
-    bl_idname = "view3d.spio_import"
-    bl_label = "Super Import View3D"
-
-    @classmethod
-    def poll(_cls, context):
-        if context.area.type == "VIEW_3D":
-            return context.area.ui_type == "VIEW_3D" and context.mode == "OBJECT"
-
-    def import_default(self):
+    def import_default(self, context):
         ext = self.ext
-        unregister_list = list()
-
-        for file_path in self.file_list:
-            if ext in model:
-                bl_idname = model.get(ext)
+        if ext in model_lib:
+            for file_path in self.file_list:
+                bl_idname = model_lib.get(ext)
                 op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
                 op_callable(filepath=file_path)
-            else:
-                pass
+        else:
+            join_paths = '$$'.join(self.file_list)
 
-        # if len(unregister_list) !=0 :
-        #
-        #     def draw_img_menu(self,context):
-        #         layout = self.layout
-        #         layout.operator('object.load_reference_image').filepath =
-        #         pass
-        #
-        #     bpy.context.window_manager.popup_menu(draw_img_menu,
-        #                                       title=f'Super Import Blend ({len(self.file_list)} files)',
-        #                                       icon='FILE_BLEND')
-        #
-        #     bpy.ops.object.load_reference_image(filepath=file_path)
+            if context.area.type == "VIEW_3D":
+                def draw_3dview_menu(cls, context):
+                    layout = cls.layout
+                    layout.operator_context = "INVOKE_DEFAULT"
+                    # only one blend need to deal with
+                    col = layout.column()
+                    op = col.operator('wm.spio_import_image', text=f'Import as reference')
+                    op.action = 'REF'
+                    op.files = join_paths
 
+                    op = col.operator('wm.spio_import_image', text=f'Import as Plane')
+                    op.action = 'PLANE'
+                    op.files = join_paths
 
-class NODE_OT_SuperImport(SuperImport):
-    """Load files/images from clipboard
-Allow to load one format at the same time"""
-    bl_idname = "node.spio_import"
-    bl_label = "Super Import ShaderNodeTree"
-
-    @classmethod
-    def poll(_cls, context):
-        return (
-                context.area.type == "NODE_EDITOR"
-                and context.area.ui_type in {'GeometryNodeTree', "ShaderNodeTree"}
-                and context.space_data.edit_tree is not None
-        )
-
-    def import_default(self):
-        nt = bpy.context.space_data.edit_tree
-        location_X, location_Y = bpy.context.space_data.cursor_location
-
-        if bpy.context.area.ui_type == 'ShaderNodeTree':
-            node_type = 'ShaderNodeTexImage'
-        elif bpy.context.area.ui_type == 'GeometryNodeTree':
-            node_type = 'GeometryNodeImageTexture'
-
-        for file_path in self.file_list:
-            tex_node = nt.nodes.new(node_type)
-            tex_node.location = location_X, location_Y
-            # tex_node.hide = True
-            location_Y += 250
-
-            path = file_path
-            image_name = os.path.basename(path)
-            image = bpy.data.images.get(image_name) if image_name in bpy.data.images else bpy.data.images.load(
-                filepath=path)
-
-            if node_type == 'ShaderNodeTexImage':
-                tex_node.image = image
-            elif node_type == 'GeometryNodeImageTexture':
-                tex_node.inputs['Image'].default_value = image
+                context.window_manager.popup_menu(draw_3dview_menu,
+                                                  title=f'Super Import Image ({len(self.file_list)} files)',
+                                                  icon='IMAGE_DATA')
+            elif context.area.type == "NODE_EDITOR":
+                bpy.ops.wm.spio_import_image(action='NODES', files=join_paths)
 
 
 def file_context_menu(self, context):
     layout = self.layout
-    layout.operator('view3d.spio_import', icon_value=import_icon.get_image_icon_id())
+    layout.operator('wm.spio_import', icon_value=import_icon.get_image_icon_id())
     layout.separator()
 
 
@@ -479,8 +449,7 @@ def register():
     import_icon.register()
 
     bpy.utils.register_class(TEMP_UL_ConfigList)
-    bpy.utils.register_class(VIEW3D_OT_SuperImport)
-    bpy.utils.register_class(NODE_OT_SuperImport)
+    bpy.utils.register_class(WM_OT_SuperImport)
 
     # Global ext
     bpy.types.Scene.spio_ext = StringProperty(name='Filter extension', default='')
@@ -494,5 +463,4 @@ def unregister():
     bpy.types.NODE_MT_context_menu.remove(node_context_menu)
 
     bpy.utils.unregister_class(TEMP_UL_ConfigList)
-    bpy.utils.unregister_class(VIEW3D_OT_SuperImport)
-    bpy.utils.unregister_class(NODE_OT_SuperImport)
+    bpy.utils.unregister_class(WM_OT_SuperImport)
