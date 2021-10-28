@@ -44,28 +44,30 @@ class SPIO_OT_ImageImport(bpy.types.Operator):
                 bpy.ops.object.load_reference_image(filepath=filepath)
 
             elif self.action == 'NODES':
-                nt = bpy.context.space_data.edit_tree
-                location_X, location_Y = bpy.context.space_data.cursor_location
+                nt = context.space_data.edit_tree
+                location_X, location_Y = context.space_data.cursor_location
 
-                if bpy.context.area.ui_type == 'ShaderNodeTree':
+                if context.area.ui_type == 'ShaderNodeTree':
                     node_type = 'ShaderNodeTexImage'
-                elif bpy.context.area.ui_type == 'GeometryNodeTree':
+                elif context.area.ui_type == 'GeometryNodeTree':
                     node_type = 'GeometryNodeImageTexture'
 
-                    tex_node = nt.nodes.new(node_type)
-                    tex_node.location = location_X, location_Y
-                    # tex_node.hide = True
-                    location_Y += 250
+                tex_node = nt.nodes.new(node_type)
+                tex_node.location = location_X, location_Y
+                # tex_node.hide = True
+                location_Y += 250
 
-                    path = filepath
-                    image_name = os.path.basename(path)
-                    image = bpy.data.images.get(image_name) if image_name in bpy.data.images else bpy.data.images.load(
-                        filepath=path)
+                path = filepath
+                image_name = os.path.basename(path)
+                image = bpy.data.images.get(image_name) if image_name in bpy.data.images else bpy.data.images.load(
+                    filepath=path)
 
-                    if node_type == 'ShaderNodeTexImage':
-                        tex_node.image = image
-                    elif node_type == 'GeometryNodeImageTexture':
-                        tex_node.inputs['Image'].default_value = image
+                if node_type == 'ShaderNodeTexImage':
+                    tex_node.image = image
+                elif node_type == 'GeometryNodeImageTexture':
+                    tex_node.inputs['Image'].default_value = image
+                # move
+                bpy.ops.transform.translate('INVOKE_DEFAULT')
 
         return {'FINISHED'}
 
