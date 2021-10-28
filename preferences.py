@@ -245,11 +245,10 @@ class PREF_UL_ConfigList(bpy.types.UIList):
     )
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        row = layout.split(factor=0.5)
-        sub = row.row(align=1)
-        sub.prop(item, 'use_config', text='')
-        sub.prop(item, 'name', text='', emboss=False)
-        sub.prop(item, 'extension', text='', emboss=False)
+        row = layout.row()
+        row.prop(item, 'use_config', text='')
+        row.prop(item, 'name', text='', emboss=False)
+        row.prop(item, 'extension', text='', emboss=False)
 
     def draw_filter(self, context, layout):
         """UI code for the filtering/sorting/search area."""
@@ -327,6 +326,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                                    ('PANEL', 'Complex', ''),
                                    ('MENU', 'Simple', '')],
                                default='MENU')
+    disable_warning_rules: BoolProperty(name='Close Waring Rules', default=False)
     # Preset
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
     config_list_index: IntProperty(min=0, default=0)
@@ -362,6 +362,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         col.prop(self, 'simple_blend_menu')
         col.prop(self, 'use_N_panel')
         col.prop(self, 'report_time')
+        col.prop(self, 'disable_warning_rules')
 
         # self.drawKeymap(context,layout)
 
@@ -443,6 +444,18 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box2.prop(item, 'match_rule')
         if item.match_rule != 'NONE':
             box2.prop(item, 'rule')
+            if not self.disable_warning_rules:
+                box3 = box2.box().column(align=True)
+                box3.alert = True
+                sub_row = box3.row()
+                sub_row.label(text="Warning", icon='ERROR')
+                sub_row.prop(self,'disable_warning_rules',text = 'Close',toggle=True)
+                box4 = box3
+                # box4.alert = False
+                box4.label(text="1. If file name not matching this rule")
+                box4.label(text="   Current config will be ignore")
+                box4.label(text="2. If not config set as the default import")
+                box4.label(text="   Che file will use the default importer")
 
         box3 = box.box()
         box3.prop(item, 'operator_type')

@@ -25,22 +25,25 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
         layout.alignment = "CENTER"
         pref = get_pref()
 
+        layout.label(text='Settings')
+
         row = layout
         row = row.row(align=True)
         row.prop(pref, 'ui', expand=True, text='', emboss=False)
 
         row.separator(factor=2)
+        row = layout.row()
+        row.scale_x=1.2
+        row.scale_x=1.2
         row.operator('spio.config_import', icon='IMPORT', text='')
         row.operator('spio.config_export', icon='EXPORT', text='')
-
-        row.separator()
-        row.operator('wm.save_userpref')
 
     def draw(self, context):
         layout = self.layout
         pref = get_pref()
         if pref.ui == 'SETTINGS':
             SPIO_Preference.draw_settings(pref, context, layout)
+            layout.operator('wm.save_userpref')
         elif pref.ui == 'CONFIG':
             SPIO_Preference.draw_config(pref, context, layout)
         elif pref.ui == 'KEYMAP':
