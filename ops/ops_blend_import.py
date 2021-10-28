@@ -24,6 +24,7 @@ Alt to link all data of the type"""
 
 
 class SPIO_OT_BatchImportBlend(bpy.types.Operator):
+    """Batch import all from all files"""
     bl_idname = 'wm.spio_batch_import_blend'
     bl_label = 'Batch Import'
 
@@ -51,6 +52,7 @@ class SPIO_OT_BatchImportBlend(bpy.types.Operator):
                 bpy.ops.wm.spio_open_blend_extra(filepath=filepath)
 
         return {'FINISHED'}
+
 
 
 class SPIO_OT_OpenBlend(blenderFileDefault, bpy.types.Operator):
