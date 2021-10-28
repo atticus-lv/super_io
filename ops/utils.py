@@ -42,6 +42,10 @@ def convert_value(value):
         return value
 
 
+from ..loader.default_importer import model_lib
+from ..loader.default_blend import blend_lib
+
+
 class ConfigItemHelper():
     def __init__(self, item):
         self.item = item
@@ -58,6 +62,24 @@ class ConfigItemHelper():
                     if prop == '' or value == '': continue
                     ops_config[prop] = convert_value(value)
             self.__setattr__('prop_list', ops_config)
+
+    def get_operator_and_args(self):
+        op_callable = None
+        ops_args = dict()
+        operator_type = self.operator_type
+        # custom operator
+        if operator_type == 'CUSTOM':
+            # custom operator
+            bl_idname = self.bl_idname
+            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+            ops_args = self.prop_list
+
+        # default operator
+        elif operator_type.startswith('DEFAULT'):
+            bl_idname = model_lib.get(operator_type.removeprefix('DEFAULT_').lower())
+            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+
+        return op_callable, ops_args
 
 
 class ConfigHelper():

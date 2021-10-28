@@ -326,11 +326,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     # default blend import
     simple_blend_menu: BoolProperty(name='Simple Menu',
                                     description='Simple blender import menu (Default)', default=False)
-    import_style: EnumProperty(name='Import Popup',
-                               items=[
-                                   ('PANEL', 'Complex', ''),
-                                   ('MENU', 'Simple', '')],
-                               default='MENU')
+
     disable_warning_rules: BoolProperty(name='Close Waring Rules', default=False)
     # Preset
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
@@ -363,7 +359,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         layout.prop(self, 'force_unicode')
         layout.separator(factor=0.5)
         col = layout.column()
-        col.prop(self, 'import_style')
         col.prop(self, 'simple_blend_menu')
         col.prop(self, 'use_N_panel')
         col.prop(self, 'report_time')

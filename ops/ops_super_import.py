@@ -20,122 +20,26 @@ from ..loader.default_blend import blend_lib
 import_icon = RSN_Preview(image='import.bip', name='import_icon')
 
 
-class TEMP_UL_ConfigList(bpy.types.UIList):
-
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        row = layout.row()
-
-        row.prop(item, 'name', text='', emboss=False)
-        row.prop(item, 'bl_idname', text='', emboss=False)
-
-    def draw_filter(self, context, layout):
-        # hide to prevent edit by user
-        pass
-
-    def filter_items(self, context, data, propname):
-        items = getattr(data, propname)
-        ordered = []
-        filtered = [self.bitflag_filter_item] * len(items)
-
-        # get current filter extension
-        ext = context.scene.spio_ext
-
-        for i, item in enumerate(items):
-            if item['extension'] == ext:
-                filtered[i] &= ~self.bitflag_filter_item
-
-        if filtered:
-            show_flag = self.bitflag_filter_item & ~self.bitflag_filter_item
-            for i, bitflag in enumerate(filtered):
-                if bitflag == show_flag:
-                    filtered[i] = self.bitflag_filter_item
-                else:
-                    filtered[i] &= ~self.bitflag_filter_item
-        try:
-            ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i['extension' == ext]),
-                                                             True)
-        except:
-            pass
-
-        return filtered, ordered
-
-
 class SuperImport(bpy.types.Operator):
     """Paste Model/Images"""
     bl_label = "Super Import"
     bl_options = {"UNDO_GROUPED"}
 
-    # dependant
-    dep_classes = []
+    # dependant class
+    #################
+    dep_classes = []  # for easier manage, helpful for batch register and un register
+
     # data
-    clipboard = None
-    file_list = []
-    CONFIGS = None
-    ext = ''
-    # action
-    load_image_as_plane = False
+    #################
+    clipboard = None  # clipboard data
+    file_list = []  # store clipboard urls for importing
+    CONFIGS = None  # config list from user preference
+    ext = ''  # only support one file extension at a time, set as global parm
+
     # state
-    use_custom_config = False
-    config_list_index: IntProperty(name='Active Index')
-    # UI
-    show_urls: BoolProperty(default=False, name='Show Files')
-    show_property: BoolProperty(default=False, name='Edit Property')
-
-    # draw panel
-    ############
-    def draw(self, context):
-        layout = self.layout
-        pref = get_pref()
-        row = layout.row()
-        row.alignment = "LEFT"
-        row.prop(self, 'show_urls', text=f'Import {len(self.file_list)} {self.ext} Object',
-                 icon_value=import_icon.get_image_icon_id(), emboss=False)
-        row.separator()
-        row.prop(self, 'update')
-
-        if self.show_urls:
-            col = layout.column(align=True)
-            for file_path in self.file_list:
-                col.label(text=str(file_path))
-
-        layout.template_list(
-            "TEMP_UL_ConfigList", "Config List",
-            pref, "config_list",
-            self, "config_list_index", rows=4)
-
-        item = pref.config_list[self.config_list_index]
-
-        box = layout.box().split().column()
-
-        row = box.split(factor=0.25)
-        row.prop(self, 'show_property', icon='TRIA_DOWN' if self.show_property else "TRIA_RIGHT", emboss=False,
-                 text=item.name)
-        row = row.row(align=True)
-
-        row.label(text=item.description)
-        c = row.operator('spio.config_list_copy', text='', icon='DUPLICATE')
-        c.index = self.config_list_index
-
-        if not self.show_property: return
-
-        if item.bl_idname != '':
-            row = box.row()
-            if len(item.prop_list) != 0:
-                row.label(text='Property')
-                row.label(text='Value')
-            for prop_index, prop_item in enumerate(item.prop_list):
-                row = box.row()
-                row.prop(prop_item, 'name', text='')
-                row.prop(prop_item, 'value', text='')
-
-                d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
-                d.config_list_index = self.config_list_index
-                d.prop_index = prop_index
-
-        row = box.row(align=True)
-        row.alignment = 'LEFT'
-        d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
-        d.config_list_index = self.config_list_index
+    ###############
+    use_custom_config = False  # if there is more then one config that advance user define
+    config_list_index: IntProperty()  # index for reading pref config list
 
     def restore(self):
         self.file_list.clear()
@@ -165,10 +69,7 @@ class SuperImport(bpy.types.Operator):
                 self.report({"ERROR"}, "Only one type of file can be imported at a time")
                 return {"CANCELLED"}
 
-        # set extension filter for ui panel
-        context.scene.spio_ext = self.ext
-
-        self.CONFIGS = ConfigHelper(check_use=True, filter=context.scene.spio_ext)
+        self.CONFIGS = ConfigHelper(check_use=True, filter=self.ext)
         config_list, index_list = self.CONFIGS.config_list, self.CONFIGS.index_list
 
         # import default if not custom config for this file extension
@@ -189,11 +90,9 @@ class SuperImport(bpy.types.Operator):
         if self.CONFIGS.is_only_one_config():
             return self.execute(context)
 
-        # when there is more than one config, set up a panel / menu for user to select
+        # when there is more than one config, set up a  menu for user to select
         elif self.CONFIGS.is_more_than_one_config():
             self.config_list_index = index_list[0]
-            if get_pref().import_style == 'PANEL':
-                return context.window_manager.invoke_props_dialog(self, width=450)
             return self.import_custom_dynamic(context)
 
     def execute(self, context):
@@ -214,45 +113,63 @@ class SuperImport(bpy.types.Operator):
     # menu
     ##############
     def import_custom_dynamic(self, context):
-        # clear
+        # unregister_class
         for cls in self.dep_classes:
             bpy.utils.unregister_class(cls)
         self.dep_classes.clear()
 
+        # no match list
         file_list = self.file_list
+        # match dict
+        match_file_op_dict = dict()
+        # match index :exclude from popup importer
+        match_index_list = list()
 
         for index in self.CONFIGS.index_list:
             # set config for register
             config_item = get_pref().config_list[index]
+            ITEM = ConfigItemHelper(config_item)
+            match_rule = ITEM.match_rule
+            rule = ITEM.rule
 
-            # dynamic operator
-            ##################
+            if match_rule == 'NONE':
+                match_files = list()
+            elif match_rule == 'STARTSWITH':
+                match_files = [file for file in file_list if os.path.basename(file).startswith(rule)]
+            elif match_rule == 'ENDSWITH':
+                match_files = [file for file in file_list if
+                               os.path.basename(file).removesuffix('.' + self.ext).endswith(rule)]
+            elif match_rule == 'IN':
+                match_files = [file for file in file_list if os.path.basename(file) in rule]
+            elif match_rule == 'REGEX':
+                import re
+                match_files = [file for file in file_list if re.search(rule, os.path.basename(file))]
+
+            if len(match_files) > 0:
+                for file in match_files:
+                    match_file_op_dict[file] = ITEM
+                match_index_list.append(index)
+
+        print(match_file_op_dict, match_index_list, file_list)
+        # dynamic operator
+        ##################
+        for index in self.CONFIGS.index_list:
+            if index in match_index_list: continue  # not register those match config
+            # only for register
+            config_item = get_pref().config_list[index]
+            ITEM = ConfigItemHelper(config_item)
+
+            # define exec
             def execute(self, context):
                 # use pre-define index to call config
-                config_item = get_pref().config_list[self.idx]
-                ITEM = ConfigItemHelper(config_item)
+                ITEM = self.ITEM
 
-                # get match rule, if rule is match, execute the operator, else popup menu/panel
-                match_rule = ITEM.match_rule
-                rule = ITEM.rule
-                operator_type = ITEM.operator_type
-
-                # custom operator
-                if operator_type == 'CUSTOM':
-                    # custom operator
-                    bl_idname = ITEM.bl_idname
-                    op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
-                    ops_args = ITEM.prop_list
-
-                # default operator
-                elif operator_type.startswith('DEFAULT'):
-                    bl_idname = model_lib.get(operator_type.removeprefix('DEFAULT_').lower())
-                    op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
-                    ops_args = dict()
+                op_callable, ops_args = ITEM.get_operator_and_args()
 
                 if op_callable:
                     with MeasureTime() as start_time:
                         for file_path in file_list:
+                            if file_path in match_file_op_dict: continue
                             ops_args['filepath'] = file_path
                             try:
                                 op_callable(**ops_args)
@@ -269,12 +186,11 @@ class SuperImport(bpy.types.Operator):
             op_cls = type("DynOp",
                           (bpy.types.Operator,),
                           {"bl_idname": f'wm.spio_config_{index}',
-                           "bl_label": config_item.name,
-                           "bl_description": config_item.description,
+                           "bl_label": ITEM.name,
+                           "bl_description": ITEM.description,
                            "execute": execute,
-                           # custom
-                           'idx': index,
-                           'CONFIG': self.CONFIGS, },
+                           # custom pass in
+                           'ITEM': ITEM, },
                           )
 
             self.dep_classes.append(op_cls)
@@ -283,15 +199,35 @@ class SuperImport(bpy.types.Operator):
         for cls in self.dep_classes:
             bpy.utils.register_class(cls)
 
-        # set draw menu
-        import_op = self
+        ############################
+        # execute
+        ############################
 
-        def draw_custom_menu(self, context):
-            for cls in import_op.dep_classes:
-                self.layout.operator(cls.bl_idname)
+        # first import all matching rule files
+        if len(match_file_op_dict) > 0:
+            with MeasureTime() as start_time:
+                for filepath, item_helper in match_file_op_dict.items():
+                    op_callable, ops_args = item_helper.get_operator_and_args()
+                    ops_args['filepath'] = filepath
+                    try:
+                        op_callable(**ops_args)
+                    except Exception as e:
+                        self.report({"ERROR"}, str(e))
 
-        context.window_manager.popup_menu(draw_custom_menu, title=f'Super Import {self.ext.upper()}',
-                                          icon='FILEBROWSER')
+                if get_pref().report_time: self.report_time(start_time)
+        # then popup menu to select the remain not matching file
+        remain = len(file_list) - len(match_file_op_dict)
+        if len(self.dep_classes) > 0 and remain > 0:
+            # set draw menu
+            import_op = self
+
+            def draw_custom_menu(self, context):
+                self.layout.label(text=f'Remain {remain} files')
+                for cls in import_op.dep_classes:
+                    self.layout.operator(cls.bl_idname)
+
+            context.window_manager.popup_menu(draw_custom_menu, title=f'Super Import {self.ext.upper()}',
+                                              icon='FILEBROWSER')
 
         return {'FINISHED'}
 
@@ -362,7 +298,7 @@ class SuperImport(bpy.types.Operator):
 
     # Advance Panel
     ################
-    def import_custom(self,context):
+    def import_custom(self, context):
         """import users' custom configs"""
         config_item = get_pref().config_list[self.config_list_index]
         ITEM = ConfigItemHelper(config_item)
@@ -448,7 +384,6 @@ def node_context_menu(self, context):
 def register():
     import_icon.register()
 
-    bpy.utils.register_class(TEMP_UL_ConfigList)
     bpy.utils.register_class(WM_OT_SuperImport)
 
     # Global ext
@@ -462,5 +397,4 @@ def unregister():
 
     bpy.types.NODE_MT_context_menu.remove(node_context_menu)
 
-    bpy.utils.unregister_class(TEMP_UL_ConfigList)
     bpy.utils.unregister_class(WM_OT_SuperImport)
