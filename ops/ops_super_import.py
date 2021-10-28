@@ -399,19 +399,28 @@ Blend file is only allow to load only one(as library)"""
 
     def import_default(self):
         ext = self.ext
+        unregister_list = list()
+
         for file_path in self.file_list:
             if ext in model:
                 bl_idname = model.get(ext)
                 op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
                 op_callable(filepath=file_path)
             else:
-                # if self.load_image_as_plane:
-                #     from addon_utils import enable
-                #     enable("io_import_images_as_planes")
-                #     bpy.ops.import_image.to_plane(files=[{"name": path}])
-                # else:
-                #     bpy.ops.object.load_reference_image(filepath=path)
-                bpy.ops.object.load_reference_image(filepath=file_path)
+                pass
+
+        # if len(unregister_list) !=0 :
+        #
+        #     def draw_img_menu(self,context):
+        #         layout = self.layout
+        #         layout.operator('object.load_reference_image').filepath =
+        #         pass
+        #
+        #     bpy.context.window_manager.popup_menu(draw_img_menu,
+        #                                       title=f'Super Import Blend ({len(self.file_list)} files)',
+        #                                       icon='FILE_BLEND')
+        #
+        #     bpy.ops.object.load_reference_image(filepath=file_path)
 
 
 class NODE_OT_SuperImport(SuperImport):

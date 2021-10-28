@@ -1,8 +1,6 @@
 import bpy
 import subprocess
 
-import json
-
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from ..loader.default_blend import blenderFileDefault
 
