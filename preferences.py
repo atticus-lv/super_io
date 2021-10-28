@@ -256,7 +256,7 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         col.prop(self, 'filter_type', icon='FILTER')
 
         row = col.row(align=1)
-        if self.filter_type == 'EXT':
+        if self.filter_type == 'extension':
             row.prop(self, 'filter_extension', text='Extension')
         else:
             row.prop(self, "filter_name", text="Name")
