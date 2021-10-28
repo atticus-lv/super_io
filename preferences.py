@@ -50,7 +50,7 @@ class ExtensionOperatorProperty(PropertyGroup):
                              items=[('NONE', 'None', ''),
                                     ('STARTSWITH', 'Startswith', ''),
                                     ('ENDSWITH', 'Endswith', ''),
-                                    ('IN', 'Contain', ''),
+                                    ('IN', 'In', ''),
                                     ('REGEX', 'Regex (WIP)', ''), ],
                              default='NONE', description='matching rule of the name')
 
@@ -59,15 +59,13 @@ class ExtensionOperatorProperty(PropertyGroup):
     operator_type: EnumProperty(
         name='Operator Type',
         items=[
-            ("", "Default", "Default blender build-in importer", "BLENDER", 0),
-            ('BLEND', 'Blend Import Menu',
-             'Default .blend import menu, support both solo/batch mode', 'BLENDER', 100),
+            ("", "Default", "Default blender build-in importer", "CUBE", 0),
             None,
             ('DEFAULT_DAE', 'Collada (.dae)', '', 'CUBE', 99),
             ('DEFAULT_ABC', 'Alembic (.abc)', '', 'CUBE', 98),
             ('DEFAULT_USD', 'USD (.usd/.usda/.usdc)', '', 'CUBE', 97),
             ('DEFAULT_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 96),
-            ('DEFAULT_SVG_2', 'SVG (.svg)', '','GP_SELECT_POINTS',89),
+            ('DEFAULT_SVG_2', 'SVG (.svg)', '', 'GP_SELECT_POINTS', 89),
             ('DEFAULT_PLY', 'Stanford (.ply)', '', 'CUBE', 95),
             ('DEFAULT_STL', 'Stl (.stl)', '', 'CUBE', 94),
             ('DEFAULT_FBX', 'FBX (.fbx)', '', 'CUBE', 93),
@@ -75,7 +73,10 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('DEFAULT_OBJ', 'Wavefront (.obj)', '', 'CUBE', 91),
             ('DEFAULT_X3D', 'X3D (.x3d/.wrl)', '', 'CUBE', 90),
 
-            ("", "Batch Append/Link", "Blend File Batch Mode", "DOCUMENTS", 0),
+            ("", "Blend File", "Blend File Single/Batch Mode", "BLENDER", 0),
+            ('BLEND', 'Blend Import Menu',
+             'Default .blend import menu, support both solo/batch mode', 'BLENDER', 100),
+            None,
             ('APPEND_BLEND_MAT', 'Append Materials', 'Append All', 'MATERIAL', 1),
             ('APPEND_BLEND_COLLECTION', 'Append Collections', 'Append All',
              'OUTLINER_COLLECTION', 2),
@@ -93,8 +94,8 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('LINK_BLEND_NODE', 'Link Node Groups', 'Load All', 'NODETREE',
              15),
 
-            ("", "Custom", ""),
-            ('CUSTOM', 'Custom', ''),
+            ("", "Custom", "Custom operator and properties input", "USER", 0),
+            ('CUSTOM', 'Custom', '', 'USER', 101),
         ],
         default='DEFAULT_OBJ', )
 
@@ -137,6 +138,9 @@ class SPIO_OT_OperatorPropRemove(OperatorPropAction, bpy.types.Operator):
     action = 'REMOVE'
 
 
+from .ops.utils import convert_value
+
+
 class SPIO_OT_ExtensionListAction:
     """Add / Remove / Copy current config"""
     bl_label = "Config Operate"
@@ -149,8 +153,8 @@ class SPIO_OT_ExtensionListAction:
         pref = get_pref()
 
         if self.action == 'ADD':
-            item = pref.config_list.add()
-            item.name = f'Config{len(pref.config_list)}'
+            new_item = pref.config_list.add()
+            new_item.name = f'Config{len(pref.config_list)}'
             pref.config_list_index = len(pref.config_list) - 1
 
         elif self.action == 'REMOVE':
@@ -158,19 +162,22 @@ class SPIO_OT_ExtensionListAction:
             pref.config_list_index = self.index - 1 if self.index != 0 else 0
 
         elif self.action == 'COPY':
-            cur_item = pref.config_list[self.index]
+            src_item = pref.config_list[self.index]
 
-            item = pref.config_list.add()
-            item.name = cur_item.name + '_copy'
-            item.use_config = cur_item.use_config
-            item.extension = cur_item.extension
-            item.description = cur_item.description
-            item.bl_idname = cur_item.bl_idname
+            new_item = pref.config_list.add()
 
-            for cur_prop_item in cur_item.prop_list:
-                prop_item = item.prop_list.add()
-                prop_item.name = cur_prop_item.name
-                prop_item.value = cur_prop_item.value
+            for key in src_item.__annotations__.keys():
+                value = getattr(src_item, key)
+                if key != 'prop_list':
+                    setattr(new_item, key, value)
+                # prop list
+                if len(new_item.prop_list) != 0:
+                    for prop_index, prop_item in enumerate(src_item.prop_list):
+                        prop, value = prop_item.name, prop_item.value
+                        # skip if the prop is not filled
+                        if prop == '' or value == '': continue
+                        prop_item = new_item.prop_list.add()
+                        setattr(prop_item, prop, convert_value(value))
 
             pref.config_list_index = len(pref.config_list) - 1
 
@@ -447,7 +454,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 box3.alert = True
                 sub_row = box3.row()
                 sub_row.label(text="Warning", icon='ERROR')
-                sub_row.prop(self,'disable_warning_rules',text = 'Close',toggle=True)
+                sub_row.prop(self, 'disable_warning_rules', text='Close', toggle=True)
                 box4 = box3
                 # box4.alert = False
                 box4.label(text="1. If file name not matching this rule")
@@ -516,6 +523,7 @@ def add_keybind():
         km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
         kmi = km.keymap_items.new("wm.spio_import", 'V', 'PRESS', ctrl=True, shift=True)
         addon_keymaps.append((km, kmi))
+
 
 def remove_keybind():
     wm = bpy.context.window_manager
