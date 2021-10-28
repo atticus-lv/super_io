@@ -1,22 +1,32 @@
 # Super Import (SPIO)
 
-> only support windows now (I don't have mac or linux computer)
+> Only support windows now (I don't have mac or linux computer)
 
-SPIO is a blender addon that allow you to copy and paste to import model. 
+SPIO is a blender addon that allow you to copy and paste to import models and images. 
 
-Currently we can not drag and drop to import model in blender, but with this addon, you can easily copy your model/Image in your File Explorer, then paste in blender with just one click/shortcut!
+Currently we can not drag and drop to import model in blender, but with this addon, you can easily copy your model/Image in your File Explorer, then paste in blender with just one click/shortcut !
 
 Import model / image never so easily in blender before.
 
 ## Feature
 
-> SPIO have a config system for advance import. Normally, you wont need to add even one config to import model like .obj/.fbx./.dae/.usd.
+> SPIO have a config system for advance user. Normally, you don't need to add even one config to import model like .obj/.fbx./.dae/.usd which blender supported by default
 >
-> But if you want to use your own addon(Like Better Fbx), or your own operator, SPIO's config system make sense.
+> But if you want to use your own addon(Like Better FBX), or your own operator, SPIO's config system make sense.
 
-### 1.Custom extension / operator
+### 1.Custom rules
 
-You are allow to assign a operator to import a certain types of file.
+SPIO comes with lots of build-in operator, they all support batch import mode. 
+
+If you have you own style of naming to manage your file(mostly is .blend I think), SPIO will give you a surprise. 
+
+You are allow to directly import your custom naming file (import all material/collection/world/nodes)
+
+Accidently, If you don't make a correct config for the missing file, SPIO will still popup other config with same extension setting, also with the default importer menu
+
+### 2.Custom extension / operator
+
+You are allow to assign a operator to import a certain types of file, with rule.
 
 Just need to fill in the `extension` with your file suffix (like obj), and copy and paste the python command to the `Operator Idenfitier`.
 
@@ -72,3 +82,4 @@ It will look like this.
 + Report time
 
   a small to for compare custom operator running time
+
