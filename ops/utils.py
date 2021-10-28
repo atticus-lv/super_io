@@ -42,6 +42,24 @@ def convert_value(value):
         return value
 
 
+class ConfigItemHelper():
+    def __init__(self, item):
+        self.item = item
+        for key in item.__annotations__.keys():
+            value = getattr(item, key)
+            if key != 'prop_list':
+                self.__setattr__(key, value)
+            # prop list
+            ops_config = dict()
+            if len(item.prop_list) != 0:
+                for prop_index, prop_item in enumerate(item.prop_list):
+                    prop, value = prop_item.name, prop_item.value
+                    # skip if the prop is not filled
+                    if prop == '' or value == '': continue
+                    ops_config[prop] = convert_value(value)
+            self.__setattr__('prop_list', ops_config)
+
+
 class ConfigHelper():
     def __init__(self, check_use=False, filter=None):
         pref_config = get_pref().config_list
@@ -57,7 +75,6 @@ class ConfigHelper():
                 value = getattr(item, key)
                 if key != 'prop_list':
                     config[key] = value
-                    print(config)
                 # prop list
                 ops_config = dict()
                 if len(item.prop_list) != 0:
@@ -78,7 +95,7 @@ class ConfigHelper():
 
             index_list.append(config_list_index)
             config_list[item.name] = config
-            print(config_list)
+
         self.config_list = config_list
         self.index_list = index_list
 

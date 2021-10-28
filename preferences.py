@@ -57,7 +57,7 @@ class ExtensionOperatorProperty(PropertyGroup):
     rule: StringProperty(name='Match Rule Value', default='')
 
     operator_type: EnumProperty(name='Operator Type',
-                                items=[("", "Blend File", "", "BLENDER", 0),
+                                items=[("", "Blend File", " Single Blend File", "BLENDER", 0),
                                        ('APPEND_BLEND', 'Append',
                                         'Support only one file a time', 'APPEND_BLEND', 97),
                                        ('LINK_BLEND', 'Link',
@@ -68,27 +68,26 @@ class ExtensionOperatorProperty(PropertyGroup):
                                        ('OPEN_BLEND_NEW', 'Open +',
                                         'Open in new blender.exe', 'ADD', 100),
 
-                                       ("", "Append", "", "APPEND_BLEND", 0),
-                                       ('APPEND_BLEND_MAT', 'Materials', 'Load All', 'MATERIAL',
+                                       ("", "Batch Append/Link", "Blend File Batch Mode", "DOCUMENTS", 0),
+                                       ('APPEND_BLEND_MAT', 'Append Materials', 'Append All', 'MATERIAL',
                                         1),
-                                       ('APPEND_BLEND_COLLECTION', 'Collections', 'Load All',
+                                       ('APPEND_BLEND_COLLECTION', 'Append Collections', 'Append All',
                                         'OUTLINER_COLLECTION', 2),
-                                       ('APPEND_BLEND_OBJECT', 'Objects', 'Load All',
+                                       ('APPEND_BLEND_OBJECT', 'Append Objects', 'Append All',
                                         'OBJECT_DATA', 3),
-                                       ('APPEND_BLEND_WORLD', 'Worlds', 'Load All', 'WORLD', 4),
+                                       ('APPEND_BLEND_WORLD', 'Append Worlds', 'Append All', 'WORLD', 4),
                                        (
-                                           'APPEND_BLEND_NODE', 'Node Groups', 'Load All', 'NODETREE',
+                                           'APPEND_BLEND_NODE', 'Append Node Groups', 'Append All', 'NODETREE',
                                            5),
-
-                                       ("", "Link", "", "LINK_BLEND", 0),
+                                       None,
                                        (
-                                           'LINK_BLEND_MAT', 'Materials', 'Load All', 'MATERIAL', 11),
-                                       ('LINK_BLEND_COLLECTION', 'Collections', 'Load All',
+                                           'LINK_BLEND_MAT', 'Link Materials', 'Load All', 'MATERIAL', 11),
+                                       ('LINK_BLEND_COLLECTION', 'Link Collections', 'Load All',
                                         'OUTLINER_COLLECTION', 12),
-                                       ('LINK_BLEND_OBJECT', 'Objects', 'Load All', 'OBJECT_DATA',
+                                       ('LINK_BLEND_OBJECT', 'Link Objects', 'Load All', 'OBJECT_DATA',
                                         13),
-                                       ('LINK_BLEND_WORLD', 'Worlds', 'Load All', 'WORLD', 14),
-                                       ('LINK_BLEND_NODE', 'Node Groups', 'Load All', 'NODETREE',
+                                       ('LINK_BLEND_WORLD', 'Link Worlds', 'Load All', 'WORLD', 14),
+                                       ('LINK_BLEND_NODE', 'Link Node Groups', 'Load All', 'NODETREE',
                                         15),
 
                                        ("", "Default", ""),
@@ -107,8 +106,8 @@ class ExtensionOperatorProperty(PropertyGroup):
                                        ('ADDON_SVG', 'SVG (.svg)', ''),
                                        ('ADDON_IMG_AS_PLANE', 'Image as plane', ''),
                                        None,
-                                       ('CUSTOM', 'Custom', ''),],
-                                       default = 'DEFAULT_OBJ',)
+                                       ('CUSTOM', 'Custom', ''), ],
+                                default='DEFAULT_OBJ', )
 
     # custom operator
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
@@ -537,7 +536,9 @@ def register():
         for key in get_pref().config_list.__annotations__.keys():
             the_value = getattr(ExtensionOperatorProperty, key)
             print(key, the_value)
-    except Exception as e: print(e)
+    except Exception as e:
+        print(e)
+
 
 def unregister():
     remove_keybind()
