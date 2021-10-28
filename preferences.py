@@ -60,13 +60,14 @@ class ExtensionOperatorProperty(PropertyGroup):
         name='Operator Type',
         items=[
             ("", "Default", "Default blender build-in importer", "BLENDER", 0),
-            ('DEFAULT_BLEND', 'Blend Import Menu',
+            ('BLEND', 'Blend Import Menu',
              'Default .blend import menu, support both solo/batch mode', 'BLENDER', 100),
             None,
             ('DEFAULT_DAE', 'Collada (.dae)', '', 'CUBE', 99),
             ('DEFAULT_ABC', 'Alembic (.abc)', '', 'CUBE', 98),
             ('DEFAULT_USD', 'USD (.usd/.usda/.usdc)', '', 'CUBE', 97),
-            ('DEFAULT_SVG', 'Grease Pencil (.svg)', '', 'CUBE', 96),
+            ('DEFAULT_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 96),
+            ('DEFAULT_SVG_2', 'SVG (.svg)', '','GP_SELECT_POINTS',89),
             ('DEFAULT_PLY', 'Stanford (.ply)', '', 'CUBE', 95),
             ('DEFAULT_STL', 'Stl (.stl)', '', 'CUBE', 94),
             ('DEFAULT_FBX', 'FBX (.fbx)', '', 'CUBE', 93),
@@ -92,10 +93,7 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('LINK_BLEND_NODE', 'Link Node Groups', 'Load All', 'NODETREE',
              15),
 
-            ("", "Add-ons", ""),
-            ('ADDON_SVG', 'SVG (.svg)', ''),
-            ('ADDON_IMG_AS_PLANE', 'Image as plane', ''),
-            None,
+            ("", "Custom", ""),
             ('CUSTOM', 'Custom', ''),
         ],
         default='DEFAULT_OBJ', )
@@ -512,13 +510,12 @@ def add_keybind():
     wm = bpy.context.window_manager
     if wm.keyconfigs.addon:
         km = wm.keyconfigs.addon.keymaps.new(name='3D View', space_type='VIEW_3D')
-        kmi = km.keymap_items.new("view3d.spio_import", 'V', 'PRESS', ctrl=True, shift=True)
+        kmi = km.keymap_items.new("wm.spio_import", 'V', 'PRESS', ctrl=True, shift=True)
         addon_keymaps.append((km, kmi))
 
         km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
-        kmi = km.keymap_items.new("node.spio_import", 'V', 'PRESS', ctrl=True, shift=True)
+        kmi = km.keymap_items.new("wm.spio_import", 'V', 'PRESS', ctrl=True, shift=True)
         addon_keymaps.append((km, kmi))
-
 
 def remove_keybind():
     wm = bpy.context.window_manager

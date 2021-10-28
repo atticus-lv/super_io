@@ -1,6 +1,6 @@
 import bpy
 
-default_model_import_dict = {
+model_lib = {
     'usd': 'wm.usd_import',
     'usdc': 'wm.usd_import',
     'usda': 'wm.usd_import',
@@ -18,5 +18,6 @@ default_model_import_dict = {
     'x3d': 'import_scene.x3d',
     'wrl': 'import_scene.x3d',
 
-    'svg': 'import_curve.svg',
+    'svg2': 'import_curve.svg',
+    'svg': 'gpencil_import_svg',
 }
