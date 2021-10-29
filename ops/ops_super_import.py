@@ -213,7 +213,7 @@ class SuperImport(bpy.types.Operator):
         else:
             title = f'Super Import {self.ext.upper()} ({len(remain_list)} files)'
 
-        if len(self.dep_classes) > 0 and len(remain_list) > 0:
+        if len(remain_list) > 0:
             # set draw menu
             import_op = self
             ext = self.ext
@@ -223,8 +223,9 @@ class SuperImport(bpy.types.Operator):
                 if len(match_file_op_dict) > 0:
                     layout.label(text=f'Remain {len(remain_list)} files')
 
-                for cls in import_op.dep_classes:
-                    layout.operator(cls.bl_idname)
+                if len(import_op.dep_classes) > 0:
+                    for cls in import_op.dep_classes:
+                        layout.operator(cls.bl_idname)
 
                 layout.separator()
                 # default popup
