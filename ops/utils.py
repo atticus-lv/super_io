@@ -5,6 +5,7 @@ from bpy.props import CollectionProperty
 import time
 import os
 
+
 def get_pref():
     """get preferences of this plugin"""
     return bpy.context.preferences.addons.get(__folder_name__).preferences
@@ -98,24 +99,25 @@ class ConfigItemHelper():
 
         return op_callable, ops_args
 
-    def get_match_files(self,file_list):
+    def get_match_files(self, file_list):
         match_rule = self.match_rule
-        rule = self.rule
+        match_value = self.match_value
 
         if match_rule == 'NONE':
             match_files = list()
         elif match_rule == 'STARTSWITH':
-            match_files = [file for file in file_list if os.path.basename(file).startswith(rule)]
+            match_files = [file for file in file_list if os.path.basename(file).startswith(match_value)]
         elif match_rule == 'ENDSWITH':
             match_files = [file for file in file_list if
-                           os.path.basename(file).removesuffix('.' + self.ext).endswith(rule)]
+                           os.path.basename(file).removesuffix('.' + self.ext).endswith(match_value)]
         elif match_rule == 'IN':
-            match_files = [file for file in file_list if os.path.basename(file) in rule]
+            match_files = [file for file in file_list if match_value in os.path.basename(file)]
         elif match_rule == 'REGEX':
             import re
-            match_files = [file for file in file_list if re.search(rule, os.path.basename(file))]
+            match_files = [file for file in file_list if re.search(match_value, os.path.basename(file))]
 
         return match_files
+
 
 class ConfigHelper():
     def __init__(self, check_use=False, filter=None):
@@ -170,6 +172,7 @@ class ConfigHelper():
 
     def is_more_than_one_config(self):
         return len(self.config_list) > 1
+
 
 class PopupMenu():
     def __init__(self, file_list, context):

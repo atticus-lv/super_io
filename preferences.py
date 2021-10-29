@@ -54,7 +54,7 @@ class ExtensionOperatorProperty(PropertyGroup):
                                     ('REGEX', 'Regex (WIP)', ''), ],
                              default='NONE', description='matching rule of the name')
 
-    rule: StringProperty(name='Match Rule Value', default='')
+    match_value: StringProperty(name='Match Value', default='')
 
     # remove grease pencil from default because this design is only allow one default importer
     operator_type: EnumProperty(
@@ -439,7 +439,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box2 = box.box()
         box2.prop(item, 'match_rule')
         if item.match_rule != 'NONE':
-            box2.prop(item, 'rule')
+            box2.prop(item, 'match_value')
             if not self.disable_warning_rules:
                 box3 = box2.box().column(align=True)
                 box3.alert = True
@@ -448,10 +448,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 sub_row.prop(self, 'disable_warning_rules', text='Close', toggle=True)
                 box4 = box3
                 # box4.alert = False
-                box4.label(text="1. If file name not matching this rule")
+                box4.label(text="1. If file name not matching this value")
                 box4.label(text="   Current config will be ignore")
                 box4.label(text="2. If not config set as the default import")
-                box4.label(text="   Che file will use the default importer")
+                box4.label(text="   Che file will popup the default importer")
 
         box3 = box.box()
         box3.prop(item, 'operator_type')
