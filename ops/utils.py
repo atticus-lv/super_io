@@ -227,6 +227,7 @@ class PopupMenu():
                 col = layout.column()
 
                 col.separator()
+                col.label(text = 'Append...',icon = 'APPEND_BLEND')
                 for subpath, lib in blend_subpath_lib.items():
                     op = col.operator('wm.spio_append_blend', text=subpath)
                     op.filepath = path
@@ -234,6 +235,7 @@ class PopupMenu():
                     op.data_type = lib
 
                 col.separator()
+                col.label(text = 'Link...',icon = 'LINK_BLEND')
                 for subpath, lib in blend_subpath_lib.items():
                     op = col.operator('wm.spio_link_blend', text=subpath)
                     op.filepath = path
