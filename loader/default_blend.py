@@ -1,7 +1,7 @@
 
 blend_subpath_lib = {
     'Collection': 'collections',
-    'Material': 'material',
+    'Material': 'materials',
     'World': 'worlds',
     'Object': 'objects',
     'NodeTree': 'node_groups'

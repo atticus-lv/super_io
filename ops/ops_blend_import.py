@@ -21,7 +21,7 @@ class blenderFileDefault:
 
     def load_batch(self):
         with bpy.data.libraries.load(self.filepath, link=self.link) as (data_from, data_to):
-            if self.data_type in {'materials', 'worlds'}:
+            if self.data_type in {'materials', 'worlds','node_groups'}:
                 setattr(data_to, self.data_type, getattr(data_from, self.data_type))
 
             elif self.data_type == 'collections':
@@ -47,7 +47,7 @@ class blenderFileDefault:
                                                                                               self.sub_path))
 
     def invoke(self, context, event):
-        self.load_all = True if event.alt or self.load_all else False
+        self.load_all = True if event.alt or self.load_all is True else False
         # self.link = event.shift
         return self.execute(context)
 
