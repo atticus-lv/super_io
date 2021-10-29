@@ -19,9 +19,16 @@ class blenderFileDefault:
     # link
     link = False
 
+    def restore(self):
+        """restore value for the next popup"""
+        self.filepath = ''
+        self.sub_path = ''
+        self.load_all = False
+        self.data_type = ''
+
     def load_batch(self):
         with bpy.data.libraries.load(self.filepath, link=self.link) as (data_from, data_to):
-            if self.data_type in {'materials', 'worlds','node_groups'}:
+            if self.data_type in {'materials', 'worlds', 'node_groups'}:
                 setattr(data_to, self.data_type, getattr(data_from, self.data_type))
 
             elif self.data_type == 'collections':
@@ -55,12 +62,15 @@ class blenderFileDefault:
         # seem need to return set for invoke
         if not self.load_all:
             self.load_with_ui()
+
+            self.restore()
             return {'FINISHED'}
         else:
             self.load_batch()
             self.report({"INFO"}, f'Load all {self.data_type} from {self.filepath}')
-            return {'FINISHED'}
 
+            self.restore()
+            return {'FINISHED'}
 
 
 class SPIO_OT_AppendBlend(blenderFileDefault, bpy.types.Operator):
@@ -110,7 +120,6 @@ class SPIO_OT_BatchImportBlend(bpy.types.Operator):
                 bpy.ops.wm.spio_open_blend_extra(filepath=filepath)
 
         return {'FINISHED'}
-
 
 
 class SPIO_OT_OpenBlend(blenderFileDefault, bpy.types.Operator):
