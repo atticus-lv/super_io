@@ -230,7 +230,7 @@ class SuperImport(bpy.types.Operator):
                 layout.separator()
                 # default popup
                 if ext in model_lib:
-                    layout.operator('wm.spio_import_model').files = '$$'.join(
+                    layout.operator('spio.import_model').files = '$$'.join(
                         remain_list)
                 elif ext == 'blend':
                     pop = PopupMenu(file_list=remain_list, context=context)
@@ -246,9 +246,9 @@ class SuperImport(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class WM_OT_SuperImport(SuperImport):
+class WM_OT_super_import(SuperImport):
     """Load files/models/images from clipboard"""
-    bl_idname = "wm.spio_import"
+    bl_idname = "wm.super_import"
     bl_label = "Super Import"
 
     def import_blend_default(self, context):
@@ -270,7 +270,7 @@ class WM_OT_SuperImport(SuperImport):
 
 def file_context_menu(self, context):
     layout = self.layout
-    layout.operator('wm.spio_import', icon_value=import_icon.get_image_icon_id())
+    layout.operator('wm.super_import', icon_value=import_icon.get_image_icon_id())
     layout.separator()
 
 
@@ -283,7 +283,7 @@ def node_context_menu(self, context):
 def register():
     import_icon.register()
 
-    bpy.utils.register_class(WM_OT_SuperImport)
+    bpy.utils.register_class(WM_OT_super_import)
 
     # Global ext
     bpy.types.Scene.spio_ext = StringProperty(name='Filter extension', default='')
@@ -296,4 +296,4 @@ def unregister():
 
     bpy.types.NODE_MT_context_menu.remove(node_context_menu)
 
-    bpy.utils.unregister_class(WM_OT_SuperImport)
+    bpy.utils.unregister_class(WM_OT_super_import)

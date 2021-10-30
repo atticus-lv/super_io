@@ -84,7 +84,7 @@ class ConfigItemHelper():
         elif operator_type.startswith('APPEND_BLEND'):
             subpath = operator_type.removeprefix('APPEND_BLEND_').title()
             data_type = blend_subpath_lib.get(subpath)
-            op_callable = bpy.ops.wm.spio_append_blend
+            op_callable = bpy.ops.spio.append_blend
             ops_args = {'sub_path': subpath,
                         'data_type': data_type,
                         'load_all': True}
@@ -92,7 +92,7 @@ class ConfigItemHelper():
         elif operator_type.startswith('LINK_BLEND'):
             subpath = operator_type.removeprefix('LINK_BLEND_').title()
             data_type = blend_subpath_lib.get(subpath)
-            op_callable = bpy.ops.wm.spio_link_blend
+            op_callable = bpy.ops.spio.link_blend
             ops_args = {'sub_path': subpath,
                         'data_type': data_type,
                         'load_all': True}
@@ -189,11 +189,11 @@ class PopupMenu():
                 layout.operator_context = "INVOKE_DEFAULT"
                 # only one blend need to deal with
                 col = layout.column()
-                op = col.operator('wm.spio_import_image', text=f'Import as reference')
+                op = col.operator('spio.import_image', text=f'Import as reference')
                 op.action = 'REF'
                 op.files = join_paths
 
-                op = col.operator('wm.spio_import_image', text=f'Import as Plane')
+                op = col.operator('spio.import_image', text=f'Import as Plane')
                 op.action = 'PLANE'
                 op.files = join_paths
 
@@ -204,7 +204,7 @@ class PopupMenu():
                                               title=f'Super Import Image ({len(self.file_list)} files)',
                                               icon='IMAGE_DATA')
         elif context.area.type == "NODE_EDITOR":
-            bpy.ops.wm.spio_import_image(action='NODES', files=join_paths)
+            bpy.ops.spio.import_image(action='NODES', files=join_paths)
 
     def default_blend_menu(self, return_menu=False):
         context = self.context
@@ -218,10 +218,10 @@ class PopupMenu():
             layout.operator_context = "INVOKE_DEFAULT"
             # only one blend need to deal with
             if len(self.file_list) == 1:
-                open = layout.operator('wm.spio_open_blend', icon='FILEBROWSER')
+                open = layout.operator('spio.open_blend', icon='FILEBROWSER')
                 open.filepath = path
 
-                open = layout.operator('wm.spio_open_blend_extra', icon='ADD')
+                open = layout.operator('spio.open_blend_extra', icon='ADD')
                 open.filepath = path
 
                 col = layout.column()
@@ -229,7 +229,7 @@ class PopupMenu():
                 col.separator()
                 col.label(text = 'Append...',icon = 'APPEND_BLEND')
                 for subpath, lib in blend_subpath_lib.items():
-                    op = col.operator('wm.spio_append_blend', text=subpath)
+                    op = col.operator('spio.append_blend', text=subpath)
                     op.filepath = path
                     op.sub_path = subpath
                     op.data_type = lib
@@ -237,19 +237,19 @@ class PopupMenu():
                 col.separator()
                 col.label(text = 'Link...',icon = 'LINK_BLEND')
                 for subpath, lib in blend_subpath_lib.items():
-                    op = col.operator('wm.spio_link_blend', text=subpath)
+                    op = col.operator('spio.link_blend', text=subpath)
                     op.filepath = path
                     op.sub_path = subpath
                     op.data_type = lib
 
             else:
                 col = layout.column()
-                op = col.operator('wm.spio_batch_import_blend', text=f'Batch Open')
+                op = col.operator('spio.batch_import_blend', text=f'Batch Open')
                 op.action = 'OPEN'
                 op.files = join_paths
 
                 for subpath, lib in blend_subpath_lib.items():
-                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Append {subpath}')
+                    op = col.operator('spio.batch_import_blend', text=f'Batch Append {subpath}')
                     op.action = 'APPEND'
                     op.files = join_paths
                     op.sub_path = subpath
@@ -257,7 +257,7 @@ class PopupMenu():
 
                 col.separator()
                 for subpath, lib in blend_subpath_lib.items():
-                    op = col.operator('wm.spio_batch_import_blend', text=f'Batch Link {subpath}')
+                    op = col.operator('spio.batch_import_blend', text=f'Batch Link {subpath}')
                     op.action = 'LINK'
                     op.files = join_paths
                     op.sub_path = subpath

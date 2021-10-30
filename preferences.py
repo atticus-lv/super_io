@@ -323,8 +323,8 @@ class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator('spio.config_import', icon='IMPORT')
-        layout.operator('spio.config_export', icon='EXPORT')
+        layout.operator('spio.import_config', icon='IMPORT')
+        layout.operator('spio.export_config', icon='EXPORT')
 
 
 class SPIO_Preference(bpy.types.AddonPreferences):
@@ -369,8 +369,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             self.draw_keymap(context, col)
 
     def draw_import(self, context, layout):
-        layout.operator('spio.config_import', icon='IMPORT')
-        layout.operator('spio.config_export', icon='EXPORT')
+        layout.operator('spio.import_config', icon='IMPORT')
+        layout.operator('spio.export_config', icon='EXPORT')
 
     def draw_settings(self, context, layout):
         layout.use_property_split = True
@@ -550,11 +550,11 @@ def add_keybind():
     wm = bpy.context.window_manager
     if wm.keyconfigs.addon:
         km = wm.keyconfigs.addon.keymaps.new(name='3D View', space_type='VIEW_3D')
-        kmi = km.keymap_items.new("wm.spio_import", 'V', 'PRESS', ctrl=True, shift=True)
+        kmi = km.keymap_items.new("wm.super_import", 'V', 'PRESS', ctrl=True, shift=True)
         addon_keymaps.append((km, kmi))
 
         km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
-        kmi = km.keymap_items.new("wm.spio_import", 'V', 'PRESS', ctrl=True, shift=True)
+        kmi = km.keymap_items.new("wm.super_import", 'V', 'PRESS', ctrl=True, shift=True)
         addon_keymaps.append((km, kmi))
 
 

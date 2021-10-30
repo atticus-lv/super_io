@@ -8,7 +8,7 @@ bl_info = {
     "doc_url": "",
     "tracker_url": "",
     "description": "Copy paste to import Model/Images (Inspired by Binit's ImagePaste)",
-    'warning': "Beta (Only Windows Support Now)",
+    'warning': "Only Windows Support Now",
     "location": "3DView > F3 > Super Import(shortcut 'Ctrl Shift V')",
 }
 

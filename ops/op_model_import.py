@@ -5,10 +5,10 @@ from bpy.props import StringProperty, BoolProperty, EnumProperty
 from ..loader.default_importer import model_lib
 
 
-class SPIO_OT_ModelImport(bpy.types.Operator):
+class SPIO_OT_import_model(bpy.types.Operator):
     """Import Model with blender's default importer"""
 
-    bl_idname = 'wm.spio_import_model'
+    bl_idname = 'spio.import_model'
     bl_label = 'Import Model'
 
     files: StringProperty()  # list of filepath, join with$$
@@ -39,8 +39,8 @@ class SPIO_OT_ModelImport(bpy.types.Operator):
 
 
 def register():
-    bpy.utils.register_class(SPIO_OT_ModelImport)
+    bpy.utils.register_class(SPIO_OT_import_model)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_OT_ModelImport)
+    bpy.utils.unregister_class(SPIO_OT_import_model)

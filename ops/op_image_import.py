@@ -4,10 +4,10 @@ import os
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
 
-class SPIO_OT_ImageImport(bpy.types.Operator):
+class SPIO_OT_import_image(bpy.types.Operator):
     """Import all image as reference (Empty object)"""
 
-    bl_idname = 'wm.spio_import_image'
+    bl_idname = 'spio.import_image'
     bl_label = 'Import Image'
 
     files: StringProperty()  # list of filepath, join with$$
@@ -73,8 +73,8 @@ class SPIO_OT_ImageImport(bpy.types.Operator):
 
 
 def register():
-    bpy.utils.register_class(SPIO_OT_ImageImport)
+    bpy.utils.register_class(SPIO_OT_import_image)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_OT_ImageImport)
+    bpy.utils.unregister_class(SPIO_OT_import_image)

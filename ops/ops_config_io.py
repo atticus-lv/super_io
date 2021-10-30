@@ -7,10 +7,10 @@ from .utils import ConfigHelper, get_pref
 from bpy_extras.io_utils import ExportHelper, ImportHelper
 
 
-class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
+class SPIO_OT_import_config(bpy.types.Operator, ImportHelper):
     """Import config from a json file"""
 
-    bl_idname = "spio.config_import"
+    bl_idname = "spio.import_config"
     bl_label = "Import Config"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -47,10 +47,10 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
         return {"FINISHED"}
 
 
-class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
+class SPIO_OT_export_config(bpy.types.Operator, ExportHelper):
     """Export marked configs to a json file\nAlt to export all"""
 
-    bl_idname = "spio.config_export"
+    bl_idname = "spio.export_config"
     bl_label = "Export Config"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -78,10 +78,10 @@ class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
 
 
 def register():
-    bpy.utils.register_class(SPIO_OT_ConfigImport)
-    bpy.utils.register_class(SPIO_OT_ConfigExport)
+    bpy.utils.register_class(SPIO_OT_import_config)
+    bpy.utils.register_class(SPIO_OT_export_config)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_OT_ConfigImport)
-    bpy.utils.unregister_class(SPIO_OT_ConfigExport)
+    bpy.utils.unregister_class(SPIO_OT_import_config)
+    bpy.utils.unregister_class(SPIO_OT_export_config)

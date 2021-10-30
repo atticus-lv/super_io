@@ -73,27 +73,27 @@ class blenderFileDefault:
             return {'FINISHED'}
 
 
-class SPIO_OT_AppendBlend(blenderFileDefault, bpy.types.Operator):
+class SPIO_OT_append_blend(blenderFileDefault, bpy.types.Operator):
     """Append files for clipboard blend file\nAlt to append all data of chosen type"""
 
-    bl_idname = 'wm.spio_append_blend'
+    bl_idname = 'spio.append_blend'
     bl_label = 'Append...'
 
     link = False
 
 
-class SPIO_OT_LinkBlend(blenderFileDefault, bpy.types.Operator):
+class SPIO_OT_link_blend(blenderFileDefault, bpy.types.Operator):
     """Link files for clipboard blend file\nAlt to link all data of chosen type"""
 
-    bl_idname = 'wm.spio_link_blend'
+    bl_idname = 'spio.link_blend'
     bl_label = 'Link...'
 
     link = True
 
 
-class SPIO_OT_BatchImportBlend(bpy.types.Operator):
+class SPIO_OT_batch_import_blend(bpy.types.Operator):
     """Batch import all from all files"""
-    bl_idname = 'wm.spio_batch_import_blend'
+    bl_idname = 'spio.batch_import_blend'
     bl_label = 'Batch Import'
 
     # action
@@ -113,18 +113,18 @@ class SPIO_OT_BatchImportBlend(bpy.types.Operator):
     def execute(self, context):
         for filepath in self.files.split('$$'):
             if self.action == 'LINK':
-                bpy.ops.wm.spio_link_blend(filepath=filepath, data_type=self.data_type, load_all=self.load_all)
+                bpy.ops.spio.link_blend(filepath=filepath, data_type=self.data_type, load_all=self.load_all)
             elif self.action == 'APPEND':
-                bpy.ops.wm.spio_append_blend(filepath=filepath, data_type=self.data_type, load_all=self.load_all)
+                bpy.ops.spio.append_blend(filepath=filepath, data_type=self.data_type, load_all=self.load_all)
             elif self.action == 'OPEN':
-                bpy.ops.wm.spio_open_blend_extra(filepath=filepath)
+                bpy.ops.spio.open_blend_extra(filepath=filepath)
 
         return {'FINISHED'}
 
 
-class SPIO_OT_OpenBlend(blenderFileDefault, bpy.types.Operator):
+class SPIO_OT_open_blend(blenderFileDefault, bpy.types.Operator):
     """Open file with current blender"""
-    bl_idname = 'wm.spio_open_blend'
+    bl_idname = 'spio.open_blend'
     bl_label = 'Open...'
 
     def execute(self, context):
@@ -132,9 +132,9 @@ class SPIO_OT_OpenBlend(blenderFileDefault, bpy.types.Operator):
         return {"FINISHED"}
 
 
-class SPIO_OT_OpenBlendExtra(blenderFileDefault, bpy.types.Operator):
+class SPIO_OT_open_blend_extra(blenderFileDefault, bpy.types.Operator):
     """Open file with another blender"""
-    bl_idname = 'wm.spio_open_blend_extra'
+    bl_idname = 'spio.open_blend_extra'
     bl_label = 'Open'
 
     def execute(self, context):
@@ -143,18 +143,18 @@ class SPIO_OT_OpenBlendExtra(blenderFileDefault, bpy.types.Operator):
 
 
 def register():
-    bpy.utils.register_class(SPIO_OT_AppendBlend)
-    bpy.utils.register_class(SPIO_OT_LinkBlend)
-    bpy.utils.register_class(SPIO_OT_BatchImportBlend)
+    bpy.utils.register_class(SPIO_OT_append_blend)
+    bpy.utils.register_class(SPIO_OT_link_blend)
+    bpy.utils.register_class(SPIO_OT_batch_import_blend)
 
-    bpy.utils.register_class(SPIO_OT_OpenBlend)
-    bpy.utils.register_class(SPIO_OT_OpenBlendExtra)
+    bpy.utils.register_class(SPIO_OT_open_blend)
+    bpy.utils.register_class(SPIO_OT_open_blend_extra)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_OT_AppendBlend)
-    bpy.utils.unregister_class(SPIO_OT_LinkBlend)
-    bpy.utils.unregister_class(SPIO_OT_BatchImportBlend)
+    bpy.utils.unregister_class(SPIO_OT_append_blend)
+    bpy.utils.unregister_class(SPIO_OT_link_blend)
+    bpy.utils.unregister_class(SPIO_OT_batch_import_blend)
 
-    bpy.utils.unregister_class(SPIO_OT_OpenBlendExtra)
-    bpy.utils.unregister_class(SPIO_OT_OpenBlend)
+    bpy.utils.unregister_class(SPIO_OT_open_blend_extra)
+    bpy.utils.unregister_class(SPIO_OT_open_blend)
