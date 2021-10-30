@@ -48,12 +48,12 @@ class ExtensionOperatorProperty(PropertyGroup):
     extension: StringProperty(name='Extension')
     # custom match rule
     match_rule: EnumProperty(name='Match Rule',
-                             items=[('NONE', 'None', ''),
+                             items=[('NONE', 'None (Default)', ''),
                                     ('STARTSWITH', 'Startswith', ''),
                                     ('ENDSWITH', 'Endswith', ''),
-                                    ('IN', 'In', ''),
-                                    ('REGEX', 'Regex (WIP)', ''), ],
-                             default='NONE', description='matching rule of the name')
+                                    ('IN', 'Contain', ''),
+                                    ('REGEX', 'Regex (Match or not)', ''), ],
+                             default='NONE', description='Matching rule of the name')
 
     match_value: StringProperty(name='Match Value', default='')
 
