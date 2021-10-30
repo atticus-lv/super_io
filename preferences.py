@@ -40,6 +40,9 @@ def correct_name(self, context):
 class ExtensionOperatorProperty(PropertyGroup):
     # USE
     use_config: BoolProperty(name='Use', default=True)
+    # UI
+    color_tag: EnumProperty(name='Color Tag',
+                            items=[(f'COLOR_0{i}', '', '', f'COLLECTION_COLOR_0{i}', i) for i in range(1, 9)])
     # information
     name: StringProperty(name='Preset Name', update=correct_name)
     description: StringProperty(name='Description',
@@ -238,6 +241,7 @@ class ConfigListFilterProperty(PropertyGroup):
         ('name', 'Name', ''),
         ('extension', 'Extension', ''),
         ('match_rule', 'Match Rule', ''),
+        ('color_tag', 'Color Tag', ''),
     ], default='name')
     filter_name: StringProperty(default='', name="Name")
 
@@ -251,43 +255,25 @@ class ConfigListFilterProperty(PropertyGroup):
                                            ('REGEX', 'Regex (Match or not)', ''), ],
                                     default='NONE', description='Matching rule of the name')
 
+    filter_color_tag: EnumProperty(name='Color Tag',
+                                   items=[(f'COLOR_0{i}', '', '', f'COLLECTION_COLOR_0{i}', i) for i in range(1, 9)])
+
     reverse: BoolProperty(name="Reverse", default=False,
                           options=set(),
                           description="Reverse", )
 
 
 class PREF_UL_ConfigList(bpy.types.UIList):
-    filter_type: EnumProperty(name='Filter Type', items=[
-        ('name', 'Name', ''),
-        ('extension', 'Extension', ''),
-        ('match_rule', 'Match Rule', ''),
-    ])
-
-    filter_extension: StringProperty(
-        default='',
-        name="Extension")
-
-    # custom match rule
-    filter_match_rule: EnumProperty(name='Match Rule',
-                                    items=[('NONE', 'None (Default)', ''),
-                                           ('STARTSWITH', 'Startswith', ''),
-                                           ('ENDSWITH', 'Endswith', ''),
-                                           ('IN', 'Contain', ''),
-                                           ('REGEX', 'Regex (Match or not)', ''), ],
-                                    default='NONE', description='Matching rule of the name')
-
-    reverse: BoolProperty(
-        name="Reverse",
-        default=False,
-        options=set(),
-        description="Reverse current filtering",
-    )
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()
-        row.prop(item, 'use_config', text='')
+        # row.props_enum(item,'color_tag')
+        # row.prop_menu_enum()
+        row.prop(item, 'color_tag', text='',emboss=False)
+
         row.prop(item, 'name', text='', emboss=False)
         row.prop(item, 'extension', text='', emboss=False)
+        row.prop(item, 'use_config', text='')
 
     def draw_filter(self, context, layout):
         pass
@@ -297,48 +283,37 @@ class PREF_UL_ConfigList(bpy.types.UIList):
 
         items = getattr(data, propname)
         ordered = []
-        filtered = [self.bitflag_filter_item] * len(items)
 
-        if filter.filter_type == 'extension':
-            for i, item in enumerate(items):
-                if item.extension != filter.filter_extension and self.filter_extension != '':
-                    filtered[i] &= ~self.bitflag_filter_item
+        # OLD STYLE
+        #################################################
+        # filtered = [self.bitflag_filter_item] * len(items)
+        # if filter.filter_type == 'extension':
+        #     for i, item in enumerate(items):
+        #         if item.extension != filter.filter_extension and filter.filter_extension != '':
+        #             filtered[i] &= ~self.bitflag_filter_item
 
-        elif filter.filter_type == 'match_rule':
-            for i, item in enumerate(items):
-                if item.match_rule != filter.filter_match_rule:
-                    filtered[i] &= ~self.bitflag_filter_item
+        # # invert
+        # if filtered and filter.reverse:
+        #     show_flag = self.bitflag_filter_item & ~self.bitflag_filter_item
+        #     for i, bitflag in enumerate(filtered):
+        #         if bitflag == show_flag:
+        #             filtered[i] = self.bitflag_filter_item
+        #         else:
+        #             filtered[i] &= ~self.bitflag_filter_item
+        # ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i.extension), True)
+        #################################################
 
-        elif filter.filter_type == 'name':
-            if filter.filter_name:
-                filtered = bpy.types.UI_UL_list.filter_items_by_name(filter.filter_name, self.bitflag_filter_item,
-                                                                     items,
-                                                                     "name", reverse=filter.reverse)
-        # invert
-        if filtered and filter.reverse:
-            show_flag = self.bitflag_filter_item & ~self.bitflag_filter_item
-            for i, bitflag in enumerate(filtered):
-                if bitflag == show_flag:
-                    filtered[i] = self.bitflag_filter_item
-                else:
-                    filtered[i] &= ~self.bitflag_filter_item
+        filtered = bpy.types.UI_UL_list.filter_items_by_name(getattr(filter, 'filter_' + filter.filter_type),
+                                                             self.bitflag_filter_item,
+                                                             items,
+                                                             filter.filter_type.removeprefix('filter_'),
+                                                             reverse=filter.reverse)
 
-        if filter.filter_type == 'extension':
-            try:
-                ordered = bpy.types.UI_UL_list.sort_items_helper(items, 'extension')
-                # ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i.extension), True)
-            except:
-                pass
-        elif filter.filter_type == 'match_rule':
-            try:
-                ordered = bpy.types.UI_UL_list.sort_items_helper(items, 'match_rule')
-            except:
-                pass
-        elif filter.filter_type == 'name':
-            try:
-                ordered = bpy.types.UI_UL_list.sort_items_helper(items, 'name')
-            except:
-                pass
+        try:
+            ordered = bpy.types.UI_UL_list.sort_items_helper(items, filter.filter_type.removeprefix('filter_'))
+        except:
+            pass
+
         return filtered, ordered
 
 
@@ -441,8 +416,12 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     def draw_config(self, context, layout):
         row = layout.column().row(align=False)
+        row.alignment = 'CENTER'
 
-        row.menu(SPIO_MT_ConfigIOMenu.bl_idname,text='',icon = 'FILE_TICK')
+        row.scale_y = 1.25
+        row.scale_x = 1.5
+
+        row.menu(SPIO_MT_ConfigIOMenu.bl_idname, text='', icon='FILE_TICK')
         # filter panel
         filter = context.window_manager.spio_filter
         if filter.filter_type == 'extension':
@@ -451,6 +430,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             row.prop(filter, "filter_name", text="", icon='VIEWZOOM')
         elif filter.filter_type == 'match_rule':
             row.prop(filter, "filter_match_rule", icon='SHORTDISPLAY', text='')
+        elif filter.filter_type == 'color_tag':
+            row.prop(filter, 'filter_color_tag',expand = True)
 
         row.popover(panel="SPIO_PT_ListFilterPanel", icon="FILTER", text='')
 
