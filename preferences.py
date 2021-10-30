@@ -480,7 +480,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box2 = box.box()
         box2.prop(item, 'match_rule')
         if item.match_rule != 'NONE':
-            box2.prop(item, 'match_value')
+            box2.prop(item, 'match_value',text='Match Value' if item.match_rule != 'REGEX' else 'Expression')
             if not self.disable_warning_rules:
                 box3 = box2.box().column(align=True)
                 box3.alert = True
