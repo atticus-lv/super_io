@@ -1,6 +1,7 @@
 data = {
     "Super Import": "超级导入",
     "Config": "配置",
+    "No file found in clipboard": "剪切板为空!",
 
     "Use N Panel": "使用侧面板",
     "Match Rule": "匹配规则",
@@ -22,8 +23,7 @@ data = {
     "Move Down": "向下移动",
 
     "Force Unicode": "强制使用Unicode",
-    "Force to use \"utf-8\" to decode filepath \\n": "强制使用utf-8来解码路径",
-    "Only enable when your system coding \"utf-8\"": "当你的系统使用uft-8编码时才需要启动",
+    'Force to use "utf-8" to decode filepath \nOnly enable when your system coding "utf-8"': "强制使用utf-8来解码路径\n当你的系统使用uft-8编码时才需要启用",
     "Report Time": "报告时间",
     "Report import time": "报告导入时间",
     "Close Warning Rules": "关闭规则警告",

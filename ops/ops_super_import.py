@@ -66,7 +66,7 @@ class SuperImport(bpy.types.Operator):
         del self.clipboard  # release clipboard
 
         if len(self.file_list) == 0:
-            self.report({"ERROR"}, "No file found in clipboard")
+            self.report({"ERROR"}, "No file found in clipboard!")
             return {"CANCELLED"}
 
         for file_path in self.file_list:

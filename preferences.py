@@ -269,7 +269,7 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         row = layout.row()
         # row.props_enum(item,'color_tag')
         # row.prop_menu_enum()
-        row.prop(item, 'color_tag', text='',emboss=False)
+        row.prop(item, 'color_tag', text='', emboss=False)
 
         row.prop(item, 'name', text='', emboss=False)
         row.prop(item, 'extension', text='', emboss=False)
@@ -340,8 +340,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     # Settings
     force_unicode: BoolProperty(name='Force Unicode',
-                                description='Force to use "utf-8" to decode filepath \n'
-                                            'Only enable when your system coding "utf-8"', default=False)
+                                description='Force to use "utf-8" to decode filepath \nOnly enable when your system coding "utf-8"',
+                                default=False)
     report_time: BoolProperty(name='Report Time',
                               description='Report import time', default=True)
 
@@ -431,7 +431,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         elif filter.filter_type == 'match_rule':
             row.prop(filter, "filter_match_rule", icon='SHORTDISPLAY', text='')
         elif filter.filter_type == 'color_tag':
-            row.prop(filter, 'filter_color_tag',expand = True)
+            row.prop(filter, 'filter_color_tag', expand=True)
 
         row.popover(panel="SPIO_PT_ListFilterPanel", icon="FILTER", text='')
 
@@ -480,7 +480,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box2 = box.box()
         box2.prop(item, 'match_rule')
         if item.match_rule != 'NONE':
-            box2.prop(item, 'match_value',text='Match Value' if item.match_rule != 'REGEX' else 'Expression')
+            box2.prop(item, 'match_value', text='Match Value' if item.match_rule != 'REGEX' else 'Expression')
             if not self.disable_warning_rules:
                 box3 = box2.box().column(align=True)
                 box3.alert = True
@@ -492,7 +492,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 box4.label(text="1. If file name not matching this rule")
                 box4.label(text="   It will search for the next config which match")
                 box4.label(text="2. If no config’s rule is matched")
-                box4.label(text="   It will popup all available importer in a menu after import all file that match a rule")
+                box4.label(
+                    text="   It will popup all available importer in a menu after import all file that match a rule")
 
         box3 = box.box()
         box3.prop(item, 'operator_type')
