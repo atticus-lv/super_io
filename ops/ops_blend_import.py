@@ -74,8 +74,8 @@ class blenderFileDefault:
 
 
 class SPIO_OT_AppendBlend(blenderFileDefault, bpy.types.Operator):
-    """Append files for clipboard blend file
-Alt to append all data of the type"""
+    """Append files for clipboard blend file\nAlt to append all data of chosen type"""
+
     bl_idname = 'wm.spio_append_blend'
     bl_label = 'Append...'
 
@@ -83,8 +83,8 @@ Alt to append all data of the type"""
 
 
 class SPIO_OT_LinkBlend(blenderFileDefault, bpy.types.Operator):
-    """Link files for clipboard blend file
-Alt to link all data of the type"""
+    """Link files for clipboard blend file\nAlt to link all data of chosen type"""
+
     bl_idname = 'wm.spio_link_blend'
     bl_label = 'Link...'
 

@@ -12,7 +12,7 @@ class SidebarSetup:
     # bl_options = {'DRAW_BOX'}
 
     @classmethod
-    def pos(cls, context):
+    def poll(cls, context):
         return get_pref().use_N_panel
 
 

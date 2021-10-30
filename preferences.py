@@ -42,7 +42,8 @@ class ExtensionOperatorProperty(PropertyGroup):
     use_config: BoolProperty(name='Use', default=True)
     # information
     name: StringProperty(name='Preset Name', update=correct_name)
-    description: StringProperty(name='Description', description='Show in the import option')
+    description: StringProperty(name='Description',
+                                description='Show in the popup operator tips')
     # extension
     extension: StringProperty(name='Extension')
     # custom match rule
@@ -310,7 +311,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     bl_idname = __package__
 
     # UI
-    ui: EnumProperty(items=[
+    ui: EnumProperty(name = 'UI',items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('CONFIG', 'Config', '', 'PRESET', 1),
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 2),
@@ -321,10 +322,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     force_unicode: BoolProperty(name='Force Unicode',
                                 description='Force to use "utf-8" to decode filepath \n'
                                             'Only enable when your system coding "utf-8"', default=False)
-    report_time: BoolProperty(name='Report time',
+    report_time: BoolProperty(name='Report Time',
                               description='Report import time', default=True)
 
-    disable_warning_rules: BoolProperty(name='Close Waring Rules', default=False)
+    disable_warning_rules: BoolProperty(name='Close Warning Rules', default=False)
     # Preset
     config_list: CollectionProperty(type=ExtensionOperatorProperty)
     config_list_index: IntProperty(min=0, default=0)
@@ -445,13 +446,13 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 box3.alert = True
                 sub_row = box3.row()
                 sub_row.label(text="Warning", icon='ERROR')
-                sub_row.prop(self, 'disable_warning_rules', text='Close', toggle=True)
+                sub_row.prop(self, 'disable_warning_rules', toggle=True)
                 box4 = box3
                 # box4.alert = False
-                box4.label(text="1. If file name not matching this value")
-                box4.label(text="   Current config will be ignore")
-                box4.label(text="2. If not config set as the default import")
-                box4.label(text="   Che file will popup the default importer")
+                box4.label(text="1. If file name not matching this rule")
+                box4.label(text="   It will search for the next config which match")
+                box4.label(text="2. If no config’s rule is matched")
+                box4.label(text="   It will popup all available importer in a menu")
 
         box3 = box.box()
         box3.prop(item, 'operator_type')
@@ -466,7 +467,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 text = 'bpy.ops.' + item.bl_idname + '(' + 'filepath,' + '{prop=value})'
             else:
                 text = 'No Operator Found'
-
+            row.alert = True
             row.label(icon='TOOL_SETTINGS', text=text)
 
             if item.bl_idname != '':
