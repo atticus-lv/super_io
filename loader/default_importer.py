@@ -9,7 +9,7 @@ model_lib = {
     'dae': 'wm.collada_import',
     'abc': 'wm.alembic_import',
     'obj': 'import_scene.obj',
-    'fbx': 'import_mesh.ply',
+    'fbx': 'import_scene.fbx',
 
     'glb': 'import_scene.gltf',
     'gltf': 'import_scene.gltf',
