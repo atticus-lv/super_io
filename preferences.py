@@ -492,7 +492,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 box4.label(text="1. If file name not matching this rule")
                 box4.label(text="   It will search for the next config which match")
                 box4.label(text="2. If no config’s rule is matched")
-                box4.label(text="   It will popup all available importer in a menu")
+                box4.label(text="   It will popup all available importer in a menu after import all file that match a rule")
 
         box3 = box.box()
         box3.prop(item, 'operator_type')

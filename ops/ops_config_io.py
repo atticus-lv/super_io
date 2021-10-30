@@ -48,7 +48,7 @@ class SPIO_OT_ConfigImport(bpy.types.Operator, ImportHelper):
 
 
 class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
-    """Export all configs to a json file"""
+    """Export marked configs to a json file\nAlt to export all"""
 
     bl_idname = "spio.config_export"
     bl_label = "Export Config"
@@ -63,8 +63,12 @@ class SPIO_OT_ConfigExport(bpy.types.Operator, ExportHelper):
 
     # use_filter_folder = True
 
+    def invoke(self,context,event):
+        self.export_all = True if event.alt else False
+        return self.execute(context)
+
     def execute(self, context):
-        CONFIG = ConfigHelper()
+        CONFIG = ConfigHelper(check_use=self.export_all)
         config, index_list = CONFIG.config_list, CONFIG.index_list
         with open(self.filepath, "w", encoding='utf-8') as f:
             json.dump(config, f, indent=4)

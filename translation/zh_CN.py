@@ -30,15 +30,15 @@ data = {
 
     "1. If file name not matching this rule": "1. 如果文件名不匹配规则",
     "   It will search for the next config which match": "    将会搜寻下一符合的配置",
-    "2. If no config’s rule is matched": "2. 如果没有偏好设置适合当前导入",
-    "   It will popup all available importer in a menu": "    将会弹出所有可用的导入器(菜单)",
+    "2. If no config’s rule is matched": "2. 如果没有配置适合当前文件",
+    "   It will popup all available importer in a menu after import all file that match a rule": "    将会导入所有匹配相应规则的文件后，弹出可用导入器菜单",
     "No Operator Found": "没有找到操作符",
 
     "Config Import/Export":"配置导入/导出",
     "Import Config": "导入配置",
     "Import config from a json file": "从json文件导入配置",
     "Export Config": "导出配置",
-    "Export all configs to a json file": "导出所有配置为json文件",
+    "Export marked configs to a json file\nAlt to export all": "导出标记配置为json文件\nAlt 导出全部",
     "Import all image as reference (Empty object)": "将所有图片导入为参考",
     "Import Model with blender's default importer": "使用blender内置的导入器导入",
     "Append files for clipboard blend file\nAlt to append all data of chosen type": "从剪切板追加blender文件\nAlt 追加当前选中项的所有数据",
