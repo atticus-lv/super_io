@@ -17,7 +17,7 @@ class SidebarSetup:
 
 
 class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
-    bl_label = ''
+    bl_label = 'Settings'
     bl_options = {'HEADER_LAYOUT_EXPAND'}
 
     def draw_header(self, context):
@@ -25,18 +25,9 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
         layout.alignment = "CENTER"
         pref = get_pref()
 
-        layout.label(text='Settings')
-
         row = layout
         row = row.row(align=True)
         row.prop(pref, 'ui', expand=True, text='', emboss=False)
-
-        row.separator(factor=2)
-        row = layout.row()
-        row.scale_x=1.2
-        row.scale_x=1.2
-        row.operator('spio.config_import', icon='IMPORT', text='')
-        row.operator('spio.config_export', icon='EXPORT', text='')
 
     def draw(self, context):
         layout = self.layout
@@ -63,11 +54,33 @@ class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
         row.separator()
 
 
+class SPIO_PT_ListFilterPanel(bpy.types.Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'HEADER'
+    bl_category = ''
+    bl_label = "Filter Type"
+    bl_idname = "SPIO_PT_ListFilterPanel"
+
+    def draw(self, context):
+        """UI code for the filtering/sorting/search area."""
+        filter = context.window_manager.spio_filter
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        col = layout.column(align=True)
+        col.prop(filter, 'filter_type', icon='FILTER', expand=True)
+
+        layout.prop(filter, "reverse")
+
+
 def register():
     bpy.utils.register_class(SPIO_PT_PrefPanel)
     bpy.utils.register_class(SPIO_PT_ImportPanel)
+    bpy.utils.register_class(SPIO_PT_ListFilterPanel)
 
 
 def unregister():
     bpy.utils.unregister_class(SPIO_PT_PrefPanel)
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
+    bpy.utils.unregister_class(SPIO_PT_ListFilterPanel)

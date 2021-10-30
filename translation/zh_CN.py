@@ -1,5 +1,6 @@
 data = {
     "Super Import": "超级导入",
+    "Config": "配置",
 
     "Use N Panel": "使用侧面板",
     "Match Rule": "匹配规则",
@@ -33,6 +34,7 @@ data = {
     "   It will popup all available importer in a menu": "    将会弹出所有可用的导入器(菜单)",
     "No Operator Found": "没有找到操作符",
 
+    "Config Import/Export":"配置导入/导出",
     "Import Config": "导入配置",
     "Import config from a json file": "从json文件导入配置",
     "Export Config": "导出配置",

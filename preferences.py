@@ -233,15 +233,48 @@ class SPIO_OT_ExtensionListMoveDown(SPIO_OT_ExtensionListAction, bpy.types.Opera
     action = 'DOWN'
 
 
+class ConfigListFilterProperty(PropertyGroup):
+    filter_type: EnumProperty(name='Filter Type', items=[
+        ('name', 'Name', ''),
+        ('extension', 'Extension', ''),
+        ('match_rule', 'Match Rule', ''),
+    ], default='name')
+    filter_name: StringProperty(default='', name="Name")
+
+    filter_extension: StringProperty(default='', name="Extension")
+
+    filter_match_rule: EnumProperty(name='Match Rule',
+                                    items=[('NONE', 'None (Default)', ''),
+                                           ('STARTSWITH', 'Startswith', ''),
+                                           ('ENDSWITH', 'Endswith', ''),
+                                           ('IN', 'Contain', ''),
+                                           ('REGEX', 'Regex (Match or not)', ''), ],
+                                    default='NONE', description='Matching rule of the name')
+
+    reverse: BoolProperty(name="Reverse", default=False,
+                          options=set(),
+                          description="Reverse", )
+
+
 class PREF_UL_ConfigList(bpy.types.UIList):
     filter_type: EnumProperty(name='Filter Type', items=[
         ('name', 'Name', ''),
         ('extension', 'Extension', ''),
+        ('match_rule', 'Match Rule', ''),
     ])
 
     filter_extension: StringProperty(
         default='',
-        name="Filter Extension")
+        name="Extension")
+
+    # custom match rule
+    filter_match_rule: EnumProperty(name='Match Rule',
+                                    items=[('NONE', 'None (Default)', ''),
+                                           ('STARTSWITH', 'Startswith', ''),
+                                           ('ENDSWITH', 'Endswith', ''),
+                                           ('IN', 'Contain', ''),
+                                           ('REGEX', 'Regex (Match or not)', ''), ],
+                                    default='NONE', description='Matching rule of the name')
 
     reverse: BoolProperty(
         name="Reverse",
@@ -257,36 +290,32 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         row.prop(item, 'extension', text='', emboss=False)
 
     def draw_filter(self, context, layout):
-        """UI code for the filtering/sorting/search area."""
-        layout.separator()
-        col = layout.column()
-
-        col.prop(self, 'filter_type', icon='FILTER')
-
-        row = col.row(align=1)
-        if self.filter_type == 'extension':
-            row.prop(self, 'filter_extension', text='Extension')
-        else:
-            row.prop(self, "filter_name", text="Name")
-
-        row.prop(self, "reverse", text="", icon='ARROW_LEFTRIGHT')
+        pass
 
     def filter_items(self, context, data, propname):
+        filter = context.window_manager.spio_filter
+
         items = getattr(data, propname)
         ordered = []
         filtered = [self.bitflag_filter_item] * len(items)
 
-        if self.filter_type == 'EXT':
+        if filter.filter_type == 'extension':
             for i, item in enumerate(items):
-                if item.extension != self.filter_extension and self.filter_extension != '':
+                if item.extension != filter.filter_extension and self.filter_extension != '':
                     filtered[i] &= ~self.bitflag_filter_item
 
-        else:
-            if self.filter_name:
-                filtered = bpy.types.UI_UL_list.filter_items_by_name(self.filter_name, self.bitflag_filter_item, items,
-                                                                     "name", reverse=self.reverse)
+        elif filter.filter_type == 'match_rule':
+            for i, item in enumerate(items):
+                if item.match_rule != filter.filter_match_rule:
+                    filtered[i] &= ~self.bitflag_filter_item
+
+        elif filter.filter_type == 'name':
+            if filter.filter_name:
+                filtered = bpy.types.UI_UL_list.filter_items_by_name(filter.filter_name, self.bitflag_filter_item,
+                                                                     items,
+                                                                     "name", reverse=filter.reverse)
         # invert
-        if filtered and self.reverse:
+        if filtered and filter.reverse:
             show_flag = self.bitflag_filter_item & ~self.bitflag_filter_item
             for i, bitflag in enumerate(filtered):
                 if bitflag == show_flag:
@@ -294,12 +323,18 @@ class PREF_UL_ConfigList(bpy.types.UIList):
                 else:
                     filtered[i] &= ~self.bitflag_filter_item
 
-        if self.filter_type == 'EXT':
+        if filter.filter_type == 'extension':
             try:
-                ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i.extension), True)
+                ordered = bpy.types.UI_UL_list.sort_items_helper(items, 'extension')
+                # ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i.extension), True)
             except:
                 pass
-        else:
+        elif filter.filter_type == 'match_rule':
+            try:
+                ordered = bpy.types.UI_UL_list.sort_items_helper(items, 'match_rule')
+            except:
+                pass
+        elif filter.filter_type == 'name':
             try:
                 ordered = bpy.types.UI_UL_list.sort_items_helper(items, 'name')
             except:
@@ -307,11 +342,21 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         return filtered, ordered
 
 
+class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
+    bl_label = "Config Import/Export"
+    bl_idname = "SPIO_PT_ConfigIOMenu"
+
+    def draw(self, context):
+        layout = self.layout
+        layout.operator('spio.config_import', icon='IMPORT')
+        layout.operator('spio.config_export', icon='EXPORT')
+
+
 class SPIO_Preference(bpy.types.AddonPreferences):
     bl_idname = __package__
 
     # UI
-    ui: EnumProperty(name = 'UI',items=[
+    ui: EnumProperty(name='UI', items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('CONFIG', 'Config', '', 'PRESET', 1),
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 2),
@@ -395,11 +440,25 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             old_km_name = km.name
 
     def draw_config(self, context, layout):
-        row = layout.column(align=True).row()
+        row = layout.column().row(align=False)
 
+        row.menu(SPIO_MT_ConfigIOMenu.bl_idname,text='',icon = 'FILE_TICK')
+        # filter panel
+        filter = context.window_manager.spio_filter
+        if filter.filter_type == 'extension':
+            row.prop(filter, 'filter_extension', text="", icon='VIEWZOOM')
+        elif filter.filter_type == 'name':
+            row.prop(filter, "filter_name", text="", icon='VIEWZOOM')
+        elif filter.filter_type == 'match_rule':
+            row.prop(filter, "filter_match_rule", icon='SHORTDISPLAY', text='')
+
+        row.popover(panel="SPIO_PT_ListFilterPanel", icon="FILTER", text='')
+
+        # split left and right
+        row = layout.column(align=True).row()
         row_left = row
 
-        row_l = row_left.row(align=True)
+        row_l = row_left.row(align=False)
         col_list = row_l.column(align=True)
         col_btn = row_l.column(align=True)
 
@@ -498,7 +557,8 @@ classes = [
     SPIO_OT_ExtensionListAdd, SPIO_OT_ExtensionListRemove, SPIO_OT_ExtensionListCopy, SPIO_OT_ExtensionListMoveUP,
     SPIO_OT_ExtensionListMoveDown,
 
-    PREF_UL_ConfigList,
+    ConfigListFilterProperty, PREF_UL_ConfigList,
+    SPIO_MT_ConfigIOMenu,
     SPIO_Preference
 ]
 
@@ -540,9 +600,13 @@ def register():
     except Exception as e:
         print(e)
 
+    bpy.types.WindowManager.spio_filter = PointerProperty(type=ConfigListFilterProperty)
+
 
 def unregister():
     remove_keybind()
 
     for cls in classes:
         bpy.utils.unregister_class(cls)
+
+    del bpy.types.WindowManager.spio_filter
