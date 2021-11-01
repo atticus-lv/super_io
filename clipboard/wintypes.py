@@ -44,7 +44,6 @@ class WintypesClipboard():
                 for index in range(file_count):
                     buf = ctypes.c_buffer(260)
                     self.DragQueryFile(h_hdrop, index, buf, ctypes.sizeof(buf))
-                    print()
                     self.file_urls.append(buf.value.decode(FS_ENCODING))
 
         self.CloseClipboard()
