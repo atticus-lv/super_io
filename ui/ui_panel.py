@@ -39,6 +39,8 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
             SPIO_Preference.draw_config(pref, context, layout)
         elif pref.ui == 'KEYMAP':
             SPIO_Preference.draw_keymap(pref, context, layout)
+        elif pref.ui == 'URL':
+            SPIO_Preference.draw_url(pref, context, layout)
 
 
 class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):

@@ -335,6 +335,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('CONFIG', 'Config', '', 'PRESET', 1),
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 2),
+        ('URL', 'Manual', '', 'URL', 3),
     ])
     use_N_panel: BoolProperty(name='Use N Panel', default=True)
 
@@ -358,7 +359,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         col.prop(self, 'ui', expand=True)
 
         col.separator(factor=2)
-        self.draw_import(context, col)
 
         col = layout.column()
         if self.ui == 'SETTINGS':
@@ -367,21 +367,48 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             self.draw_config(context, col)
         elif self.ui == 'KEYMAP':
             self.draw_keymap(context, col)
+        elif self.ui == 'URL':
+            self.draw_url(context, col)
 
-    def draw_import(self, context, layout):
-        layout.operator('spio.import_config', icon='IMPORT')
-        layout.operator('spio.export_config', icon='EXPORT')
+    def draw_url(self, context, layout):
+        box = layout.box()
+        box.label(text='Manual', icon='HELP')
+        box.operator('wm.url_open', text='Manual', icon='URL').url = 'https://www.baidu.com/'
+
+        box = layout.box()
+        box.label(text='Developer: Atticus', icon='MONKEY')
+        row = box.row()
+        row.operator('wm.url_open', text='Atticus Github', icon='URL').url = 'https://github.com/atticus-lv'
+        row.row(align=True).operator('wm.url_open', text='AtticusB站频道',
+                                     icon='URL').url = 'https://space.bilibili.com/1509173'
+
+        box = layout.box()
+        box.label(text='Supporter: 只剩一瓶辣椒酱', icon='FUND')
+        row = box.row()
+        row.operator('wm.url_open', text='斑斓魔法CG官网', icon='URL').url = 'https://www.blendermagic.cn/'
+        row.row(align=True).operator('wm.url_open', text='辣椒B站频道',
+                                     icon='URL').url = 'https://space.bilibili.com/35723238'
 
     def draw_settings(self, context, layout):
-        layout.use_property_split = True
-        layout.prop(self, 'force_unicode')
-        layout.separator(factor=0.5)
-        col = layout.column()
-        col.prop(self, 'use_N_panel')
-        col.prop(self, 'report_time')
-        col.prop(self, 'disable_warning_rules')
+        col = layout.column(align=True).box()
+        col.use_property_split = True
 
-        # self.drawKeymap(context,layout)
+        row = col.row(align=True)
+        row.alert = True
+        row.prop(self, 'force_unicode', text='')
+        row.label(text='Force Unicode')
+
+        row = col.row(align=True)
+        row.prop(self, 'use_N_panel', text='')
+        row.label(text='Use N Panel')
+
+        row = col.row(align=True)
+        row.prop(self, 'report_time', text='')
+        row.label(text='Report Time')
+
+        row = col.row(align=True)
+        row.prop(self, 'disable_warning_rules', text='')
+        row.label(text='Close Warning Rules')
 
     def draw_keymap(self, context, layout):
         col = layout.box().column()

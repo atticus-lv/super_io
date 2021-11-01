@@ -2,6 +2,8 @@ data = {
     "Super Import": "超级导入",
     "Config": "配置",
     "No file found in clipboard": "剪切板为空!",
+    "Supporter: 只剩一瓶辣椒酱": "赞助者: 只剩一瓶辣椒酱",
+    "Developer: Atticus": "开发者: Atticus",
 
     "Use N Panel": "使用侧面板",
     "Match Rule": "匹配规则",
@@ -34,7 +36,7 @@ data = {
     "   It will popup all available importer in a menu after import all file that match a rule": "    将会导入所有匹配相应规则的文件后，弹出可用导入器菜单",
     "No Operator Found": "没有找到操作符",
 
-    "Config Import/Export":"配置导入/导出",
+    "Config Import/Export": "配置导入/导出",
     "Import Config": "导入配置",
     "Import config from a json file": "从json文件导入配置",
     "Export Config": "导出配置",
