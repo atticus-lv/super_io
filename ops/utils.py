@@ -11,6 +11,9 @@ def get_pref():
     return bpy.context.preferences.addons.get(__folder_name__).preferences
 
 
+def viewlayer_fix_291(self, context):
+    return context.view_layer.depsgraph if bpy.app.version >= (2, 91, 0) else context.view_layer
+
 class MeasureTime():
     def __enter__(self):
         return time.time()
@@ -43,8 +46,8 @@ def convert_value(value):
         return value
 
 
-from ..loader.default_importer import model_lib
-from ..loader.default_blend import blend_subpath_lib
+from ..loader.default_importer import default_importer
+from ..loader.default_blend import default_blend_lib
 
 
 class ConfigItemHelper():
@@ -78,12 +81,12 @@ class ConfigItemHelper():
 
         # default operator
         elif operator_type.startswith('DEFAULT'):
-            bl_idname = model_lib.get(operator_type.removeprefix('DEFAULT_').lower())
+            bl_idname = default_importer.get(operator_type.removeprefix('DEFAULT_').lower())
             op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
         elif operator_type.startswith('APPEND_BLEND'):
             subpath = operator_type.removeprefix('APPEND_BLEND_').title()
-            data_type = blend_subpath_lib.get(subpath)
+            data_type = default_blend_lib.get(subpath)
             op_callable = bpy.ops.spio.append_blend
             ops_args = {'sub_path': subpath,
                         'data_type': data_type,
@@ -91,7 +94,7 @@ class ConfigItemHelper():
 
         elif operator_type.startswith('LINK_BLEND'):
             subpath = operator_type.removeprefix('LINK_BLEND_').title()
-            data_type = blend_subpath_lib.get(subpath)
+            data_type = default_blend_lib.get(subpath)
             op_callable = bpy.ops.spio.link_blend
             ops_args = {'sub_path': subpath,
                         'data_type': data_type,
@@ -228,7 +231,7 @@ class PopupMenu():
 
                 col.separator()
                 col.label(text = 'Append...',icon = 'APPEND_BLEND')
-                for subpath, lib in blend_subpath_lib.items():
+                for subpath, lib in default_blend_lib.items():
                     op = col.operator('spio.append_blend', text=subpath)
                     op.filepath = path
                     op.sub_path = subpath
@@ -236,7 +239,7 @@ class PopupMenu():
 
                 col.separator()
                 col.label(text = 'Link...',icon = 'LINK_BLEND')
-                for subpath, lib in blend_subpath_lib.items():
+                for subpath, lib in default_blend_lib.items():
                     op = col.operator('spio.link_blend', text=subpath)
                     op.filepath = path
                     op.sub_path = subpath
@@ -248,7 +251,7 @@ class PopupMenu():
                 op.action = 'OPEN'
                 op.files = join_paths
 
-                for subpath, lib in blend_subpath_lib.items():
+                for subpath, lib in default_blend_lib.items():
                     op = col.operator('spio.batch_import_blend', text=f'Batch Append {subpath}')
                     op.action = 'APPEND'
                     op.files = join_paths
@@ -256,7 +259,7 @@ class PopupMenu():
                     op.data_type = lib
 
                 col.separator()
-                for subpath, lib in blend_subpath_lib.items():
+                for subpath, lib in default_blend_lib.items():
                     op = col.operator('spio.batch_import_blend', text=f'Batch Link {subpath}')
                     op.action = 'LINK'
                     op.files = join_paths

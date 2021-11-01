@@ -14,8 +14,8 @@ from ..clipboard.wintypes import WintypesClipboard as Clipboard
 from .utils import MeasureTime, ConfigItemHelper, ConfigHelper, PopupMenu
 from .utils import is_float, get_pref, convert_value
 
-from ..loader.default_importer import model_lib
-from ..loader.default_blend import blend_subpath_lib
+from ..loader.default_importer import default_importer
+from ..loader.default_blend import default_blend_lib
 
 from ..ui.icon_utils import RSN_Preview
 
@@ -229,7 +229,7 @@ class SuperImport(bpy.types.Operator):
 
                 layout.separator()
                 # default popup
-                if ext in model_lib:
+                if ext in default_importer:
                     layout.operator('spio.import_model').files = '$$'.join(
                         remain_list)
                 elif ext == 'blend':
@@ -258,9 +258,9 @@ class WM_OT_super_import(SuperImport):
 
     def import_default(self, context):
         ext = self.ext
-        if ext in model_lib:
+        if ext in default_importer:
             for file_path in self.file_list:
-                bl_idname = model_lib.get(ext)
+                bl_idname = default_importer.get(ext)
                 op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
                 op_callable(filepath=file_path)
         else:

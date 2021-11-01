@@ -1,5 +1,5 @@
 
-blend_subpath_lib = {
+default_blend_lib = {
     'Collection': 'collections',
     'Material': 'materials',
     'World': 'worlds',

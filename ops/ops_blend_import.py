@@ -42,6 +42,8 @@ class blenderFileDefault:
 
         for obj in data_to.objects:
             bpy.context.collection.objects.link(obj)
+        # return target data type for post process
+        return getattr(data_to, self.data_type)
 
     def load_with_ui(self):
         if self.link:
@@ -89,6 +91,80 @@ class SPIO_OT_link_blend(blenderFileDefault, bpy.types.Operator):
     bl_label = 'Link...'
 
     link = True
+
+
+from .utils import viewlayer_fix_291
+from bpy_extras import view3d_utils
+
+
+class SPIO_OT_load_and_assign_material(blenderFileDefault, bpy.types.Operator):
+    """Import material from a single file and assign it to the mouse position object"""
+
+    link: BoolProperty(default=False)
+
+    material = None  # material that import
+    target_obj = None  # object to assign target, detect by raycast
+
+    @classmethod
+    def poll(self, context):
+        return context.area.type == "VIEW_3D"
+
+    def invoke(self, context, event):
+        # define
+        self.load_all = True
+        self.data_type = 'materials'
+
+        self.target_obj = self.ray_cast(context, event)
+        if not self.target_obj:
+            self.report({"INFO"}, f'No Object on mouse position')
+            return {"CANCELLED"}
+        return self.execute(context)
+
+    def execute(self, context):
+        # append material
+        materials = self.load_batch()
+        if len(materials) == 0:
+            self.report({"INFO"}, f'No material in this blend file')
+            return {"CANCELLED"}
+        # TODO popup menu for multiple material file
+        self.material = materials[0]
+        if self.target_obj.type == "MESH":
+            self.target_obj.active_material = self.material
+        elif hasattr(object, 'modifiers'):
+            # TODO: Check that if the geo modifier obj can be detect by obj. If so, set set material modifier to it
+            pass
+
+        return {'FINISHED'}
+
+    def ray_cast(self, context, event):
+        # Get the mouse position
+        self.mouse_pos = event.mouse_region_x, event.mouse_region_y
+        # Contextual active object, 2D and 3D regions
+        scene = context.scene
+        region = context.region
+        region3D = context.space_data.region_3d
+
+        viewlayer = viewlayer_fix_291(self, context)
+
+        # The direction indicated by the mouse position from the current view
+        self.view_vector = view3d_utils.region_2d_to_vector_3d(region, region3D, self.mouse_pos)
+        # The view point of the user
+        self.view_point = view3d_utils.region_2d_to_origin_3d(region, region3D, self.mouse_pos)
+        # The 3D location in this direction
+        self.world_loc = view3d_utils.region_2d_to_location_3d(region, region3D, self.mouse_pos, self.view_vector)
+
+        result, self.loc, normal, index, hit_object, matrix = scene.ray_cast(viewlayer, self.view_point, self.view_vector)
+
+        if result:
+            for obj in context.selected_objects:
+                obj.select_set(False)
+            # dg = context.evaluated_depsgraph_get()
+            # eval_obj = dg.id_eval_get(object)
+
+            # set active
+            context.view_layer.objects.active = hit_object.original
+
+            return object
 
 
 class SPIO_OT_batch_import_blend(bpy.types.Operator):
@@ -150,6 +226,8 @@ def register():
     bpy.utils.register_class(SPIO_OT_open_blend)
     bpy.utils.register_class(SPIO_OT_open_blend_extra)
 
+    bpy.utils.register_class(SPIO_OT_load_and_assign_material)
+
 
 def unregister():
     bpy.utils.unregister_class(SPIO_OT_append_blend)
@@ -158,3 +236,5 @@ def unregister():
 
     bpy.utils.unregister_class(SPIO_OT_open_blend_extra)
     bpy.utils.unregister_class(SPIO_OT_open_blend)
+
+    bpy.utils.unregister_class(SPIO_OT_load_and_assign_material)

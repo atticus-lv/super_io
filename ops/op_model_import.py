@@ -2,7 +2,7 @@ import bpy
 import os
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
-from ..loader.default_importer import model_lib
+from ..loader.default_importer import default_importer
 
 
 class SPIO_OT_import_model(bpy.types.Operator):
@@ -30,8 +30,8 @@ class SPIO_OT_import_model(bpy.types.Operator):
     def execute(self, context):
         for filepath in self.files.split('$$'):
             ext = filepath.split('.')[-1]
-            if ext in model_lib:
-                bl_idname = model_lib.get(ext)
+            if ext in default_importer:
+                bl_idname = default_importer.get(ext)
                 op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
                 op_callable(filepath=filepath)
 

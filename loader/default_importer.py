@@ -1,5 +1,5 @@
 
-model_lib = {
+default_importer = {
     'usd': 'wm.usd_import',
     'usdc': 'wm.usd_import',
     'usda': 'wm.usd_import',
