@@ -139,7 +139,6 @@ class SuperImport(bpy.types.Operator):
                     match_file_op_dict[file] = ITEM
                 match_index_list.append(index)
 
-        print(match_file_op_dict, match_index_list, file_list)
         # dynamic operator
         ##################
         for index in self.CONFIGS.index_list:

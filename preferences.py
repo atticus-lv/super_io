@@ -98,6 +98,8 @@ class ExtensionOperatorProperty(PropertyGroup):
 
             ("", "Add-ons", "Custom operator and properties input", "USER", 0),
             # ('ADDONS_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 89),
+            ('ADDONS_BLEND_MATERIAL', 'Append and assign material', 'Import material from a single file and assign it to active object', 'MATERIAL', 101),
+            ('ADDONS_BLEND_WORLD', 'Append and assign world', 'Import world from a single file and set it as context world', 'WORLD', 101),
             None,
             ('CUSTOM', 'Custom', '', 'USER', 101),
         ],
@@ -605,7 +607,6 @@ def register():
     try:
         for key in get_pref().config_list.__annotations__.keys():
             the_value = getattr(ExtensionOperatorProperty, key)
-            print(key, the_value)
     except Exception as e:
         print(e)
 

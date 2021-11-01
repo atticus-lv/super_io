@@ -49,4 +49,9 @@ data = {
     "Open file with another blender": "使用新的blender打开文件",
     "Load files/models/images from clipboard": "从剪切板导入文件/模型/图片",
 
+    "Append and assign material": "导入并赋予材质",
+    "Append and assign world": "导入并设置世界",
+    "Import material from a single file and assign it to active object": "从单个文件导入材质并赋予到激活物体上",
+    "Import world from a single file and set it as context world": "从单个文件导入世界并设置为当前世界",
+
 }

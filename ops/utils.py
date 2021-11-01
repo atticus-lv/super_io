@@ -14,6 +14,7 @@ def get_pref():
 def viewlayer_fix_291(self, context):
     return context.view_layer.depsgraph if bpy.app.version >= (2, 91, 0) else context.view_layer
 
+
 class MeasureTime():
     def __enter__(self):
         return time.time()
@@ -48,6 +49,7 @@ def convert_value(value):
 
 from ..loader.default_importer import default_importer
 from ..loader.default_blend import default_blend_lib
+from ..loader.addon_blend import addon_blend
 
 
 class ConfigItemHelper():
@@ -99,6 +101,10 @@ class ConfigItemHelper():
             ops_args = {'sub_path': subpath,
                         'data_type': data_type,
                         'load_all': True}
+
+        elif operator_type.startswith('ADDONS'):
+            bl_idname = addon_blend.get(operator_type)
+            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
         return op_callable, ops_args
 
@@ -230,7 +236,7 @@ class PopupMenu():
                 col = layout.column()
 
                 col.separator()
-                col.label(text = 'Append...',icon = 'APPEND_BLEND')
+                col.label(text='Append...', icon='APPEND_BLEND')
                 for subpath, lib in default_blend_lib.items():
                     op = col.operator('spio.append_blend', text=subpath)
                     op.filepath = path
@@ -238,7 +244,7 @@ class PopupMenu():
                     op.data_type = lib
 
                 col.separator()
-                col.label(text = 'Link...',icon = 'LINK_BLEND')
+                col.label(text='Link...', icon='LINK_BLEND')
                 for subpath, lib in default_blend_lib.items():
                     op = col.operator('spio.link_blend', text=subpath)
                     op.filepath = path
@@ -273,3 +279,31 @@ class PopupMenu():
         context.window_manager.popup_menu(draw_blend_menu,
                                           title=f'Super Import Blend ({len(self.file_list)} files)',
                                           icon='FILE_BLEND')
+
+# def ray_cast(self, context, event):
+#     # Get the mouse position
+#     self.mouse_pos = event.mouse_region_x, event.mouse_region_y
+#     # Contextual active object, 2D and 3D regions
+#     scene = context.scene
+#     region = context.region
+#     region3D = context.space_data.region_3d
+#
+#     viewlayer = viewlayer_fix_291(self, context)
+#
+#     # The direction indicated by the mouse position from the current view
+#     self.view_vector = view3d_utils.region_2d_to_vector_3d(region, region3D, self.mouse_pos)
+#     # The view point of the user
+#     self.view_point = view3d_utils.region_2d_to_origin_3d(region, region3D, self.mouse_pos)
+#     # The 3D location in this direction
+#     self.world_loc = view3d_utils.region_2d_to_location_3d(region, region3D, self.mouse_pos, self.view_vector)
+#
+#     result, self.loc, normal, index, self.object, matrix = scene.ray_cast(viewlayer, self.view_point,
+#                                                                               self.view_vector)
+#     print(result,self.object)
+#     if result:
+#         for obj in context.selected_objects:
+#             obj.select_set(False)
+#         # dg = context.evaluated_depsgraph_get()
+#         # eval_obj = dg.id_eval_get(object)
+#         # set active
+#         context.view_layer.objects.active = self.object
