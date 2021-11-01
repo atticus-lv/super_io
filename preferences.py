@@ -101,7 +101,7 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('ADDONS_BLEND_MATERIAL', 'Append and assign material', 'Import material from a single file and assign it to active object', 'MATERIAL', 101),
             ('ADDONS_BLEND_WORLD', 'Append and assign world', 'Import world from a single file and set it as context world', 'WORLD', 101),
             None,
-            ('CUSTOM', 'Custom', '', 'USER', 101),
+            ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
         default='DEFAULT_OBJ', )
 
