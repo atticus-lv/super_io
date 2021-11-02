@@ -24,6 +24,7 @@ data = {
     "Copy Config": "复制配置",
     "Move Up": "向上移动",
     "Move Down": "向下移动",
+    "Export All": "导出全部",
 
     "Force Unicode": "强制使用Unicode",
     'Force to use "utf-8" to decode filepath \nOnly enable when your system coding "utf-8"': "强制使用utf-8来解码路径\n当你的系统使用uft-8编码时才需要启用",
@@ -41,7 +42,7 @@ data = {
     "Import Config": "导入配置",
     "Import config from a json file": "从json文件导入配置",
     "Export Config": "导出配置",
-    "Export marked configs to a json file\nAlt to export all": "导出标记配置为json文件\nAlt 导出全部",
+    "wm.super_importExport marked configs to a json file": "导出标记配置为json文件\nAlt 导出全部",
     "Import all image as reference (Empty object)": "将所有图片导入为参考",
     "Import Model with blender's default importer": "使用blender内置的导入器导入",
     "Append files for clipboard blend file\nAlt to append all data of chosen type": "从剪切板追加blender文件\nAlt 追加当前选中项的所有数据",

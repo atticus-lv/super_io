@@ -2,7 +2,7 @@ import bpy
 import json
 import os
 
-from bpy.props import StringProperty
+from bpy.props import StringProperty, BoolProperty
 from .utils import ConfigHelper, get_pref
 from bpy_extras.io_utils import ExportHelper, ImportHelper
 
@@ -48,7 +48,7 @@ class SPIO_OT_import_config(bpy.types.Operator, ImportHelper):
 
 
 class SPIO_OT_export_config(bpy.types.Operator, ExportHelper):
-    """Export marked configs to a json file\nAlt to export all"""
+    """wm.super_importExport marked configs to a json file"""
 
     bl_idname = "spio.export_config"
     bl_label = "Export Config"
@@ -61,17 +61,17 @@ class SPIO_OT_export_config(bpy.types.Operator, ExportHelper):
         options={'HIDDEN'}
     )
 
-    # use_filter_folder = True
+    export_all: BoolProperty(name='Export All', default=False)
 
-    def invoke(self,context,event):
-        self.export_all = True if event.alt else False
-        return self.execute(context)
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(self, 'export_all')
 
     def execute(self, context):
         CONFIG = ConfigHelper(check_use=self.export_all)
         config, index_list = CONFIG.config_list, CONFIG.index_list
         with open(self.filepath, "w", encoding='utf-8') as f:
-            json.dump(config, f, indent=4)
+            json.dump(config, f, indent=4, ensure_ascii=False)
             self.report({"INFO"}, f'Save config to "{self.filepath}"')
 
         return {"FINISHED"}
