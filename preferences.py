@@ -111,8 +111,8 @@ class ExtensionOperatorProperty(PropertyGroup):
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
     context: EnumProperty(name="Operator Context",
                                    items=[("INVOKE_DEFAULT", "INVOKE_DEFAULT", ''),
-                                          ("EXECUTE_DEFAULT", "EXECUTE_DEFAULT", ''), ],
-                                   default='EXECUTE_DEFAULT')
+                                          ("EXEC_DEFAULT", "EXEC_DEFAULT", ''), ],
+                                   default='EXEC_DEFAULT')
     prop_list: CollectionProperty(type=OperatorProperty)
 
 

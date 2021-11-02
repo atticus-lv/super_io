@@ -10,6 +10,7 @@ class SPIO_OT_import_model(bpy.types.Operator):
 
     bl_idname = 'spio.import_model'
     bl_label = 'Import Model'
+    bl_options = {'UNDO_GROUPED'}
 
     files: StringProperty()  # list of filepath, join with$$
 
