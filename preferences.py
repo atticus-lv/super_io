@@ -97,11 +97,11 @@ class ExtensionOperatorProperty(PropertyGroup):
              15),
 
             ("", "Add-ons", "Custom operator and properties input", "USER", 0),
-            # ('ADDONS_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 89),
+            # ('ADDONS_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 100),
             ('ADDONS_BLEND_MATERIAL', 'Append and assign material',
              'Import material from a single file and assign it to active object', 'MATERIAL', 101),
             ('ADDONS_BLEND_WORLD', 'Append and assign world',
-             'Import world from a single file and set it as context world', 'WORLD', 101),
+             'Import world from a single file and set it as context world', 'WORLD', 102),
             None,
             ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
