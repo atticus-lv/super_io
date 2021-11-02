@@ -98,8 +98,10 @@ class ExtensionOperatorProperty(PropertyGroup):
 
             ("", "Add-ons", "Custom operator and properties input", "USER", 0),
             # ('ADDONS_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 89),
-            ('ADDONS_BLEND_MATERIAL', 'Append and assign material', 'Import material from a single file and assign it to active object', 'MATERIAL', 101),
-            ('ADDONS_BLEND_WORLD', 'Append and assign world', 'Import world from a single file and set it as context world', 'WORLD', 101),
+            ('ADDONS_BLEND_MATERIAL', 'Append and assign material',
+             'Import material from a single file and assign it to active object', 'MATERIAL', 101),
+            ('ADDONS_BLEND_WORLD', 'Append and assign world',
+             'Import world from a single file and set it as context world', 'WORLD', 101),
             None,
             ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
@@ -107,6 +109,10 @@ class ExtensionOperatorProperty(PropertyGroup):
 
     # custom operator
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
+    context: EnumProperty(name="Operator Context",
+                                   items=[("INVOKE_DEFAULT", "INVOKE_DEFAULT", ''),
+                                          ("EXECUTE_DEFAULT", "EXECUTE_DEFAULT", ''), ],
+                                   default='EXECUTE_DEFAULT')
     prop_list: CollectionProperty(type=OperatorProperty)
 
 
@@ -526,7 +532,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         box3 = box.box()
         box3.prop(item, 'operator_type')
+
         if item.operator_type == 'CUSTOM':
+            box3.prop(item, 'context')
             box3.prop(item, 'bl_idname')
 
             # ops props

@@ -73,6 +73,7 @@ class ConfigItemHelper():
         op_callable = None
         ops_args = dict()
         operator_type = self.operator_type
+        op_context= None
 
         # custom operator
         if operator_type == 'CUSTOM':
@@ -80,6 +81,7 @@ class ConfigItemHelper():
             bl_idname = self.bl_idname
             op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
             ops_args = self.prop_list
+            op_context = self.context
 
         # default operator
         elif operator_type.startswith('DEFAULT'):
@@ -106,7 +108,7 @@ class ConfigItemHelper():
             bl_idname = addon_blend.get(operator_type)
             op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
-        return op_callable, ops_args
+        return op_callable, ops_args, op_context
 
     def get_match_files(self, file_list):
         match_rule = self.match_rule

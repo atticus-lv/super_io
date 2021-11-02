@@ -152,7 +152,7 @@ class SuperImport(bpy.types.Operator):
                 # use pre-define index to call config
                 ITEM = self.ITEM
 
-                op_callable, ops_args = ITEM.get_operator_and_args()
+                op_callable, ops_args, op_context = ITEM.get_operator_and_args()
 
                 if op_callable:
                     with MeasureTime() as start_time:
@@ -160,7 +160,10 @@ class SuperImport(bpy.types.Operator):
                             if file_path in match_file_op_dict: continue
                             ops_args['filepath'] = file_path
                             try:
-                                op_callable(**ops_args)
+                                if op_context:
+                                    op_callable(op_context, **ops_args)
+                                else:
+                                    op_callable(**ops_args)
                             except Exception as e:
                                 self.report({"ERROR"}, str(e))
 
@@ -195,10 +198,14 @@ class SuperImport(bpy.types.Operator):
         if len(match_file_op_dict) > 0:
             with MeasureTime() as start_time:
                 for filepath, item_helper in match_file_op_dict.items():
-                    op_callable, ops_args = item_helper.get_operator_and_args()
+                    op_callable, ops_args, op_context = item_helper.get_operator_and_args()
                     ops_args['filepath'] = filepath
                     try:
-                        op_callable(**ops_args)
+                        if op_context:
+                            op_callable(op_context, **ops_args)
+                        else:
+                            op_callable(**ops_args)
+
                     except Exception as e:
                         self.report({"ERROR"}, str(e))
 

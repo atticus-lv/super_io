@@ -11,6 +11,7 @@ data = {
     "Matching rule of the name": "文件名的匹配规则",
     "Operator Type": "操作符类型",
     "Operator Identifier": "操作符标识",
+    "Operator Context": "操作符上下文",
     "Show in the popup operator tips": "将展示为弹出式操作符的提示",
     "None (Default)": "无 (默认)",
     "Startswith": "前缀",
