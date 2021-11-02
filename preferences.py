@@ -110,9 +110,9 @@ class ExtensionOperatorProperty(PropertyGroup):
     # custom operator
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
     context: EnumProperty(name="Operator Context",
-                                   items=[("INVOKE_DEFAULT", "INVOKE_DEFAULT", ''),
-                                          ("EXEC_DEFAULT", "EXEC_DEFAULT", ''), ],
-                                   default='EXEC_DEFAULT')
+                          items=[("INVOKE_DEFAULT", "INVOKE_DEFAULT", ''),
+                                 ("EXEC_DEFAULT", "EXEC_DEFAULT", ''), ],
+                          default='EXEC_DEFAULT')
     prop_list: CollectionProperty(type=OperatorProperty)
 
 
@@ -271,14 +271,71 @@ class ConfigListFilterProperty(PropertyGroup):
                           description="Reverse", )
 
 
+class SPIO_OT_color_tag_selector(bpy.types.Operator):
+    bl_idname = 'spio.color_tag_selector'
+    bl_label = 'Color Tag'
+
+    index: IntProperty(name='Config list Index')
+
+    dep_classes = []
+
+    @classmethod
+    def poll(cls, context):
+        return len(get_pref().config_list) != 0
+
+    def execute(self, context):
+        # clear
+        for cls in self.dep_classes:
+            bpy.utils.unregister_class(cls)
+        self.dep_classes.clear()
+
+        pref = get_pref()
+        item = pref.config_list[self.index]
+
+        for i in range(1, 9):
+            # set color tag
+            def execute(self, context):
+                print(item.name)
+                print(f'COLOR_0{self.index}')
+                self.item.color_tag = f'COLOR_0{self.index}'
+                context.area.tag_redraw()
+                return {'FINISHED'}
+
+            # define
+            op_cls = type("DynOp",
+                          (bpy.types.Operator,),
+                          {"bl_idname": f'wm.spio_color_tag_{i}',
+                           "bl_label": 'Select',
+                           "bl_description": 'Color Tag',
+                           "execute": execute,
+                           # custom pass in
+                           'index': i,
+                           'item': item, },
+                          )
+
+            self.dep_classes.append(op_cls)
+
+        # register
+        for cls in self.dep_classes:
+            bpy.utils.register_class(cls)
+
+        def draw(cls, context):
+            row = cls.layout.row(align=True)
+            row.scale_x = 1.2
+            for i in range(1, 9):
+                row.operator(f'wm.spio_color_tag_{i}', text='', icon=f'COLLECTION_COLOR_0{i}')
+
+        context.window_manager.popup_menu(draw, title="Color", icon='OUTLINER_COLLECTION')
+
+        return {'FINISHED'}
+
+
 class PREF_UL_ConfigList(bpy.types.UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()
-        # row.props_enum(item,'color_tag')
-        # row.prop_menu_enum()
-        row.prop(item, 'color_tag', text='', emboss=False)
 
+        row.operator('spio.color_tag_selector', text='', icon=f'COLLECTION_{item.color_tag}').index = index
         row.prop(item, 'name', text='', emboss=False)
         row.prop(item, 'extension', text='', emboss=False)
         row.prop(item, 'use_config', text='')
@@ -575,6 +632,8 @@ classes = [
     ExtensionOperatorProperty,
     SPIO_OT_ExtensionListAdd, SPIO_OT_ExtensionListRemove, SPIO_OT_ExtensionListCopy, SPIO_OT_ExtensionListMoveUP,
     SPIO_OT_ExtensionListMoveDown,
+
+    SPIO_OT_color_tag_selector,
 
     ConfigListFilterProperty, PREF_UL_ConfigList,
     SPIO_MT_ConfigIOMenu,
