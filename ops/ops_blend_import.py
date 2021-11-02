@@ -155,7 +155,7 @@ class SPIO_OT_load_and_assign_world(bpy.types.Operator):
             self.report({"ERROR"}, f'No world in this blend file')
             return {"CANCELLED"}
 
-        context.world = data_to.worlds[0]
+        context.scene.world = data_to.worlds[0]
         return {'FINISHED'}
 
 
