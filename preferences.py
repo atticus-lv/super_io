@@ -42,7 +42,9 @@ class ExtensionOperatorProperty(PropertyGroup):
     use_config: BoolProperty(name='Use', default=True)
     # UI
     color_tag: EnumProperty(name='Color Tag',
-                            items=[(f'COLOR_0{i}', '', '', f'COLLECTION_COLOR_0{i}', i) for i in range(1, 9)])
+                            items=[
+                                (f'COLOR_0{i}', '', '', f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION',
+                                 i) for i in range(0, 9)])
     # information
     name: StringProperty(name='Preset Name', update=correct_name)
     description: StringProperty(name='Description',
@@ -264,7 +266,9 @@ class ConfigListFilterProperty(PropertyGroup):
                                     default='NONE', description='Matching rule of the name')
 
     filter_color_tag: EnumProperty(name='Color Tag',
-                                   items=[(f'COLOR_0{i}', '', '', f'COLLECTION_COLOR_0{i}', i) for i in range(1, 9)])
+                                   items=[(f'COLOR_0{i}', '', '',
+                                           f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION', i) for i in
+                                          range(0, 9)])
 
     reverse: BoolProperty(name="Reverse", default=False,
                           options=set(),
@@ -292,11 +296,9 @@ class SPIO_OT_color_tag_selector(bpy.types.Operator):
         pref = get_pref()
         item = pref.config_list[self.index]
 
-        for i in range(1, 9):
+        for i in range(0, 9):
             # set color tag
             def execute(self, context):
-                print(item.name)
-                print(f'COLOR_0{self.index}')
                 self.item.color_tag = f'COLOR_0{self.index}'
                 context.area.tag_redraw()
                 return {'FINISHED'}
@@ -306,7 +308,7 @@ class SPIO_OT_color_tag_selector(bpy.types.Operator):
                           (bpy.types.Operator,),
                           {"bl_idname": f'wm.spio_color_tag_{i}',
                            "bl_label": 'Select',
-                           "bl_description": 'Color Tag',
+                           "bl_description": f'Color {i}',
                            "execute": execute,
                            # custom pass in
                            'index': i,
@@ -320,10 +322,12 @@ class SPIO_OT_color_tag_selector(bpy.types.Operator):
             bpy.utils.register_class(cls)
 
         def draw(cls, context):
+            layout = cls.layout
             row = cls.layout.row(align=True)
-            row.scale_x = 1.2
-            for i in range(1, 9):
-                row.operator(f'wm.spio_color_tag_{i}', text='', icon=f'COLLECTION_COLOR_0{i}')
+            row.scale_x = 1.12
+            for i in range(0, 9):
+                row.operator(f'wm.spio_color_tag_{i}', text='',
+                             icon=f'COLLECTION_COLOR_0{i}' if i != 0 else 'X')
 
         context.window_manager.popup_menu(draw, title="Color", icon='OUTLINER_COLLECTION')
 
@@ -335,7 +339,8 @@ class PREF_UL_ConfigList(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()
 
-        row.operator('spio.color_tag_selector', text='', icon=f'COLLECTION_{item.color_tag}').index = index
+        row.operator('spio.color_tag_selector', text='',
+                     icon=f'COLLECTION_{item.color_tag}' if item.color_tag != 'COLOR_00' else 'OUTLINER_COLLECTION').index = index
         row.prop(item, 'name', text='', emboss=False)
         row.prop(item, 'extension', text='', emboss=False)
         row.prop(item, 'use_config', text='')
