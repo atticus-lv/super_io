@@ -442,15 +442,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     def draw_url(self, context, layout):
         box = layout.box()
-        box.label(text='Manual', icon='HELP')
-        box.operator('wm.url_open', text='Manual', icon='URL').url = 'https://www.baidu.com/'
-
-        box = layout.box()
-        box.label(text='Developer: Atticus', icon='MONKEY')
+        box.label(text='Help', icon='HELP')
         row = box.row()
-        row.operator('wm.url_open', text='Atticus Github', icon='URL').url = 'https://github.com/atticus-lv'
-        row.row(align=True).operator('wm.url_open', text='AtticusB站频道',
-                                     icon='URL').url = 'https://space.bilibili.com/1509173'
+        row.operator('wm.url_open', text='中文').url = 'http://atticus-lv.gitee.io/super_io/#/zh-cn/'
+        row.operator('wm.url_open', text='English').url = 'http://atticus-lv.gitee.io/super_io/#/en-us/'
 
         box = layout.box()
         box.label(text='Supporter: 只剩一瓶辣椒酱', icon='FUND')
@@ -458,6 +453,12 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         row.operator('wm.url_open', text='斑斓魔法CG官网', icon='URL').url = 'https://www.blendermagic.cn/'
         row.row(align=True).operator('wm.url_open', text='辣椒B站频道',
                                      icon='URL').url = 'https://space.bilibili.com/35723238'
+
+        box.label(text='Developer: Atticus', icon='MONKEY')
+        row = box.row()
+        row.operator('wm.url_open', text='Atticus Github', icon='URL').url = 'https://github.com/atticus-lv'
+        row.row(align=True).operator('wm.url_open', text='AtticusB站频道',
+                                     icon='URL').url = 'https://space.bilibili.com/1509173'
 
     def draw_settings(self, context, layout):
         col = layout.column(align=True).box()
