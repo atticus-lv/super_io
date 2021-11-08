@@ -1,9 +1,9 @@
-自定义操作符允许你选择一个已有的操作符，并向里面传递参数
+Custom operators allow you to select an existing operator and pass parameters to it. 
+1. Hover the mouse over an import operator button, right-click and copy the python command or `Ctrl C` to get such as `bpy.ops.xxxx()` 
 
-1. 将鼠标悬停于某一导入符按钮，右键复制python命令或`Ctrl C`即可获得如`bpy.ops.xxxx()`的格式
-2. 将其黏贴在操作符标识，则会自动去头去尾，将其纠正为`xxx`，对于非标准格式，请手动去除括号及里面内容
-3. 选择执行环境，若选择`INVOKE_DEFAULT`,则从此操作符的invoke函数开始执行，对于大多数导入插件而言，该执行环境将会弹出选择弹窗<br>
-若选择`EXEC_DEFAULT`（默认）,则从该操作符的execute函数开始执行
-4. 无论执行哪个选项，在导入文件调用此操作符时候，都会对传入`filepath = 文件路径`的参数，若指定的操作符不以filepath作为识别文件路径的参数，则调用该操作符失败<br>
-*后续更新可能会使用特殊字符标识进行参数替代，以满足不同命名习惯的需求*
-5. 用户通过按下+按钮，可添加自定义参数，目前支持字符串，浮点，整数类型的参数识别
+2. Paste it on the operator ID, it will automatically remove the head and tail, and correct it to `xxx`. 
+   For non-standard formats, please manually remove the brackets and contents 
+
+3. Select the execution environment , If you select `INVOKE_DEFAULT`, then start execution from the invoke function of this operator. For most imported plugins, the execution environment will pop up a selection popup window.<br> If you select `EXEC_DEFAULT` (default), start from this operation The execute function of the operator starts to execute 
+
+4. No matter which option is executed, when this operator is called in the import file, the parameter of `filepath = file path` will be passed in. If the specified operator does not use filepath as the parameter to identify the file path, Then the operator fails to call.<br> Subsequent updates may use special character identifiers for parameter substitution to meet the needs of different naming conventions. 5. The user can add custom parameters by pressing the + button. Currently, strings and floating point are supported. , Parameter identification of integer type

@@ -1,26 +1,26 @@
-> SPIO 是一个辅助向的blender插件，用于提高用户从外部导入blend文件/模型/图片的效率
+> PIO is an auxiliary blender plug-in, used to improve the efficiency of users importing blend file model pictures from outside
 >
-> 目前支持windows平台
+> Currently supports windows platform
 
-### 快速上手
+### Quick Start
 
-SPIO的使用方法非常简单<br>从偏好设置安装插件并启用后，只需要从windows资源管理器`Ctrl+C`复制文件，并在3d视图中`Ctrl+Shift+V`就可以导入文件。
+The use of SPIO is very simple.<br>After installing the plug-in from the preferences and enabling it, you only need to copy the file from the windows explorer `Ctrl+C`, and in the 3d view `Ctrl+Shift+V` can import the file. 
 
-SPIO允许**单个/批量导入**默认导入菜单所包含的所有格式，并可对blend文执行件详细类别的追加/导入支持。
+SPIO allows **single/batch** to import all the formats included in the default import menu, and can also support additional import of the detailed categories of blend files. 
 
-对于非模型文件（或未识别格式）SPIO将其作为图像处理
+For non-model files (or unrecognized formats) SPIO treats them as images
 
-在**3D视图**中，你可以选择将其作为参考或者图像平面导入
+In the **3D view**, you can choose to import it as a reference or image plane
 
-在**着色编辑器**和**几何节点编辑器**中，则将其作为图像纹理节点导入
+In the **shading editor** and **geometry node editor**, import it as an image texture node
 
 
 
 ### 自定义
 
-SPIO允许高度自定义导入配置，满足复杂导入需求
+SPIO allows highly customized import config to meet complex import requirements
 
-具体使用方法可参考[添加配置](/zh-cn/AddConfig.md)
+For specific usage methods, please refer to [Config Manage](/AddConfig.md)
 
 
 

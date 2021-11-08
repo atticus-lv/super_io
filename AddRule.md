@@ -1,10 +1,10 @@
-你可以为配置添加文件名匹配规则来避免配置弹出选择菜单，加快导入
+You can add file name matching rules to the configto avoid the configuration pop-up selection menu and speed up the import
 
-以 `M_特殊材质.blend` 为例子, 用户希望有一个配置能识别此种以M_开头的blend文件，导入其所有材质
+Take `M_IamMaterial.blend` as an example, the user wants to have a configuration that can recognize this kind of blend file starting with M_ and import all its materials
 
-以下是实现该自定义配置的步骤
-1. 新建配置
-2. 设置扩展名为`blend`
-3. 设置匹配规则为前缀
-4. 设置匹配值为`M_`
-5. 设置操作符类型为`Append Materials`
+The following are the steps to implement this custom configuration
+1. New config
+2. Set the extension to`blend`
+3. Set the matching rule to prefix
+4. Set the match value to`M_`
+5. Set the operator type to`Append Materials`
