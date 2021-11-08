@@ -1,6 +1,6 @@
 <!-- _navbar.md -->
 
-+ Language
-    + [English](/)
-    + [中文](/zh-cn/)
++ 语言
+	+ [English](/en-us/)
+	+ [中文](/zh-cn/)
 

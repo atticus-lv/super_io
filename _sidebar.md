@@ -1,20 +1,14 @@
-+ **Get Start**
-    + [Intro](/Intro.md)
-    + [Interface](Interface.md)
-    + [RSN Helper](RSN_Helper.md)
-    + [Set up a simple task](SetUpTask.md)
-+ **Example**
-    + [Muti Camera Shot](Example1.md)
-    + [Object Placement & Material](Example2.md)
-+ **Nodes**
-    + [Task](NodeTask)	
-    + [Input](NodeInput)
-    + [Output](NodeOutput)
-    + [Scene](NodeScene)
-    + [Obejct](NodeObject)
-    + [Render Settings(Extra)](NodeRender)
-    + [Variants](NodeVariants)
-    + [Layout](NodeLayout)
-    + [Extra](NodeExtra)
-+ **FAQ**
-    + [Frequently asked Questions](FAQ.md)
++ **快速开始**
+    + [简介](/zh-cn/Intro.md)
+
++ **运作原理**
+    + [运作原理](/zh-cn/Principle.md)
+
++ **自定义配置**
+    + [配置管理](/zh-cn/AddConfig.md)
+    + [文件名匹配](/zh-cn/AddRule.md)
+    + [自定义操作符](/zh-cn/CustomOperator.md)
+    
++ **更新日志**
+    + [1.0](/zh-cn/log/1.0.md)
+ 
