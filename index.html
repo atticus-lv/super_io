@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Super IO</title>
+    <title>RSN Document</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     <meta name="description" content="Description">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
@@ -11,8 +11,9 @@
 <body>
 
 <nav>
-    <a href="#/en-us/">English</a>
+    <a href="#/">English</a>
     <a href="#/zh-cn/">中文</a>
+    <a href="#/develop/">Develop</a>
 </nav>
 
 <div id="app"></div>
@@ -21,11 +22,11 @@
 
     window.$docsify = {
         // 侧栏logo
-        name: '',
-        logo: 'media/logo.png height="150px"',
+        name: 'RSN Document',
+        logo: 'media/logo/logo.svg height="150px"',
 
         // 右上角github小猫
-        repo: 'https://github.com/atticus-lv/super_io',
+        repo: 'https://github.com/atticus-lv/RenderStackNode/',
 
         // 侧栏顶栏
         loadSidebar: true,
@@ -35,7 +36,7 @@
 
         // 封面
         onlyCover: true,
-        coverpage: ['/'],
+        coverpage: ['/', '/zh-cn/','/develop/'],
 
         // 搜索栏
         search: {
@@ -46,11 +47,13 @@
             pathNamespaces: ['/zh-cn',],
             placeholder: {
                 '/zh-cn/': '🔍 搜索',
-                '/en-us/': '🔍 Search',
+                '/': '🔍 Search',
+                '/develop/': '🔍 Search'
             },
             noData: {
                 '/zh-cn/': '我是真找不到 😅',
-                '/en-us/': 'No Results 😅',
+                '/': 'No Results 😅',
+                '/develop/': 'No Results 😅',
             }
         },
 
@@ -59,28 +62,28 @@
             note: {
                 label: {
                     '/zh-cn/': '注意',
-                    '/en-us/': 'Note',
+                    '/': 'Note',
                     '/develop/': 'Note'
                 }
             },
             tip: {
                 label: {
                     '/zh-cn/': '提示',
-                    '/en-us/': 'Tip',
+                    '/': 'Tip',
                     '/develop/': 'Tip',
                 }
             },
             warning: {
                 label: {
                     '/zh-cn/': '警告',
-                    '/en-us/': 'Warning',
+                    '/': 'Warning',
                     '/develop/': 'Warning'
                 }
             },
             attention: {
                 label: {
                     '/zh-cn/': '危险',
-                    '/en-us/': 'Attention',
+                    '/': 'Attention',
                     '/develop/': 'Attention',
                 }
             }
@@ -93,7 +96,7 @@
                     '<hr/>',
                     '<footer>',
                     '<span><a href="https://github.com/atticus-lv">Atticus</a> &copy;2021.</span>',
-                    '<span>Published with <a href="https://github.com/atticus-lv/super_io" target="_blank">Super IO</a>.</span>',
+                    '<span>Published with <a href="https://github.com/atticus-lv/RenderStackNode" target="_blank">RenderStackNode</a>.</span>',
                     '</footer>'
                 ].join('');
 
@@ -103,7 +106,6 @@
             }
         ]
     }
-
 
 
 </script>

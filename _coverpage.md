@@ -1,10 +1,20 @@
 <!-- _coverpage.md -->
 
-<img src="media/logo_bg.png" alt="cover" width="300px" />
+<img src="media/logo/logo no_text.svg" alt="cover" width="200px" />
 
+# **RenderStackNode**
 
-[中文手册](/zh-cn/Intro.md)
-[Documentation](/en-us/Intro.md)
+> Node based design and render workflow in blender
+
++ Render queue
++ Custom Overwrite
++ Version Control
++ Path Expression
+
+[GitHub](https://github.com/atticus-lv/RenderStackNode)
+[Get Started](/Intro.md)
+
+![title2](media/img/title2.png)
 
 
 
