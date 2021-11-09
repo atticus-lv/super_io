@@ -2,7 +2,7 @@ data = {
     "Super Import": "超级导入",
     "Config": "配置",
     "No file found in clipboard": "剪切板为空!",
-    "Supporter: 只剩一瓶辣椒酱": "赞助者: 只剩一瓶辣椒酱",
+    "Sponsor: 只剩一瓶辣椒酱": "赞助者: 只剩一瓶辣椒酱",
     "Developer: Atticus": "开发者: Atticus",
 
     "Use N Panel": "使用侧面板",

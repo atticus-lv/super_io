@@ -446,7 +446,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         row.operator('wm.url_open', text='Manual').url = 'http://atticus-lv.gitee.io/super_io/#/'
 
         box = layout.box()
-        box.label(text='Supporter: 只剩一瓶辣椒酱', icon='FUND')
+        box.label(text='Sponsor: 只剩一瓶辣椒酱', icon='FUND')
         row = box.row()
         row.operator('wm.url_open', text='斑斓魔法CG官网', icon='URL').url = 'https://www.blendermagic.cn/'
         row.row(align=True).operator('wm.url_open', text='辣椒B站频道',
