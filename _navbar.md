@@ -1,5 +1,5 @@
 <!-- _navbar.md -->
 
-+ [English](/)
-+ [中文](/zh-cn/)
++ [English](/Intro.md)
++ [中文](/zh-cn/Intro.md)
 
