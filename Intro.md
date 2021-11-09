@@ -16,7 +16,7 @@ In the **shading editor** and **geometry node editor**, import it as an image te
 
 
 
-### 自定义
+### Customize
 
 SPIO allows highly customized import config to meet complex import requirements
 
