@@ -17,17 +17,17 @@ class SidebarSetup:
 
 
 class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
-    bl_label = 'Settings'
+    bl_label = ''
     bl_options = {'HEADER_LAYOUT_EXPAND'}
 
     def draw_header(self, context):
         layout = self.layout
-        layout.alignment = "CENTER"
+        layout.alignment = "LEFT"
         pref = get_pref()
 
         row = layout
         row = row.row(align=True)
-        row.prop(pref, 'ui', expand=True, text='', emboss=False)
+        row.prop(pref, 'ui', expand=True, emboss=False)
 
     def draw(self, context):
         layout = self.layout

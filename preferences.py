@@ -354,6 +354,19 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         items = getattr(data, propname)
         ordered = []
 
+        filtered = bpy.types.UI_UL_list.filter_items_by_name(getattr(filter, 'filter_' + filter.filter_type),
+                                                             self.bitflag_filter_item,
+                                                             items,
+                                                             filter.filter_type.removeprefix('filter_'),
+                                                             reverse=filter.reverse)
+
+        try:
+            ordered = bpy.types.UI_UL_list.sort_items_helper(items, filter.filter_type.removeprefix('filter_'))
+        except:
+            pass
+
+        return filtered, ordered
+
         # OLD STYLE
         #################################################
         # filtered = [self.bitflag_filter_item] * len(items)
@@ -373,19 +386,6 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         # ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i.extension), True)
         #################################################
 
-        filtered = bpy.types.UI_UL_list.filter_items_by_name(getattr(filter, 'filter_' + filter.filter_type),
-                                                             self.bitflag_filter_item,
-                                                             items,
-                                                             filter.filter_type.removeprefix('filter_'),
-                                                             reverse=filter.reverse)
-
-        try:
-            ordered = bpy.types.UI_UL_list.sort_items_helper(items, filter.filter_type.removeprefix('filter_'))
-        except:
-            pass
-
-        return filtered, ordered
-
 
 class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
     bl_label = "Config Import/Export"
@@ -404,9 +404,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     ui: EnumProperty(name='UI', items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('CONFIG', 'Config', '', 'PRESET', 1),
-        ('KEYMAP', 'Keymap', '', 'KEYINGSET', 2),
-        ('URL', 'Manual', '', 'URL', 3),
-    ])
+        ('URL', 'Help', '', 'URL', 2),
+    ],default = 'CONFIG')
     use_N_panel: BoolProperty(name='Use N Panel', default=True)
 
     # Settings
@@ -433,10 +432,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         col = layout.column()
         if self.ui == 'SETTINGS':
             self.draw_settings(context, col)
+
         elif self.ui == 'CONFIG':
             self.draw_config(context, col)
-        elif self.ui == 'KEYMAP':
-            self.draw_keymap(context, col)
+
         elif self.ui == 'URL':
             self.draw_url(context, col)
 
@@ -444,8 +443,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box = layout.box()
         box.label(text='Help', icon='HELP')
         row = box.row()
-        row.operator('wm.url_open', text='中文').url = 'http://atticus-lv.gitee.io/super_io/#/zh-cn/'
-        row.operator('wm.url_open', text='English').url = 'http://atticus-lv.gitee.io/super_io/#/en-us/'
+        row.operator('wm.url_open', text='Manual').url = 'http://atticus-lv.gitee.io/super_io/#/'
 
         box = layout.box()
         box.label(text='Supporter: 只剩一瓶辣椒酱', icon='FUND')
@@ -481,9 +479,13 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         row.prop(self, 'disable_warning_rules', text='')
         row.label(text='Close Warning Rules')
 
+        col = layout.column(align=True).box()
+        col.use_property_split = True
+        self.draw_keymap(context, col)
+
     def draw_keymap(self, context, layout):
         col = layout.box().column()
-        # col.label(text="Keymap", icon="KEYINGSET")
+        col.label(text="Keymap", icon="KEYINGSET")
         km = None
         wm = context.window_manager
         kc = wm.keyconfigs.user
