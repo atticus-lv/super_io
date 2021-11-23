@@ -44,6 +44,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 bpy.ops.object.load_reference_image(filepath=filepath)
 
             elif self.action == 'NODES':
+                bpy.ops.node.select_all(action='DESELECT')
                 nt = context.space_data.edit_tree
                 location_X, location_Y = context.space_data.cursor_location
 
@@ -66,6 +67,8 @@ class SPIO_OT_import_image(bpy.types.Operator):
                     tex_node.image = image
                 elif node_type == 'GeometryNodeImageTexture':
                     tex_node.inputs['Image'].default_value = image
+
+            if self.action == 'NODES':
                 # move
                 bpy.ops.transform.translate('INVOKE_DEFAULT')
 
