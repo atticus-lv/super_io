@@ -36,7 +36,8 @@ class SPIO_OT_import_image(bpy.types.Operator):
             from addon_utils import enable
             enable("io_import_images_as_planes")
 
-        location_X, location_Y = context.space_data.cursor_location
+        if self.action == 'NODES':
+            location_X, location_Y = context.space_data.cursor_location
 
         for filepath in self.files.split('$$'):
             if self.action == 'PLANE':
