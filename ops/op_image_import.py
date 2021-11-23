@@ -36,6 +36,8 @@ class SPIO_OT_import_image(bpy.types.Operator):
             from addon_utils import enable
             enable("io_import_images_as_planes")
 
+        location_X, location_Y = context.space_data.cursor_location
+
         for filepath in self.files.split('$$'):
             if self.action == 'PLANE':
                 bpy.ops.import_image.to_plane(files=[{"name": filepath}])
@@ -46,7 +48,6 @@ class SPIO_OT_import_image(bpy.types.Operator):
             elif self.action == 'NODES':
                 bpy.ops.node.select_all(action='DESELECT')
                 nt = context.space_data.edit_tree
-                location_X, location_Y = context.space_data.cursor_location
 
                 if context.area.ui_type == 'ShaderNodeTree':
                     node_type = 'ShaderNodeTexImage'
@@ -56,7 +57,11 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 tex_node = nt.nodes.new(node_type)
                 tex_node.location = location_X, location_Y
                 # tex_node.hide = True
-                location_Y += 250
+                location_Y -= 50
+                location_X += 25
+
+                tex_node.select = True
+                nt.nodes.active = tex_node
 
                 path = filepath
                 image_name = os.path.basename(path)
@@ -68,9 +73,6 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 elif node_type == 'GeometryNodeImageTexture':
                     tex_node.inputs['Image'].default_value = image
 
-            if self.action == 'NODES':
-                # move
-                bpy.ops.transform.translate('INVOKE_DEFAULT')
 
         return {'FINISHED'}
 
