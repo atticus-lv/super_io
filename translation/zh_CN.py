@@ -31,6 +31,8 @@ data = {
     "Report Time": "报告时间",
     "Report import time": "报告导入时间",
     "Close Warning Rules": "关闭规则警告",
+    "No file found in clipboard!": "剪贴板没有找到文件！",
+    "Only one type of file can be imported at a time": "只支持一次导入一种格式的文件",
 
     "1. If file name not matching this rule": "1. 如果文件名不匹配规则",
     "   It will search for the next config which match": "    将会搜寻下一符合的配置",
