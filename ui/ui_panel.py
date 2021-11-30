@@ -18,7 +18,6 @@ class SidebarSetup:
 
 class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
     bl_label = ''
-    bl_options = {'HEADER_LAYOUT_EXPAND'}
 
     def draw_header(self, context):
         layout = self.layout
@@ -41,6 +40,14 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
             SPIO_Preference.draw_keymap(pref, context, layout)
         elif pref.ui == 'URL':
             SPIO_Preference.draw_url(pref, context, layout)
+
+
+class SPIO_PT_PrefPanel_283(SPIO_PT_PrefPanel):
+    bl_label = ' '
+
+
+class SPIO_PT_PrefPanel_300(SPIO_PT_PrefPanel):
+    bl_options = {'HEADER_LAYOUT_EXPAND'}
 
 
 class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
@@ -77,12 +84,18 @@ class SPIO_PT_ListFilterPanel(bpy.types.Panel):
 
 
 def register():
-    bpy.utils.register_class(SPIO_PT_PrefPanel)
+    if bpy.app.version < (3, 0, 0):
+        bpy.utils.register_class(SPIO_PT_PrefPanel_283)
+    else:
+        bpy.utils.register_class(SPIO_PT_PrefPanel_300)
     bpy.utils.register_class(SPIO_PT_ImportPanel)
     bpy.utils.register_class(SPIO_PT_ListFilterPanel)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_PT_PrefPanel)
+    if bpy.app.version < (3, 0, 0):
+        bpy.utils.unregister_class(SPIO_PT_PrefPanel_283)
+    else:
+        bpy.utils.unregister_class(SPIO_PT_PrefPanel_300)
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
     bpy.utils.unregister_class(SPIO_PT_ListFilterPanel)

@@ -37,14 +37,41 @@ def correct_name(self, context):
         self.name += '(1)'
 
 
+def get_color_tag_enum_items():
+    if bpy.app.version < (2, 93, 0):
+        items = [
+            (f'COLOR_0{i}',
+             '',
+             '',
+             f'COLORSET_0{i}_VEC' if i != 0 else 'COLORSET_13_VEC', i) for i in range(0, 9)
+        ]
+    else:
+        items = [
+            (f'COLOR_0{i}',
+             '',
+             '',
+             f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION', i) for i in range(0, 9)
+        ]
+
+    return items
+
+
+def get_color_tag_icon(index):
+    if bpy.app.version < (2, 93, 0):
+        return 'COLORSET_13_VEC' if index == 0 else f'COLORSET_0{index}_VEC'
+    else:
+        return f'COLLECTION_COLOR_0{index}' if index != 0 else 'OUTLINER_COLLECTION'
+
+
+enum_color_tag_items = get_color_tag_enum_items()
+
+
 class ExtensionOperatorProperty(PropertyGroup):
     # USE
     use_config: BoolProperty(name='Use', default=True)
     # UI
     color_tag: EnumProperty(name='Color Tag',
-                            items=[
-                                (f'COLOR_0{i}', '', '', f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION',
-                                 i) for i in range(0, 9)])
+                            items=enum_color_tag_items)
     # information
     name: StringProperty(name='Preset Name', update=correct_name)
     description: StringProperty(name='Description',
@@ -266,9 +293,7 @@ class ConfigListFilterProperty(PropertyGroup):
                                     default='NONE', description='Matching rule of the name')
 
     filter_color_tag: EnumProperty(name='Color Tag',
-                                   items=[(f'COLOR_0{i}', '', '',
-                                           f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION', i) for i in
-                                          range(0, 9)])
+                                   items=enum_color_tag_items)
 
     reverse: BoolProperty(name="Reverse", default=False,
                           options=set(),
@@ -327,9 +352,10 @@ class SPIO_OT_color_tag_selector(bpy.types.Operator):
             row.scale_x = 1.12
             for i in range(0, 9):
                 row.operator(f'wm.spio_color_tag_{i}', text='',
-                             icon=f'COLLECTION_COLOR_0{i}' if i != 0 else 'X')
+                             icon=get_color_tag_icon(i))
 
-        context.window_manager.popup_menu(draw, title="Color", icon='OUTLINER_COLLECTION')
+        context.window_manager.popup_menu(draw, title="Color", icon='OUTLINER_COLLECTION' if bpy.app.version > (
+            2, 93, 0) else 'COLORSET_13_VEC')
 
         return {'FINISHED'}
 
@@ -340,7 +366,7 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         row = layout.row()
 
         row.operator('spio.color_tag_selector', text='',
-                     icon=f'COLLECTION_{item.color_tag}' if item.color_tag != 'COLOR_00' else 'OUTLINER_COLLECTION').index = index
+                     icon=get_color_tag_icon(int(item.color_tag[-1:]))).index = index
         row.prop(item, 'name', text='', emboss=False)
         row.prop(item, 'extension', text='', emboss=False)
         row.prop(item, 'use_config', text='')
@@ -349,6 +375,9 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         pass
 
     def filter_items(self, context, data, propname):
+        if bpy.app.version < (2,93,0):
+            return self.filter_items_283(context,data,propname)
+
         filter = context.window_manager.spio_filter
 
         items = getattr(data, propname)
@@ -367,24 +396,50 @@ class PREF_UL_ConfigList(bpy.types.UIList):
 
         return filtered, ordered
 
-        # OLD STYLE
-        #################################################
-        # filtered = [self.bitflag_filter_item] * len(items)
-        # if filter.filter_type == 'extension':
-        #     for i, item in enumerate(items):
-        #         if item.extension != filter.filter_extension and filter.filter_extension != '':
-        #             filtered[i] &= ~self.bitflag_filter_item
+    def filter_items_283(self, context, data, propname):
+        filter = context.window_manager.spio_filter
 
-        # # invert
-        # if filtered and filter.reverse:
-        #     show_flag = self.bitflag_filter_item & ~self.bitflag_filter_item
-        #     for i, bitflag in enumerate(filtered):
-        #         if bitflag == show_flag:
-        #             filtered[i] = self.bitflag_filter_item
-        #         else:
-        #             filtered[i] &= ~self.bitflag_filter_item
-        # ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(i.extension), True)
-        #################################################
+        items = getattr(data, propname)
+        ordered = []
+
+        ################################################
+        filtered = [self.bitflag_filter_item] * len(items)
+        if filter.filter_type == 'extension':
+            for i, item in enumerate(items):
+                if item.extension != filter.filter_extension and filter.filter_extension != '':
+                    filtered[i] &= ~self.bitflag_filter_item
+
+        elif filter.filter_type == 'match_rule':
+            for i, item in enumerate(items):
+                if item.match_rule != filter.filter_match_rule and filter.filter_match_rule != '':
+                    filtered[i] &= ~self.bitflag_filter_item
+
+        elif filter.filter_type == 'color_tag':
+            for i, item in enumerate(items):
+                if item.color_tag != filter.filter_color_tag and filter.filter_color_tag != '':
+                    filtered[i] &= ~self.bitflag_filter_item
+
+        elif filter.filter_type == 'name':
+            filtered = bpy.types.UI_UL_list.filter_items_by_name(getattr(filter, 'filter_' + filter.filter_type),
+                                                                 self.bitflag_filter_item,
+                                                                 items,
+                                                                 filter.filter_name,
+                                                                 reverse=filter.reverse)
+
+        # invert
+        if filtered and filter.reverse:
+            show_flag = self.bitflag_filter_item & ~self.bitflag_filter_item
+            for i, bitflag in enumerate(filtered):
+                if bitflag == show_flag:
+                    filtered[i] = self.bitflag_filter_item
+                else:
+                    filtered[i] &= ~self.bitflag_filter_item
+        try:
+            ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(getattr(i, filter.filter_type[7:]), True))
+        except:
+            pass
+
+        return filtered, ordered
 
 
 class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
@@ -405,7 +460,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('CONFIG', 'Config', '', 'PRESET', 1),
         ('URL', 'Help', '', 'URL', 2),
-    ],default = 'CONFIG')
+    ], default='CONFIG')
     use_N_panel: BoolProperty(name='Use N Panel', default=True)
 
     # Settings
