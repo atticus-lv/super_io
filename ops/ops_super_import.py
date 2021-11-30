@@ -1,6 +1,11 @@
-import os
+from __future__ import annotations
+import sys
 import time
-import subprocess
+
+if sys.platform == "win32":
+    from ..clipboard.wintypes import WintypesClipboard as Clipboard
+elif sys.platform == "darwin":
+    from ..clipboard.darwin.mac import MacClipboard as Clipboard
 
 import bpy
 from bpy.props import (EnumProperty,
@@ -8,8 +13,6 @@ from bpy.props import (EnumProperty,
                        StringProperty,
                        IntProperty,
                        BoolProperty)
-
-from ..clipboard.wintypes import WintypesClipboard as Clipboard
 
 from .utils import MeasureTime, ConfigItemHelper, ConfigHelper, PopupMenu
 from .utils import is_float, get_pref, convert_value
