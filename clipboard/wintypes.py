@@ -5,7 +5,7 @@ import ctypes.wintypes as w
 from locale import getdefaultlocale
 
 class WintypesClipboard():
-    def __init__(self, file_urls):
+    def __init__(self, file_urls = None):
         # file_urls: list[str] = None
         self.file_urls = file_urls
 
