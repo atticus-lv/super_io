@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://atticus-lv.gitee.io/super_io/#/">
-    <img src="res/img/logo_bg.png" alt="logo" width="1080px"/>
+    <img src="res/img/logo_bg.png" alt="logo" width="540px"/>
   </a>
 </p>
 <h4 align="center">
@@ -14,7 +14,7 @@
     Blender 2.83 ~ 3.0
 </p>
 
-## Intro
+# Intro
 
 SPIO is a blender addon that allow you to copy and paste to import models and images. 
 
