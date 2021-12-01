@@ -8,7 +8,6 @@ import subprocess
 import sys
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
-from .ops_super_import import import_icon
 
 
 class ImageCopyDefault:
@@ -47,27 +46,9 @@ class ImageCopyDefault:
         args = powershell_args + ["& { " + script + " }"]
         return args
 
-    def execute(self, context):
-        active_image = context.area.spaces.active.image
-        image_path = os.path.join(bpy.app.tempdir, f'{active_image.name}.png')
-
-        bpy.ops.image.save_as(filepath=image_path, save_as_render=True, copy=True)
-
-        parms = {
-            'args': self.get_args(self.script),
-            'encoding': 'utf-8',
-            'stdout': subprocess.PIPE,
-            'stderr': subprocess.PIPE,
-        }
-
-        subprocess.Popen(**parms)
-
-        self.report({'INFO'}, f'{active_image.name} has been copied to Clipboard')
-
-        return {'FINISHED'}
-
 
 class SPIO_OT_export_pixel(ImageCopyDefault, bpy.types.Operator):
+    """Export as Image Pixel"""
     bl_idname = 'spio.export_pixel'
     bl_label = 'Copy Pixel'
 
@@ -103,6 +84,7 @@ class SPIO_OT_export_pixel(ImageCopyDefault, bpy.types.Operator):
 
 
 class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
+    """Export as Image File"""
     bl_idname = 'spio.export_image'
     bl_label = 'Copy Image'
 
@@ -113,11 +95,11 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
         bpy.ops.image.save_as(filepath=image_path, save_as_render=True, copy=True)
 
         script = (
-            f"$file = '{image_path}';"
-            '$col = New-Object Collections.Specialized.StringCollection;'
-            '$col.add($file);'
+            f"$file = '{image_path}'; "
+            "$col = New-Object Collections.Specialized.StringCollection; "
+            "$col.add($file); "
             "Add-Type -Assembly System.Windows.Forms; "
-            "[System.Windows.Forms.Clipboard]::SetFileDropList($col)"
+            "[System.Windows.Forms.Clipboard]::SetFileDropList($col); "
         )
         # file list
         # f"$filelist = '{image_path}'"
@@ -129,7 +111,7 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
             'stdout': subprocess.PIPE,
             'stderr': subprocess.PIPE,
         }
-        print(parms)
+
         subprocess.Popen(**parms)
 
         self.report({'INFO'}, f'{active_image.name} has been copied to Clipboard')
@@ -137,38 +119,11 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
         return {'FINISHED'}
 
 
-from .utils import PopupExportMenu
-
-
-class WM_OT_super_export(bpy.types.Operator):
-    """Export to Clipboard"""
-
-    bl_idname = 'wm.super_export'
-    bl_label = 'Super Export'
-
-    def execute(self, context):
-        popup = PopupExportMenu(temp_path=None, context=context)
-        popup.default_image_menu()
-        return {'FINISHED'}
-
-
-def draw_menu(self, context):
-    layout = self.layout
-    layout.separator()
-    layout.operator('wm.super_export', icon_value=import_icon.get_image_icon_id())
-
-
 def register():
     bpy.utils.register_class(SPIO_OT_export_pixel)
     bpy.utils.register_class(SPIO_OT_export_image)
-    bpy.utils.register_class(WM_OT_super_export)
-
-    bpy.types.IMAGE_MT_image.append(draw_menu)
 
 
 def unregister():
     bpy.utils.unregister_class(SPIO_OT_export_pixel)
     bpy.utils.unregister_class(SPIO_OT_export_image)
-    bpy.utils.unregister_class(WM_OT_super_export)
-
-    bpy.types.IMAGE_MT_image.remove(draw_menu)

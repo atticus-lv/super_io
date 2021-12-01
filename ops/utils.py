@@ -86,9 +86,9 @@ class ConfigItemHelper():
         # default operator
         elif operator_type.startswith('DEFAULT'):
             if bpy.app.version < (3, 0, 0):
-                bl_idname = default_importer.get(operator_type.removeprefix('DEFAULT_').lower())
+                bl_idname = default_exporter.get(operator_type.removeprefix('DEFAULT_').lower())
             else:
-                bl_idname = default_importer.get(operator_type[8:].lower())
+                bl_idname = default_exporter.get(operator_type[8:].lower())
             op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
         elif operator_type.startswith('APPEND_BLEND'):
@@ -191,6 +191,7 @@ class ConfigHelper():
     def is_more_than_one_config(self):
         return len(self.config_list) > 1
 
+from ..exporter.default_exporter import default_exporter
 
 class PopupExportMenu():
     def __init__(self, temp_path, context):
@@ -215,6 +216,21 @@ class PopupExportMenu():
                                                   title=f'Super Export Image ({context.area.spaces.active.image.name})',
                                                   icon='IMAGE_DATA')
 
+    def default_blend_menu(self, return_menu=False):
+        context = self.context
+        if context.area.type == "VIEW_3D":
+            def draw_menu(cls, context):
+                layout = cls.layout
+                layout.operator_context = "INVOKE_DEFAULT"
+                col = layout.column()
+                col.operator('spio.export_blend')
+
+            if return_menu:
+                return draw_menu
+
+            context.window_manager.popup_menu(draw_menu,
+                                              title=f'Super Export Blend ({len(context.selected_objects)} objs)',
+                                              icon='FILE_BLEND')
 
 class PopupImportMenu():
     def __init__(self, file_list, context):
