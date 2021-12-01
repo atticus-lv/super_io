@@ -4,14 +4,23 @@ import ctypes.wintypes as w
 
 from locale import getdefaultlocale
 
+
 class DROPFILES(ctypes.Structure):
     _fields_ = (('pFiles', w.DWORD),
-                ('pt',     w.POINT),
-                ('fNC',    w.BOOL),
-                ('fWide',  w.BOOL))
+                ('x', w.LONG),
+                ('y', w.LONG),
+                ('fNC', w.BOOL),
+                ('fWide', w.BOOL))
+
+
+pDropFiles = DROPFILES()
+pDropFiles.pFiles = ctypes.sizeof(DROPFILES)
+pDropFiles.fWide = True
+metadata = bytes(pDropFiles)
+
 
 class WintypesClipboard():
-    def __init__(self, file_urls = None):
+    def __init__(self, file_urls=None):
         # file_urls: list[str] = None
         self.file_urls = file_urls
 
@@ -29,7 +38,6 @@ class WintypesClipboard():
         self.GetClipboardData.argtypes = w.UINT,
         self.GetClipboardData.restype = w.HANDLE
 
-
         self.SetClipboardData = u32.SetClipboardData
 
         self.CloseClipboard = u32.CloseClipboard
@@ -39,29 +47,19 @@ class WintypesClipboard():
         self.DragQueryFile = s32.DragQueryFile
         self.DragQueryFile.argtypes = [w.HANDLE, w.UINT, ctypes.c_void_p, w.UINT]
 
+    def pull(self, file_list):
+        files = ('\0'.join(file_list)).replace('/', '\\')
+        data = files.encode('U16')[2:] + b'\0\0'
 
-    # def pull(self,file_list):
-    #     offset = ctypes.sizeof(DROPFILES)
-    #     length = sum(len(p) + 1 for p in file_list) + 1
-    #     size = offset + length * ctypes.sizeof(ctypes.c_wchar)
-    #     buf = (ctypes.c_char * size)()
-    #     df = DROPFILES.from_buffer(buf)
-    #     df.pFiles, df.fWide = offset, True
-    #     for path in file_list:
-    #         array_t = ctypes.c_wchar * (len(path) + 1)
-    #         path_buf = array_t.from_buffer(buf, offset)
-    #         path_buf.value = path
-    #         offset += ctypes.sizeof(path_buf)
-    #     stg = pythoncom.STGMEDIUM()
-    #     stg.set(pythoncom.TYMED_HGLOBAL, buf)
-    #     self.OpenClipboard()
-    #     try:
-    #         self.SetClipboardData(self.CF_HDROP,stg.data)
-    #
-    #     finally:
-    #         self.CloseClipboard()
+        if self.OpenClipboard(None):
+            try:
+                self.SetClipboardData(self.CF_HDROP, metadata + data)
+            except Exception as e:
+                print(e)
+            finally:
+                self.CloseClipboard()
 
-    def push(self,force_unicode = False):
+    def push(self, force_unicode=False):
         self.file_urls = []
 
         if self.OpenClipboard(None):

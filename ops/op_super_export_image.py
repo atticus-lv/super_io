@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 from .ops_super_import import import_icon
-
+from ..clipboard.wintypes import WintypesClipboard as Clipboard
 
 class WM_OT_super_export_image(bpy.types.Operator):
     """Export Image to Clipboard"""
@@ -57,6 +57,10 @@ class WM_OT_super_export_image(bpy.types.Operator):
 
         bpy.ops.image.save_as(filepath=image_path, save_as_render=True, copy=True)
 
+        # clipboard = Clipboard()
+        # clipboard.pull([image_path])
+        #
+        # del clipboard
         script = (
             "Add-Type -Assembly System.Windows.Forms; "
             "Add-Type -Assembly System.Drawing; "
