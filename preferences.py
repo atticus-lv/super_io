@@ -717,6 +717,10 @@ def add_keybind():
         kmi = km.keymap_items.new("wm.super_import", 'V', 'PRESS', ctrl=True, shift=True)
         addon_keymaps.append((km, kmi))
 
+        km = wm.keyconfigs.addon.keymaps.new(name='Image Editor', space_type='IMAGE_EDITOR')
+        kmi = km.keymap_items.new("wm.super_export_image", 'C', 'PRESS', ctrl=True, shift=True)
+        addon_keymaps.append((km, kmi))
+
 
 def remove_keybind():
     wm = bpy.context.window_manager

@@ -1,5 +1,6 @@
 data = {
     "Super Import": "超级导入",
+    "Super Export": "超级导出",
     "Config": "配置",
     "No file found in clipboard": "剪切板为空!",
     "Sponsor: 只剩一瓶辣椒酱": "赞助者: 只剩一瓶辣椒酱",
