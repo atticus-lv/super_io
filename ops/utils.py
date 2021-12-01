@@ -73,7 +73,7 @@ class ConfigItemHelper():
         op_callable = None
         ops_args = dict()
         operator_type = self.operator_type
-        op_context= None
+        op_context = None
 
         # custom operator
         if operator_type == 'CUSTOM':
@@ -192,7 +192,31 @@ class ConfigHelper():
         return len(self.config_list) > 1
 
 
-class PopupMenu():
+class PopupExportMenu():
+    def __init__(self, temp_path, context):
+        self.path = temp_path
+        self.context = context
+
+    def default_image_menu(self, return_menu=False):
+        context = self.context
+        if context.area.type == "IMAGE_EDITOR":
+            if context.area.spaces.active.image is not None and context.area.spaces.active.image.has_data is True:
+                def draw_image_editor_menu(cls, context):
+                    layout = cls.layout
+                    layout.operator_context = "INVOKE_DEFAULT"
+                    col = layout.column()
+                    op = col.operator('spio.export_image')
+                    op = col.operator('spio.export_pixel')
+
+                if return_menu:
+                    return draw_image_editor_menu
+
+                context.window_manager.popup_menu(draw_image_editor_menu,
+                                                  title=f'Super Export Image ({context.area.spaces.active.image.name})',
+                                                  icon='IMAGE_DATA')
+
+
+class PopupImportMenu():
     def __init__(self, file_list, context):
         self.file_list = file_list
         self.context = context

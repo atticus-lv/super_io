@@ -444,7 +444,7 @@ class PREF_UL_ConfigList(bpy.types.UIList):
 
 class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
     bl_label = "Config Import/Export"
-    bl_idname = "SPIO_PT_ConfigIOMenu"
+    bl_idname = "SPIO_MT_ConfigIOMenu"
 
     def draw(self, context):
         layout = self.layout

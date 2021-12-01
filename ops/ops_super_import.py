@@ -14,7 +14,7 @@ from bpy.props import (EnumProperty,
                        IntProperty,
                        BoolProperty)
 
-from .utils import MeasureTime, ConfigItemHelper, ConfigHelper, PopupMenu
+from .utils import MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu
 from .utils import is_float, get_pref, convert_value
 
 from ..loader.default_importer import default_importer
@@ -242,11 +242,11 @@ class SuperImport(bpy.types.Operator):
                     layout.operator('spio.import_model').files = '$$'.join(
                         remain_list)
                 elif ext == 'blend':
-                    pop = PopupMenu(file_list=remain_list, context=context)
+                    pop = PopupImportMenu(file_list=remain_list, context=context)
                     menu = pop.default_blend_menu(return_menu=True)
                     menu(self, context)
                 else:
-                    pop = PopupMenu(file_list=remain_list, context=context)
+                    pop = PopupImportMenu(file_list=remain_list, context=context)
                     menu = pop.default_image_menu(return_menu=True)
                     menu(self, context)
 
@@ -262,7 +262,7 @@ class WM_OT_super_import(SuperImport):
 
     def import_blend_default(self, context):
         """Import with default popup"""
-        popup = PopupMenu(file_list=self.file_list, context=context)
+        popup = PopupImportMenu(file_list=self.file_list, context=context)
         popup.default_blend_menu()
 
     def import_default(self, context):
@@ -273,7 +273,7 @@ class WM_OT_super_import(SuperImport):
                 op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
                 op_callable(filepath=file_path)
         else:
-            popup = PopupMenu(self.file_list, context)
+            popup = PopupImportMenu(self.file_list, context)
             popup.default_image_menu()
 
 
