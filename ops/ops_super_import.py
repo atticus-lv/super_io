@@ -3,7 +3,7 @@ import sys
 import time
 
 if sys.platform == "win32":
-    from ..clipboard.wintypes import WintypesClipboard as Clipboard
+    from ..clipboard.windows import WintypesClipboard as Clipboard
 elif sys.platform == "darwin":
     from ..clipboard.darwin.mac import MacClipboard as Clipboard
 

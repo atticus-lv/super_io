@@ -225,7 +225,7 @@ class PopupExportMenu():
                 layout = cls.layout
                 layout.operator_context = "INVOKE_DEFAULT"
                 col = layout.column()
-                col.operator('spio.export_blend', text='Copy CopyBuffer Blend File')
+                col.operator('spio.export_blend', text='Export BLEND')
 
                 for ext, bl_idname in default_exporter.items():
                     op = col.operator('spio.export_model', text=f'Export {ext.upper()}')

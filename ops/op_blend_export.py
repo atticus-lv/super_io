@@ -9,7 +9,8 @@ import sys
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from .ops_super_import import import_icon
-
+from ..clipboard.windows import PowerShellClipboard
+from ..exporter.utils import run_blend_fix
 
 class ImageCopyDefault:
     @classmethod
@@ -22,37 +23,12 @@ class ImageCopyDefault:
                     and len(context.selected_objects) != 0
             )
 
-    def get_args(self, script):
-        powershell_args = [
-            os.path.join(
-                getenv("SystemRoot"),
-                "System32",
-                "WindowsPowerShell",
-                "v1.0",
-                "powershell.exe",
-            ),
-            "-NoProfile",
-            "-NoLogo",
-            "-NonInteractive",
-            "-WindowStyle",
-            "Hidden",
-        ]
-        script = (
-                "$OutputEncoding = "
-                "[System.Console]::OutputEncoding = "
-                "[System.Console]::InputEncoding = "
-                "[System.Text.Encoding]::UTF8; "
-                + "$PSDefaultParameterValues['*:Encoding'] = 'utf8'; "
-                + script
-        )
-        args = powershell_args + ["& { " + script + " }"]
-        return args
-
 
 class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
     """Export Selected obj as blend file"""
     bl_idname = 'spio.export_blend'
     bl_label = 'Copy Blend'
+
 
     def execute(self, context):
         bpy.ops.view3d.copybuffer()  # copy buffer
@@ -66,26 +42,15 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
         if os.path.exists(filepath): os.remove(filepath)
         os.rename(os.path.join(temp_dir, 'copybuffer.blend'), filepath)
 
-        script = (
-            f"$file = '{filepath}'; "
-            "$col = New-Object Collections.Specialized.StringCollection; "
-            "$col.add($file); "
-            "Add-Type -Assembly System.Windows.Forms; "
-            "[System.Windows.Forms.Clipboard]::SetFileDropList($col); "
-        )
+        run_blend_fix(filepath)
 
-        parms = {
-            'args': self.get_args(script),
-            'encoding': 'utf-8',
-            'stdout': subprocess.PIPE,
-            'stderr': subprocess.PIPE,
-        }
-
-        subprocess.Popen(**parms)
+        clipboard = PowerShellClipboard()
+        clipboard.push_to_clipboard(path=filepath)
 
         self.report({'INFO'}, f'{context.active_object.name}.blend has been copied to Clipboard')
 
         return {'FINISHED'}
+
 
 
 def register():
