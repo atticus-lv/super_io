@@ -9,6 +9,5 @@
     + [Match Rule](/AddRule.md)
     + [Custom Operator](/CustomOperator.md)
     
-+ **Log**
-    + [1.0](/log/1.0.md)
+
  

@@ -9,7 +9,4 @@
     + [文件名匹配](/zh-cn/AddRule.md)
     + [自定义操作符](/zh-cn/CustomOperator.md)
     
-+ **更新日志**
-    + [1.0](/zh-cn/log/1.0.md)
-    + [1.1](/zh-cn/log/1.1.md)
  
