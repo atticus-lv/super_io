@@ -85,17 +85,18 @@ class ConfigItemHelper():
 
         # default operator
         elif operator_type.startswith('DEFAULT'):
-            if bpy.app.version < (3, 0, 0):
-                bl_idname = default_importer.get(operator_type.removeprefix('DEFAULT_').lower())
-            else:
+            if bpy.app.version < (2, 93, 0):
                 bl_idname = default_importer.get(operator_type[8:].lower())
+            else:
+                bl_idname = default_importer.get(operator_type.removeprefix('DEFAULT_').lower())
+
             op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
         elif operator_type.startswith('APPEND_BLEND'):
-            if bpy.app.version < (3, 0, 0):
-                subpath = operator_type.removeprefix('APPEND_BLEND_').title()
-            else:
+            if bpy.app.version < (2, 93, 0):
                 subpath = operator_type[13:].title()
+            else:
+                subpath = operator_type.removeprefix('APPEND_BLEND_').title()
 
             data_type = default_blend_lib.get(subpath)
             op_callable = bpy.ops.spio.append_blend
