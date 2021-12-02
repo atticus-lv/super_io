@@ -5,11 +5,11 @@ default_exporter = {
     # 'usda': 'wm.usd_import',
     #
     # 'ply': 'import_mesh.ply',
-    # 'stl': 'import_mesh.stl',
+    'stl': 'export_mesh.stl',
     # 'dae': 'wm.collada_import',
     # 'abc': 'wm.alembic_import',
     'obj': 'export_scene.obj',
-    # 'fbx': 'import_scene.fbx',
+    'fbx': 'export_scene.fbx',
     #
     # 'glb': 'import_scene.gltf',
     # 'gltf': 'import_scene.gltf',

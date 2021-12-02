@@ -49,22 +49,33 @@ class ImageCopyDefault:
         return args
 
 
-class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
-    """Export Selected obj as blend file"""
-    bl_idname = 'spio.export_blend'
-    bl_label = 'Copy Blend'
+from ..exporter.default_exporter import default_exporter
+
+
+class SPIO_OT_export_model(ImageCopyDefault, bpy.types.Operator):
+    """Export Selected obj as model file"""
+    bl_idname = 'spio.export_model'
+    bl_label = 'Copy Model'
+
+    extension: StringProperty()
 
     def execute(self, context):
-        bpy.ops.view3d.copybuffer()  # copy buffer
+        if self.extension not in default_exporter: return {"CANCELLED"}
+
+        bl_idname = default_exporter.get(self.extension)
+        op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
         ori_dir = context.preferences.filepaths.temporary_directory
         temp_dir = ori_dir
         if ori_dir == '':
             temp_dir = os.path.join(os.getenv('APPDATA'), os.path.pardir, 'Local', 'Temp')
 
-        filepath = os.path.join(temp_dir, context.active_object.name + '.blend')
-        if os.path.exists(filepath): os.remove(filepath)
-        os.rename(os.path.join(temp_dir, 'copybuffer.blend'), filepath)
+        filepath = os.path.join(temp_dir, context.active_object.name + f'.{self.extension}')
+
+        op_args = {'filepath': filepath,
+                   'use_selection': True}
+
+        op_callable(**op_args)
 
         script = (
             f"$file = '{filepath}'; "
@@ -83,14 +94,14 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
 
         subprocess.Popen(**parms)
 
-        self.report({'INFO'}, f'{context.active_object.name}.blend has been copied to Clipboard')
+        self.report({'INFO'}, f'{context.active_object.name}.{self.extension} has been copied to Clipboard')
 
         return {'FINISHED'}
 
 
 def register():
-    bpy.utils.register_class(SPIO_OT_export_blend)
+    bpy.utils.register_class(SPIO_OT_export_model)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_OT_export_blend)
+    bpy.utils.unregister_class(SPIO_OT_export_model)

@@ -191,7 +191,9 @@ class ConfigHelper():
     def is_more_than_one_config(self):
         return len(self.config_list) > 1
 
+
 from ..exporter.default_exporter import default_exporter
+
 
 class PopupExportMenu():
     def __init__(self, temp_path, context):
@@ -223,14 +225,19 @@ class PopupExportMenu():
                 layout = cls.layout
                 layout.operator_context = "INVOKE_DEFAULT"
                 col = layout.column()
-                col.operator('spio.export_blend')
+                col.operator('spio.export_blend', text='Copy CopyBuffer Blend File')
+
+                for ext, bl_idname in default_exporter.items():
+                    op = col.operator('spio.export_model', text=f'Export {ext.upper()}')
+                    op.extension = ext
 
             if return_menu:
                 return draw_menu
 
             context.window_manager.popup_menu(draw_menu,
-                                              title=f'Super Export Blend ({len(context.selected_objects)} objs)',
+                                              title=f'Super Export ({len(context.selected_objects)} objs)',
                                               icon='FILE_BLEND')
+
 
 class PopupImportMenu():
     def __init__(self, file_list, context):
