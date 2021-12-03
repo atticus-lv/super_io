@@ -2,6 +2,7 @@ import argparse
 import bpy
 import sys
 
+
 def main(args):
     print("Script args: ", args)
 
@@ -21,16 +22,18 @@ def main(args):
 
         for o in bpy.data.objects:
             bpy.context.scene.collection.objects.link(o)
-        # if packImages:
-        #     for p in packImages:
-        #         for i in bpy.data.images:
-        #             if i.filepath.endswith(p):
-        #                 i.pack()
-        #                 break
+
+        # pack
+        bpy.ops.file.pack_all()
+        try:
+            bpy.ops.file.pack_libraries()
+        except:
+            pass
 
         bpy.context.view_layer.update()
         bpy.context.preferences.filepaths.save_version = 0  # No backup blends needed
         bpy.ops.wm.save_as_mainfile(filepath=blend, compress=True)
+
 
 if __name__ == "__main__":
     if "--" not in sys.argv:

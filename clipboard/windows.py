@@ -9,18 +9,18 @@ import ctypes.wintypes as w
 from locale import getdefaultlocale
 
 
-class DROPFILES(ctypes.Structure):
-    _fields_ = (('pFiles', w.DWORD),
-                ('x', w.LONG),
-                ('y', w.LONG),
-                ('fNC', w.BOOL),
-                ('fWide', w.BOOL))
-
-
-pDropFiles = DROPFILES()
-pDropFiles.pFiles = ctypes.sizeof(DROPFILES)
-pDropFiles.fWide = True
-metadata = bytes(pDropFiles)
+# class DROPFILES(ctypes.Structure):
+#     _fields_ = (('pFiles', w.DWORD),
+#                 ('x', w.LONG),
+#                 ('y', w.LONG),
+#                 ('fNC', w.BOOL),
+#                 ('fWide', w.BOOL))
+#
+#
+# pDropFiles = DROPFILES()
+# pDropFiles.pFiles = ctypes.sizeof(DROPFILES)
+# pDropFiles.fWide = True
+# metadata = bytes(DROPFILES)
 
 
 class WintypesClipboard():
