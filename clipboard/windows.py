@@ -63,7 +63,7 @@ class WintypesClipboard():
     #         finally:
     #             self.CloseClipboard()
 
-    def push(self, force_unicode=False):
+    def pull(self, force_unicode=False):
         self.file_urls = []
 
         if self.OpenClipboard(None):
