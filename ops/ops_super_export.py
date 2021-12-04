@@ -174,12 +174,12 @@ class WM_OT_super_export(bpy.types.Operator):
                            "invoke": invoke,
                            # custom pass in
                            'ITEM': ITEM,
-                           'batch_mode':False ,
-                           'extension':ITEM.extension ,
+                           'batch_mode': False,
+                           'extension': ITEM.extension,
                            # custom function
-                           'export_single':export_single,
-                           'export_batch':export_batch,
-                           'get_temp_dir':get_temp_dir,
+                           'export_single': export_single,
+                           'export_batch': export_batch,
+                           'get_temp_dir': get_temp_dir,
                            },
                           )
 

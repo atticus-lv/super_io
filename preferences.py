@@ -313,6 +313,9 @@ class ConfigListFilterProperty(PropertyGroup):
                           options=set(),
                           description="Reverse", )
 
+    show_import: BoolProperty(name='Show Import', default=True)
+    show_export: BoolProperty(name='Show Export', default=True)
+
 
 class SPIO_OT_color_tag_selector(bpy.types.Operator):
     bl_idname = 'spio.color_tag_selector'
@@ -389,35 +392,22 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         pass
 
     def filter_items(self, context, data, propname):
-        if bpy.app.version < (2, 93, 0):
-            return self.filter_items_283(context, data, propname)
-
         filter = context.window_manager.spio_filter
 
         items = getattr(data, propname)
         ordered = []
 
-        filtered = bpy.types.UI_UL_list.filter_items_by_name(getattr(filter, 'filter_' + filter.filter_type),
-                                                             self.bitflag_filter_item,
-                                                             items,
-                                                             filter.filter_type.removeprefix('filter_'),
-                                                             reverse=filter.reverse)
+        filtered = [self.bitflag_filter_item] * len(items)
 
-        try:
-            ordered = bpy.types.UI_UL_list.sort_items_helper(items, filter.filter_type.removeprefix('filter_'))
-        except:
-            pass
+        for i, item in enumerate(items):
+            if item.io_type == 'IMPORT' and not filter.show_import:
+                filtered[i] &= ~self.bitflag_filter_item
 
-        return filtered, ordered
-
-    def filter_items_283(self, context, data, propname):
-        filter = context.window_manager.spio_filter
-
-        items = getattr(data, propname)
-        ordered = []
+        for i, item in enumerate(items):
+            if item.io_type == 'EXPORT' and not filter.show_export:
+                filtered[i] &= ~self.bitflag_filter_item
 
         ################################################
-        filtered = [self.bitflag_filter_item] * len(items)
         if filter.filter_type == 'extension':
             for i, item in enumerate(items):
                 if item.extension != filter.filter_extension and filter.filter_extension != '':
@@ -434,11 +424,9 @@ class PREF_UL_ConfigList(bpy.types.UIList):
                     filtered[i] &= ~self.bitflag_filter_item
 
         elif filter.filter_type == 'name':
-            filtered = bpy.types.UI_UL_list.filter_items_by_name(getattr(filter, 'filter_' + filter.filter_type),
-                                                                 self.bitflag_filter_item,
-                                                                 items,
-                                                                 filter.filter_name,
-                                                                 reverse=filter.reverse)
+            for i, item in enumerate(items):
+                if item.name != filter.filter_color_tag and filter.filter_name != '':
+                    filtered[i] &= ~self.bitflag_filter_item
 
         # invert
         if filtered and filter.reverse:
