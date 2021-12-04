@@ -98,27 +98,28 @@ class ExtensionOperatorProperty(PropertyGroup):
         items=[
             ("", "Import", "Default blender build-in importer", "CUBE", 0),
             None,
-            ('DEFAULT_DAE', 'Collada (.dae)', '', 'CUBE', 99),
-            ('DEFAULT_ABC', 'Alembic (.abc)', '', 'CUBE', 98),
-            ('DEFAULT_USD', 'USD (.usd/.usda/.usdc)', '', 'CUBE', 97),
+            ('DEFAULT_DAE', 'Collada (.dae)', '', 'IMPORT', 99),
+            ('DEFAULT_ABC', 'Alembic (.abc)', '', 'IMPORT', 98),
+            ('DEFAULT_USD', 'USD (.usd/.usda/.usdc)', '', 'IMPORT', 97),
             ('DEFAULT_SVG', 'SVG (.svg)', '', 'GP_SELECT_POINTS', 96),
-            ('DEFAULT_PLY', 'Stanford (.ply)', '', 'CUBE', 95),
-            ('DEFAULT_STL', 'Stl (.stl)', '', 'CUBE', 94),
-            ('DEFAULT_FBX', 'FBX (.fbx)', '', 'CUBE', 93),
-            ('DEFAULT_GLTF', 'glTF 2.0 (.gltf/.glb)', '', 'CUBE', 92),
-            ('DEFAULT_OBJ', 'Wavefront (.obj)', '', 'CUBE', 91),
-            ('DEFAULT_X3D', 'X3D (.x3d/.wrl)', '', 'CUBE', 90),
+            ('DEFAULT_PLY', 'Stanford (.ply)', '', 'IMPORT', 95),
+            ('DEFAULT_STL', 'Stl (.stl)', '', 'IMPORT', 94),
+            ('DEFAULT_FBX', 'FBX (.fbx)', '', 'IMPORT', 93),
+            ('DEFAULT_GLTF', 'glTF 2.0 (.gltf/.glb)', '', 'IMPORT', 92),
+            ('DEFAULT_OBJ', 'Wavefront (.obj)', '', 'IMPORT', 91),
+            ('DEFAULT_X3D', 'X3D (.x3d/.wrl)', '', 'IMPORT', 90),
+
             ("", "Export", "Default blender build-in exporter", "CUBE", 0),
-            ('EXPORT_DAE', 'Collada (.dae)', '', 'CUBE', 199),
-            ('EXPORT_ABC', 'Alembic (.abc)', '', 'CUBE', 198),
-            ('EXPORT_USD', 'USD (.usd)', '', 'CUBE', 197),
-            ('EXPORT_USDC', 'USD (.usdc)', '', 'CUBE', 196),
-            ('EXPORT_USDA', 'USD (.usda)', '', 'CUBE', 195),
-            ('EXPORT_PLY', 'Stanford (.ply)', '', 'CUBE', 194),
-            ('EXPORT_STL', 'Stl (.stl)', '', 'CUBE', 193),
-            ('EXPORT_FBX', 'FBX (.fbx)', '', 'CUBE', 192),
-            ('EXPORT_GLTF', 'glTF 2.0 (.gltf)', '', 'CUBE', 191),
-            ('EXPORT_OBJ', 'Wavefront (.obj)', '', 'CUBE', 190),
+            ('EXPORT_DAE', 'Collada (.dae)', '', 'EXPORT', 199),
+            ('EXPORT_ABC', 'Alembic (.abc)', '', 'EXPORT', 198),
+            ('EXPORT_USD', 'USD (.usd)', '', 'EXPORT', 197),
+            ('EXPORT_USDC', 'USD (.usdc)', '', 'EXPORT', 196),
+            ('EXPORT_USDA', 'USD (.usda)', '', 'EXPORT', 195),
+            ('EXPORT_PLY', 'Stanford (.ply)', '', 'EXPORT', 194),
+            ('EXPORT_STL', 'Stl (.stl)', '', 'EXPORT', 193),
+            ('EXPORT_FBX', 'FBX (.fbx)', '', 'EXPORT', 192),
+            ('EXPORT_GLTF', 'glTF 2.0 (.gltf)', '', 'EXPORT', 191),
+            ('EXPORT_OBJ', 'Wavefront (.obj)', '', 'EXPORT', 190),
 
             ("", "Import Blend", "Import Blend File", "BLENDER", 0),
             None,
@@ -641,9 +642,11 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         row.prop(item, 'io_type', expand=True)
 
         box1.prop(item, 'name')
-        box1.prop(item, 'extension')
-
         box1.prop(item, 'description')
+
+        f = box1
+        f.alert = (item.extension == '')
+        f.prop(item, 'extension')
 
         if item.io_type == 'IMPORT':
             box2 = box.box()
