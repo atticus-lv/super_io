@@ -1,6 +1,6 @@
 default_exporter = {
     # 'usd': 'wm.usd_import',
-    'usdc': 'wm.usd_import',
+    'usdc': 'wm.usd_export',
     # 'usda': 'wm.usd_import',
     #
     'ply': 'export_mesh.ply',
