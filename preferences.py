@@ -524,6 +524,11 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         row.label(text='Force Unicode')
 
         row = col.row(align=True)
+        row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
+
+        col.separator()
+
+        row = col.row(align=True)
         row.prop(self, 'use_N_panel', text='')
         row.label(text='Use N Panel')
 
