@@ -73,7 +73,7 @@ class ExtensionOperatorProperty(PropertyGroup):
     color_tag: EnumProperty(name='Color Tag',
                             items=enum_color_tag_items)
     # IO type
-    io_type: EnumProperty(name='IO Type', items=[('IMPORT', 'Import', ''), ('EXPORT', 'Export', '')],
+    io_type: EnumProperty(name='IO Type', items=[('IMPORT', 'Import', '','IMPORT',0), ('EXPORT', 'Export', '','EXPORT',1)],
                           default='IMPORT')
     # information
     name: StringProperty(name='Preset Name', update=correct_name)
@@ -385,7 +385,7 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         row.operator('spio.color_tag_selector', text='',
                      icon=get_color_tag_icon(int(item.color_tag[-1:]))).index = index
         row.prop(item, 'name', text='', emboss=False)
-        row.prop(item, 'extension', text='', emboss=False)
+        row.prop(item, 'extension', text='', emboss=False,icon = item.io_type)
         row.prop(item, 'use_config', text='')
 
     def draw_filter(self, context, layout):
