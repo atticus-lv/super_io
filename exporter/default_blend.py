@@ -21,7 +21,7 @@ def execute_blender(args):
     return execute(args)
 
 
-def run_blend_fix(asset):
+def post_process_blend_file(asset,scripts_file_name = 'script_export_blend.py'):
     """
     Fixes the given .blend file, by instancing all objects in the active scene.
     """
@@ -29,7 +29,7 @@ def run_blend_fix(asset):
         "--background",
         "--factory-startup",
         "--python",
-        os.path.join(os.path.dirname(__file__), "fix_blend.py"),
+        os.path.join(os.path.dirname(__file__), scripts_file_name),
         "--",
         asset,
     ]

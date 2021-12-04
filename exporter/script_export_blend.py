@@ -13,10 +13,8 @@ def main(args):
         args = parser.parse_args(args)
 
         blend = args.blend
-        # packImages = args.pack
 
         print(f"Blend to fix: {blend}")
-        # print(f"Images to pack: {packImages}")
 
         bpy.ops.wm.open_mainfile(filepath=blend)
 

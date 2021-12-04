@@ -10,7 +10,7 @@ import sys
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from .ops_super_import import import_icon
 from ..clipboard.windows import PowerShellClipboard
-from ..exporter.utils import run_blend_fix
+from ..exporter.default_blend import post_process_blend_file
 
 class ImageCopyDefault:
     @classmethod
@@ -25,7 +25,7 @@ class ImageCopyDefault:
 
 
 class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
-    """Export Selected obj as blend file"""
+    """Export Selected objects to a blend file"""
     bl_idname = 'spio.export_blend'
     bl_label = 'Copy Blend'
 
@@ -42,10 +42,10 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
         if os.path.exists(filepath): os.remove(filepath)
         os.rename(os.path.join(temp_dir, 'copybuffer.blend'), filepath)
 
-        run_blend_fix(filepath)
+        post_process_blend_file(filepath)
 
         clipboard = PowerShellClipboard()
-        clipboard.push_to_clipboard(path=filepath)
+        clipboard.push_to_clipboard(paths=[filepath])
 
         self.report({'INFO'}, f'{context.active_object.name}.blend has been copied to Clipboard')
 
