@@ -113,26 +113,7 @@ class PowerShellClipboard():
         args = powershell_args + ["& { " + script + " }"]
         return args
 
-    def push_to_clipboard(self, path, draw_image_pixel=False):
-        script = (
-            f"$file = '{path}'; "
-            "$col = New-Object Collections.Specialized.StringCollection; "
-            "$col.add($file); "
-            "Add-Type -Assembly System.Windows.Forms; "
-            "[System.Windows.Forms.Clipboard]::SetFileDropList($col); "
-        )
-        if draw_image_pixel:
-            script = (
-                "Add-Type -Assembly System.Windows.Forms; "
-                "Add-Type -Assembly System.Drawing; "
-                f"$image = [Drawing.Image]::FromFile('{path}'); "
-                "$imageStream = New-Object System.IO.MemoryStream; "
-                "$image.Save($imageStream, [System.Drawing.Imaging.ImageFormat]::Png); "
-                "$dataObj = New-Object System.Windows.Forms.DataObject('Bitmap', $image); "
-                "$dataObj.SetData('PNG', $imageStream); "
-                "[System.Windows.Forms.Clipboard]::SetDataObject($dataObj, $true); "
-            )
-
+    def push(self, script):
         parms = {
             'args': self.get_args(script),
             'encoding': 'utf-8',
@@ -141,3 +122,33 @@ class PowerShellClipboard():
         }
 
         subprocess.Popen(**parms)
+
+    def push_pixel_to_clipboard(self, path):
+        script = (
+            "Add-Type -Assembly System.Windows.Forms; "
+            "Add-Type -Assembly System.Drawing; "
+            f"$image = [Drawing.Image]::FromFile('{path}'); "
+            "$imageStream = New-Object System.IO.MemoryStream; "
+            "$image.Save($imageStream, [System.Drawing.Imaging.ImageFormat]::Png); "
+            "$dataObj = New-Object System.Windows.Forms.DataObject('Bitmap', $image); "
+            "$dataObj.SetData('PNG', $imageStream); "
+            "[System.Windows.Forms.Clipboard]::SetDataObject($dataObj, $true); "
+        )
+
+        self.push(script)
+
+    def push_to_clipboard(self, paths):
+        join_s = ""
+
+        for path in paths:
+            join_s += f", '{path}'"
+
+        script = (
+            f"$filelist = {join_s};"
+            "$col = New-Object Collections.Specialized.StringCollection; "
+            "foreach($file in $filelist){$col.add($file)}; "
+            "Add-Type -Assembly System.Windows.Forms; "
+            "[System.Windows.Forms.Clipboard]::SetFileDropList($col); "
+        )
+
+        self.push(script)

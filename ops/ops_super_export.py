@@ -3,6 +3,10 @@ import bpy
 from .utils import PopupExportMenu
 from .ops_super_import import import_icon
 
+from ..ui.icon_utils import RSN_Preview
+
+export_icon = RSN_Preview(image='export.bip', name='import_icon')
+
 
 class WM_OT_super_export(bpy.types.Operator):
     """Export to Clipboard"""
@@ -22,16 +26,20 @@ class WM_OT_super_export(bpy.types.Operator):
 def draw_menu(self, context):
     layout = self.layout
     layout.separator()
-    layout.operator('wm.super_export', icon_value=import_icon.get_image_icon_id())
+    layout.operator('wm.super_export', icon_value=export_icon.get_image_icon_id())
 
 
 def register():
+    export_icon.register()
+
     bpy.utils.register_class(WM_OT_super_export)
 
     bpy.types.IMAGE_MT_image.append(draw_menu)
 
 
 def unregister():
+    export_icon.unregister()
+
     bpy.utils.unregister_class(WM_OT_super_export)
 
     bpy.types.IMAGE_MT_image.remove(draw_menu)

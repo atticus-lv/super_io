@@ -228,6 +228,8 @@ class PopupExportMenu():
                 col = layout.column()
                 col.operator('spio.export_blend', text='Export BLEND')
 
+                col.separator()
+
                 for ext, bl_idname in default_exporter.items():
                     op = col.operator('spio.export_model', text=f'Export {ext.upper()}')
                     op.extension = ext
