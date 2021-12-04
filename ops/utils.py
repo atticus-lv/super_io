@@ -47,9 +47,22 @@ def convert_value(value):
         return value
 
 
+def get_op_by_idname(bl_idname):
+    return getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+
+
+def remove_prefix(s, prefix):
+    if bpy.app.version < (2, 93, 0):
+        return s[len(prefix):]
+    else:
+        return s.removeprefix(prefix)
+
+
 from ..loader.default_importer import default_importer
 from ..loader.default_blend import default_blend_lib
 from ..loader.addon_blend import addon_blend
+
+from ..exporter.default_exporter import default_exporter, exporter_ops_props
 
 
 class ConfigItemHelper():
@@ -85,18 +98,11 @@ class ConfigItemHelper():
 
         # default operator
         elif operator_type.startswith('DEFAULT'):
-            if bpy.app.version < (2, 93, 0):
-                bl_idname = default_importer.get(operator_type[8:].lower())
-            else:
-                bl_idname = default_importer.get(operator_type.removeprefix('DEFAULT_').lower())
-
-            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+            bl_idname = default_importer.get(remove_prefix(operator_type, 'DEFAULT_').lower())
+            op_callable = get_op_by_idname(bl_idname)
 
         elif operator_type.startswith('APPEND_BLEND'):
-            if bpy.app.version < (2, 93, 0):
-                subpath = operator_type[13:].title()
-            else:
-                subpath = operator_type.removeprefix('APPEND_BLEND_').title()
+            subpath = remove_prefix(operator_type, 'APPEND_BLEND_').title()
 
             data_type = default_blend_lib.get(subpath)
             op_callable = bpy.ops.spio.append_blend
@@ -105,7 +111,8 @@ class ConfigItemHelper():
                         'load_all': True}
 
         elif operator_type.startswith('LINK_BLEND'):
-            subpath = operator_type.removeprefix('LINK_BLEND_').title()
+            subpath = remove_prefix(operator_type, 'LINK_BLEND_').title()
+
             data_type = default_blend_lib.get(subpath)
             op_callable = bpy.ops.spio.link_blend
             ops_args = {'sub_path': subpath,
@@ -114,7 +121,14 @@ class ConfigItemHelper():
 
         elif operator_type.startswith('ADDONS'):
             bl_idname = addon_blend.get(operator_type)
-            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
+            op_callable = get_op_by_idname(bl_idname)
+
+        elif operator_type.startswith('EXPORT'):
+            ext = remove_prefix(operator_type, 'EXPORT_').lower()
+            bl_idname = default_exporter.get(ext)
+            op_callable = get_op_by_idname(bl_idname)
+
+            ops_args = exporter_ops_props.get(ext)
 
         return op_callable, ops_args, op_context
 
@@ -139,7 +153,7 @@ class ConfigItemHelper():
 
 
 class ConfigHelper():
-    def __init__(self, check_use=False, filter=None):
+    def __init__(self, check_use=False, filter=None,io_type = "IMPORT"):
         pref_config = get_pref().config_list
 
         config_list = dict()
@@ -163,16 +177,26 @@ class ConfigHelper():
                         ops_config[prop] = convert_value(value)
                 config['prop_list'] = ops_config
 
-            # check config dict
-            if True in (config.get('name') == '',
-                        config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '',
-                        config.get('extension') == '',
-                        filter and config.get('extension') != filter,
-                        check_use and config.get('use_config') is False,
-                        ): continue
+            if io_type == 'IMPORT':
+                # check config dict
+                if True in (config.get('name') == '',
+                            config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '',
+                            config.get('extension') == '',
+                            filter and config.get('extension') != filter,
+                            check_use and config.get('use_config') is False,
+                            ): continue
 
-            index_list.append(config_list_index)
-            config_list[item.name] = config
+                index_list.append(config_list_index)
+                config_list[item.name] = config
+            elif io_type == 'EXPORT':
+                if True in (config.get('name') == '',
+                            config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '',
+                            config.get('extension') == '',
+                            check_use and config.get('use_config') is False,
+                            ): continue
+
+                index_list.append(config_list_index)
+                config_list[item.name] = config
 
         self.config_list = config_list
         self.index_list = index_list

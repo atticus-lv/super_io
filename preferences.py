@@ -72,6 +72,9 @@ class ExtensionOperatorProperty(PropertyGroup):
     # UI
     color_tag: EnumProperty(name='Color Tag',
                             items=enum_color_tag_items)
+    # IO type
+    io_type: EnumProperty(name='IO Type', items=[('IMPORT', 'Import', ''), ('EXPORT', 'Export', '')],
+                          default='IMPORT')
     # information
     name: StringProperty(name='Preset Name', update=correct_name)
     description: StringProperty(name='Description',
@@ -93,7 +96,7 @@ class ExtensionOperatorProperty(PropertyGroup):
     operator_type: EnumProperty(
         name='Operator Type',
         items=[
-            ("", "Default", "Default blender build-in importer", "CUBE", 0),
+            ("", "Import", "Default blender build-in importer", "CUBE", 0),
             None,
             ('DEFAULT_DAE', 'Collada (.dae)', '', 'CUBE', 99),
             ('DEFAULT_ABC', 'Alembic (.abc)', '', 'CUBE', 98),
@@ -105,8 +108,19 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('DEFAULT_GLTF', 'glTF 2.0 (.gltf/.glb)', '', 'CUBE', 92),
             ('DEFAULT_OBJ', 'Wavefront (.obj)', '', 'CUBE', 91),
             ('DEFAULT_X3D', 'X3D (.x3d/.wrl)', '', 'CUBE', 90),
+            ("", "Export", "Default blender build-in exporter", "CUBE", 0),
+            ('EXPORT_DAE', 'Collada (.dae)', '', 'CUBE', 199),
+            ('EXPORT_ABC', 'Alembic (.abc)', '', 'CUBE', 198),
+            ('EXPORT_USD', 'USD (.usd)', '', 'CUBE', 197),
+            ('EXPORT_USDC', 'USD (.usdc)', '', 'CUBE', 196),
+            ('EXPORT_USDA', 'USD (.usda)', '', 'CUBE', 195),
+            ('EXPORT_PLY', 'Stanford (.ply)', '', 'CUBE', 194),
+            ('EXPORT_STL', 'Stl (.stl)', '', 'CUBE', 193),
+            ('EXPORT_FBX', 'FBX (.fbx)', '', 'CUBE', 192),
+            ('EXPORT_GLTF', 'glTF 2.0 (.gltf)', '', 'CUBE', 191),
+            ('EXPORT_OBJ', 'Wavefront (.obj)', '', 'CUBE', 190),
 
-            ("", "Blend File", "Blend File", "BLENDER", 0),
+            ("", "Import Blend", "Import Blend File", "BLENDER", 0),
             None,
             ('APPEND_BLEND_MATERIAL', 'Append Materials', 'Append All', 'MATERIAL', 1),
             ('APPEND_BLEND_COLLECTION', 'Append Collections', 'Append All',
@@ -634,27 +648,33 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         box.use_property_split = True
         box1 = box.box()
+
+        row = box1.row(align=True)
+        row.prop(item, 'io_type', expand=True)
+
         box1.prop(item, 'name')
         box1.prop(item, 'extension')
+
         box1.prop(item, 'description')
 
-        box2 = box.box()
-        box2.prop(item, 'match_rule')
-        if item.match_rule != 'NONE':
-            box2.prop(item, 'match_value', text='Match Value' if item.match_rule != 'REGEX' else 'Expression')
-            if not self.disable_warning_rules:
-                box3 = box2.box().column(align=True)
-                box3.alert = True
-                sub_row = box3.row()
-                sub_row.label(text="Warning", icon='ERROR')
-                sub_row.prop(self, 'disable_warning_rules', toggle=True)
-                box4 = box3
-                # box4.alert = False
-                box4.label(text="1. If file name not matching this rule")
-                box4.label(text="   It will search for the next config which match")
-                box4.label(text="2. If no config’s rule is matched")
-                box4.label(
-                    text="   It will popup all available importer in a menu after import all file that match a rule")
+        if item.io_type == 'IMPORT':
+            box2 = box.box()
+            box2.prop(item, 'match_rule')
+            if item.match_rule != 'NONE':
+                box2.prop(item, 'match_value', text='Match Value' if item.match_rule != 'REGEX' else 'Expression')
+                if not self.disable_warning_rules:
+                    box3 = box2.box().column(align=True)
+                    box3.alert = True
+                    sub_row = box3.row()
+                    sub_row.label(text="Warning", icon='ERROR')
+                    sub_row.prop(self, 'disable_warning_rules', toggle=True)
+                    box4 = box3
+                    # box4.alert = False
+                    box4.label(text="1. If file name not matching this rule")
+                    box4.label(text="   It will search for the next config which match")
+                    box4.label(text="2. If no config’s rule is matched")
+                    box4.label(
+                        text="   It will popup all available importer in a menu after import all file that match a rule")
 
         box3 = box.box()
         box3.prop(item, 'operator_type')
@@ -730,6 +750,7 @@ def add_keybind():
         km = wm.keyconfigs.addon.keymaps.new(name='3D View', space_type='VIEW_3D')
         kmi = km.keymap_items.new("wm.super_export", 'C', 'PRESS', ctrl=True, shift=True)
         addon_keymaps.append((km, kmi))
+
 
 def remove_keybind():
     wm = bpy.context.window_manager
