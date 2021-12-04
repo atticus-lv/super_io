@@ -2,6 +2,7 @@ import bpy
 from ..ops.utils import get_pref
 from ..preferences import SPIO_Preference
 from ..ops.ops_super_import import import_icon
+from ..ops.ops_super_export import export_icon
 
 
 class SidebarSetup:
@@ -51,7 +52,7 @@ class SPIO_PT_PrefPanel_300(SPIO_PT_PrefPanel):
 
 
 class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
-    bl_label = 'Super Import'
+    bl_label = 'Super IO'
 
     def draw(self, context):
         layout = self.layout
@@ -60,6 +61,13 @@ class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
         row.scale_y = 1.5
         row.separator()
         row.operator("wm.super_import", icon_value=import_icon.get_image_icon_id())
+        row.separator()
+
+        row = layout.row()
+        row.alignment = 'CENTER'
+        row.scale_y = 1.5
+        row.separator()
+        row.operator("wm.super_export", icon_value=export_icon.get_image_icon_id())
         row.separator()
 
 

@@ -375,8 +375,8 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         pass
 
     def filter_items(self, context, data, propname):
-        if bpy.app.version < (2,93,0):
-            return self.filter_items_283(context,data,propname)
+        if bpy.app.version < (2, 93, 0):
+            return self.filter_items_283(context, data, propname)
 
         filter = context.window_manager.spio_filter
 
@@ -435,7 +435,8 @@ class PREF_UL_ConfigList(bpy.types.UIList):
                 else:
                     filtered[i] &= ~self.bitflag_filter_item
         try:
-            ordered = bpy.types.UI_UL_list.sort_items_helper(items, lambda i: len(getattr(i, filter.filter_type[7:]), True))
+            ordered = bpy.types.UI_UL_list.sort_items_helper(items,
+                                                             lambda i: len(getattr(i, filter.filter_type[7:]), True))
         except:
             pass
 
@@ -444,7 +445,7 @@ class PREF_UL_ConfigList(bpy.types.UIList):
 
 class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
     bl_label = "Config Import/Export"
-    bl_idname = "SPIO_PT_ConfigIOMenu"
+    bl_idname = "SPIO_MT_ConfigIOMenu"
 
     def draw(self, context):
         layout = self.layout
@@ -521,6 +522,11 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         row.alert = True
         row.prop(self, 'force_unicode', text='')
         row.label(text='Force Unicode')
+
+        row = col.row(align=True)
+        row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
+
+        col.separator()
 
         row = col.row(align=True)
         row.prop(self, 'use_N_panel', text='')
@@ -717,10 +723,13 @@ def add_keybind():
         kmi = km.keymap_items.new("wm.super_import", 'V', 'PRESS', ctrl=True, shift=True)
         addon_keymaps.append((km, kmi))
 
-        km = wm.keyconfigs.addon.keymaps.new(name='Image Editor', space_type='IMAGE_EDITOR')
-        kmi = km.keymap_items.new("wm.super_export_image", 'C', 'PRESS', ctrl=True, shift=True)
+        km = wm.keyconfigs.addon.keymaps.new(name='Image Generic', space_type='IMAGE_EDITOR')
+        kmi = km.keymap_items.new("wm.super_export", 'C', 'PRESS', ctrl=True, shift=True)
         addon_keymaps.append((km, kmi))
 
+        km = wm.keyconfigs.addon.keymaps.new(name='3D View', space_type='VIEW_3D')
+        kmi = km.keymap_items.new("wm.super_export", 'C', 'PRESS', ctrl=True, shift=True)
+        addon_keymaps.append((km, kmi))
 
 def remove_keybind():
     wm = bpy.context.window_manager

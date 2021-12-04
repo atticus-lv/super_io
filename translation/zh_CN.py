@@ -3,6 +3,7 @@ data = {
     "Super Export": "超级导出",
     "Config": "配置",
     "No file found in clipboard": "剪切板为空!",
+    "Export to Clipboard": "导出到剪切板",
     "Sponsor: 只剩一瓶辣椒酱": "赞助者: 只剩一瓶辣椒酱",
     "Developer: Atticus": "开发者: Atticus",
 
@@ -53,6 +54,10 @@ data = {
     "Open file with current blender": "使用当前blender打开文件",
     "Open file with another blender": "使用新的blender打开文件",
     "Load files/models/images from clipboard": "从剪切板导入文件/模型/图片",
+    "Export as Image File": "导出为图像文件",
+    "Export as Image Pixel": "导出为图像像素",
+    "Export Selected objects to file and copy to clipboard\nAlt to export every object to a single file": "导出所选物体为单个文件并复制到剪切板\nAlt 导出每个物体为单独文件",
+    "Export Selected objects to a blend file": "导出所选物体为单个blend文件",
 
     "Append and assign material": "导入并赋予材质",
     "Append and assign world": "导入并设置世界",

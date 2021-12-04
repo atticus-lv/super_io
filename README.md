@@ -26,6 +26,17 @@ Import model / image never so easily in blender before.
 
 # Log
 
+### v1.2
+
+2021.12.04
+
++ 一键模型导出 （ctrl shift c），可将选中物体一键导出为（blend/obj/stl/fbx）
+  + 导出后复制至剪切板，可一键黏贴到需要的位置，便于发送于整理资产
+  + blend文件导出后将打包所有外部引用资产
+  + obj/stl/fbx文件支持批量导出功能（按下alt后，每个物体导出为单独文件）
++ 一键图像导出 （ctrl shift c）
+  + 图像编辑器中，可选择将图片导出为像素（不支持透明像素）/图像文件，前者可一键黏贴至ps等图像编辑软件
+
 ### v1.1.1
 
 2021.12.02 
