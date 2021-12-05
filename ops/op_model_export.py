@@ -6,7 +6,7 @@ from bpy.props import StringProperty, BoolProperty, EnumProperty
 
 from .ops_super_import import import_icon
 from ..clipboard.windows import PowerShellClipboard
-from ..exporter.default_exporter import default_exporter
+from ..exporter.default_exporter import default_exporter, exporter_ops_props
 
 
 class ModeCopyDefault:
@@ -38,7 +38,7 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
 
         return temp_dir
 
-    def export_batch(self, context, op_callable):
+    def export_batch(self, context, op_callable, op_args):
         paths = []
         temp_dir = self.get_temp_dir()
 
@@ -49,26 +49,24 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
             filepath = os.path.join(temp_dir, obj.name + f'.{self.extension}')
             paths.append(filepath)
 
-            bpy.ops.object.select_all(action='DESELECT')
             context.view_layer.objects.active = obj
             obj.select_set(True)
 
-            op_args = {'filepath': filepath,
-                       'use_selection': True}
+            op_args.update({'filepath': filepath})
             op_callable(**op_args)
+            obj.select_set(False)
 
         context.view_layer.objects.active = src_active
 
         return paths
 
-    def export_single(self, context, op_callable):
+    def export_single(self, context, op_callable, op_args):
         paths = []
         temp_dir = self.get_temp_dir()
         filepath = os.path.join(temp_dir, context.active_object.name + f'.{self.extension}')
         paths.append(filepath)
 
-        op_args = {'filepath': filepath,
-                   'use_selection': True}
+        op_args.update({'filepath': filepath})
         op_callable(**op_args)
 
         return paths
@@ -83,13 +81,15 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
         bl_idname = default_exporter.get(self.extension)
         op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
+        op_args = exporter_ops_props.get(self.extension)
+
         if self.batch_mode:
-            paths = self.export_batch(context, op_callable)
+            paths = self.export_batch(context, op_callable, op_args)
             self.report({'INFO'},
                         f'{len(paths)} {self.extension} files has been copied to Clipboard')
 
         else:
-            paths = self.export_single(context, op_callable)
+            paths = self.export_single(context, op_callable, op_args)
             self.report({'INFO'}, f'{context.active_object.name}.{self.extension} has been copied to Clipboard')
 
         clipboard = PowerShellClipboard()

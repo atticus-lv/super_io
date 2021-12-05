@@ -35,6 +35,8 @@ data = {
     "Close Warning Rules": "关闭规则警告",
     "No file found in clipboard!": "剪贴板没有找到文件！",
     "Only one type of file can be imported at a time": "只支持一次导入一种格式的文件",
+    "Show Import": "显示导入",
+    "Show Export": "显示导出",
 
     "1. If file name not matching this rule": "1. 如果文件名不匹配规则",
     "   It will search for the next config which match": "    将会搜寻下一符合的配置",
@@ -58,6 +60,7 @@ data = {
     "Export as Image Pixel": "导出为图像像素",
     "Export Selected objects to file and copy to clipboard\nAlt to export every object to a single file": "导出所选物体为单个文件并复制到剪切板\nAlt 导出每个物体为单独文件",
     "Export Selected objects to a blend file": "导出所选物体为单个blend文件",
+    "Temporary Directory to store export files.\nIf empty, use blender's default temporary directory": "储存导出文件的临时文件夹\n如果为空，则使用blender的临时文件夹路径",
 
     "Append and assign material": "导入并赋予材质",
     "Append and assign world": "导入并设置世界",

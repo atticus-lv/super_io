@@ -61,12 +61,6 @@ class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
         row.scale_y = 1.5
         row.separator()
         row.operator("wm.super_import", icon_value=import_icon.get_image_icon_id())
-        row.separator()
-
-        row = layout.row()
-        row.alignment = 'CENTER'
-        row.scale_y = 1.5
-        row.separator()
         row.operator("wm.super_export", icon_value=export_icon.get_image_icon_id())
         row.separator()
 
@@ -85,10 +79,14 @@ class SPIO_PT_ListFilterPanel(bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
+        layout.prop(filter, 'show_import')
+        layout.prop(filter, 'show_export')
+
         col = layout.column(align=True)
         col.prop(filter, 'filter_type', icon='FILTER', expand=True)
 
         layout.prop(filter, "reverse")
+
 
 
 def register():

@@ -64,7 +64,7 @@ class SuperImport(bpy.types.Operator):
 
         # get Clipboard
         self.clipboard = Clipboard()
-        self.file_list = self.clipboard.push(force_unicode=get_pref().force_unicode)
+        self.file_list = self.clipboard.pull(force_unicode=get_pref().force_unicode)
 
         del self.clipboard  # release clipboard
 

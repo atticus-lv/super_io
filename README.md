@@ -26,6 +26,13 @@ Import model / image never so easily in blender before.
 
 # Log
 
+### v1.2.5
+
+2021.12.06
+
++ 集成配置系统至 Super Export
+
+
 ### v1.2
 
 2021.12.04
