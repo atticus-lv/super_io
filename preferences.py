@@ -201,7 +201,7 @@ class SPIO_OT_OperatorPropRemove(OperatorPropAction, bpy.types.Operator):
     action = 'REMOVE'
 
 
-from .ops.utils import convert_value
+from .ops.core import convert_value
 
 
 class SPIO_OT_ExtensionListAction:

@@ -363,6 +363,62 @@ class PopupImportMenu():
                                           title=f'Super Import Blend ({len(self.file_list)} files)',
                                           icon='FILE_BLEND')
 
+
+from bpy.props import (EnumProperty,
+                       CollectionProperty,
+                       StringProperty,
+                       IntProperty,
+                       BoolProperty)
+
+class IO_Base(bpy.types.Operator):
+    """IO template"""
+
+    # dependant class
+    #################
+    dep_classes = []  # for easier manage, helpful for batch register and un register
+
+    # data
+    #################
+    clipboard = None  # clipboard data
+    file_list = []  # store clipboard urls for importing
+    CONFIGS = None  # config list from user preference
+
+    # state
+    ###############
+    use_custom_config = False  # if there is more then one config that advance user define
+    config_list_index: IntProperty()  # index for reading pref config list
+
+    # Utils
+    ###########
+    def restore(self):
+        self.file_list.clear()
+        self.clipboard = None
+        self.ext = None
+        self.use_custom_config = False
+
+    def report_time(self, start_time):
+        if get_pref().report_time: self.report({"INFO"},
+                                               f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
+
+    # Import Method
+    def import_blend_default(self, context):
+        """Import with default popup"""
+        pass
+
+    def import_default(self, context):
+        """Import with blender's default setting"""
+        pass
+
+    # Import Method (Popup)
+    ##############
+    def import_custom_dynamic(self, context):
+        pass
+
+    # Export Method (Popup)
+    ##############
+    def export_custom_dynamic(self,context):
+        pass
+
 # def ray_cast(self, context, event):
 #     # Get the mouse position
 #     self.mouse_pos = event.mouse_region_x, event.mouse_region_y

@@ -3,7 +3,7 @@ import json
 import os
 
 from bpy.props import StringProperty, BoolProperty
-from .utils import ConfigHelper, get_pref
+from .core import ConfigHelper, get_pref
 from bpy_extras.io_utils import ExportHelper, ImportHelper
 
 
