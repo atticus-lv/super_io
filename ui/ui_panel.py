@@ -1,5 +1,5 @@
 import bpy
-from ..ops.utils import get_pref
+from ..ops.core import get_pref
 from ..preferences import SPIO_Preference
 from ..ops.ops_super_import import import_icon
 from ..ops.ops_super_export import export_icon

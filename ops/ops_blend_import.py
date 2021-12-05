@@ -91,7 +91,7 @@ class SPIO_OT_link_blend(blenderFileDefault, bpy.types.Operator):
     link = True
 
 
-from .utils import viewlayer_fix_291
+from .core import viewlayer_fix_291
 from bpy_extras import view3d_utils
 
 

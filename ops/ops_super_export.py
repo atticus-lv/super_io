@@ -7,9 +7,9 @@ from bpy.props import (EnumProperty,
                        IntProperty,
                        BoolProperty)
 
-from .utils import MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu, PopupExportMenu
+from .core import IO_Base, MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu, PopupExportMenu
 from .ops_super_import import import_icon
-from .utils import is_float, get_pref, convert_value
+from .core import is_float, get_pref, convert_value
 from ..ui.icon_utils import RSN_Preview
 
 from ..clipboard.windows import PowerShellClipboard
@@ -18,37 +18,12 @@ from ..exporter.default_exporter import default_exporter, exporter_ops_props
 export_icon = RSN_Preview(image='export.bip', name='import_icon')
 
 
-class WM_OT_super_export(bpy.types.Operator):
+class WM_OT_super_export(IO_Base, bpy.types.Operator):
     """Export to Clipboard"""
 
     bl_idname = 'wm.super_export'
     bl_label = 'Super Export'
 
-    # dependant class
-    #################
-    dep_classes = []  # for easier manage, helpful for batch register and un register
-
-    # data
-    #################
-    clipboard = None  # clipboard data
-    file_list = []  # store clipboard urls for importing
-    CONFIGS = None  # config list from user preference
-
-    # state
-    ###############
-    use_custom_config = False  # if there is more then one config that advance user define
-    config_list_index: IntProperty()  # index for reading pref config list
-
-    # Utils
-    ###########
-    def restore(self):
-        self.file_list.clear()
-        self.clipboard = None
-        self.ext = None
-
-    def report_time(self, start_time):
-        if get_pref().report_time: self.report({"INFO"},
-                                               f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
 
     def invoke(self, context, event):
         self.restore()
@@ -108,7 +83,7 @@ class WM_OT_super_export(bpy.types.Operator):
             def export_single(self, context, op_callable, op_args):
                 paths = []
                 temp_dir = self.get_temp_dir()
-                filepath = os.path.join(temp_dir, context.active_object.name + f'.{self.extension}').replace('\\','/')
+                filepath = os.path.join(temp_dir, context.active_object.name + f'.{self.extension}').replace('\\', '/')
                 paths.append(filepath)
 
                 op_args.update({'filepath': filepath})
@@ -124,7 +99,7 @@ class WM_OT_super_export(bpy.types.Operator):
                 selected_objects = context.selected_objects.copy()
 
                 for obj in selected_objects:
-                    filepath = os.path.join(temp_dir, obj.name + f'.{self.extension}').replace('\\','/')
+                    filepath = os.path.join(temp_dir, obj.name + f'.{self.extension}').replace('\\', '/')
                     paths.append(filepath)
 
                     bpy.ops.object.select_all(action='DESELECT')

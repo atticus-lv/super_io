@@ -14,8 +14,8 @@ from bpy.props import (EnumProperty,
                        IntProperty,
                        BoolProperty)
 
-from .utils import MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu
-from .utils import is_float, get_pref, convert_value
+from .core import IO_Base,MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu
+from .core import is_float, get_pref, convert_value
 
 from ..loader.default_importer import default_importer
 from ..loader.default_blend import default_blend_lib
@@ -25,37 +25,11 @@ from ..ui.icon_utils import RSN_Preview
 import_icon = RSN_Preview(image='import.bip', name='import_icon')
 
 
-class SuperImport(bpy.types.Operator):
+class SuperImport(IO_Base, bpy.types.Operator):
     """Paste Model/Images"""
     bl_label = "Super Import"
     bl_options = {"UNDO_GROUPED"}
 
-    # dependant class
-    #################
-    dep_classes = []  # for easier manage, helpful for batch register and un register
-
-    # data
-    #################
-    clipboard = None  # clipboard data
-    file_list = []  # store clipboard urls for importing
-    CONFIGS = None  # config list from user preference
-    ext = ''  # only support one file extension at a time, set as global parm
-
-    # state
-    ###############
-    use_custom_config = False  # if there is more then one config that advance user define
-    config_list_index: IntProperty()  # index for reading pref config list
-
-    # Utils
-    ###########
-    def restore(self):
-        self.file_list.clear()
-        self.clipboard = None
-        self.ext = None
-
-    def report_time(self, start_time):
-        if get_pref().report_time: self.report({"INFO"},
-                                               f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
 
     # Build-in
     ############
@@ -106,17 +80,7 @@ class SuperImport(bpy.types.Operator):
 
         return {"FINISHED"}
 
-    # Import Method
-    def import_blend_default(self, context):
-        """Import with default popup"""
-        pass
-
-    def import_default(self, context):
-        """Import with blender's default setting"""
-        pass
-
     # Import Method (Popup)
-    ##############
     def import_custom_dynamic(self, context):
         # unregister_class
         for cls in self.dep_classes:
