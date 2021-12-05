@@ -92,18 +92,23 @@ class WM_OT_super_export(bpy.types.Operator):
             # define exec
 
             def get_temp_dir(self):
-                ori_dir = bpy.context.preferences.filepaths.temporary_directory
-                temp_dir = ori_dir
-                if ori_dir == '':
-                    # win temp file
-                    temp_dir = os.path.join(os.getenv('APPDATA'), os.path.pardir, 'Local', 'Temp')
+                temp_dir = ITEM.temporary_directory
+                if temp_dir == '':
+                    temp_dir = bpy.path.abspath(bpy.context.preferences.filepaths.temporary_directory)
+                    if temp_dir == '':
+                        # win temp file
+                        temp_dir = os.path.join(os.getenv('APPDATA'), os.path.pardir, 'Local', 'Temp')
+                else:
+                    temp_dir = bpy.path.abspath(temp_dir)
+                    if not os.path.exists(temp_dir):
+                        os.makedirs(temp_dir)
 
                 return temp_dir
 
             def export_single(self, context, op_callable, op_args):
                 paths = []
                 temp_dir = self.get_temp_dir()
-                filepath = os.path.join(temp_dir, context.active_object.name + f'.{self.extension}')
+                filepath = os.path.join(temp_dir, context.active_object.name + f'.{self.extension}').replace('\\','/')
                 paths.append(filepath)
 
                 op_args.update({'filepath': filepath})
@@ -119,7 +124,7 @@ class WM_OT_super_export(bpy.types.Operator):
                 selected_objects = context.selected_objects.copy()
 
                 for obj in selected_objects:
-                    filepath = os.path.join(temp_dir, obj.name + f'.{self.extension}')
+                    filepath = os.path.join(temp_dir, obj.name + f'.{self.extension}').replace('\\','/')
                     paths.append(filepath)
 
                     bpy.ops.object.select_all(action='DESELECT')

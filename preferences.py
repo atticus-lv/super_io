@@ -73,7 +73,8 @@ class ExtensionOperatorProperty(PropertyGroup):
     color_tag: EnumProperty(name='Color Tag',
                             items=enum_color_tag_items)
     # IO type
-    io_type: EnumProperty(name='IO Type', items=[('IMPORT', 'Import', '','IMPORT',0), ('EXPORT', 'Export', '','EXPORT',1)],
+    io_type: EnumProperty(name='IO Type',
+                          items=[('IMPORT', 'Import', '', 'IMPORT', 0), ('EXPORT', 'Export', '', 'EXPORT', 1)],
                           default='IMPORT')
     # information
     name: StringProperty(name='Preset Name', update=correct_name)
@@ -81,7 +82,9 @@ class ExtensionOperatorProperty(PropertyGroup):
                                 description='Show in the popup operator tips')
     # extension
     extension: StringProperty(name='Extension')
-    # custom match rule
+
+    # custom import match rule
+    ###############################
     match_rule: EnumProperty(name='Match Rule',
                              items=[('NONE', 'None (Default)', ''),
                                     ('STARTSWITH', 'Startswith', ''),
@@ -91,6 +94,10 @@ class ExtensionOperatorProperty(PropertyGroup):
                              default='NONE', description='Matching rule of the name')
 
     match_value: StringProperty(name='Match Value', default='')
+
+    # custom export temp path
+    temporary_directory: StringProperty(name='Temporary Directory', subtype='DIR_PATH',
+                                        description="Temporary Directory to store export files.\nIf empty, use blender's default temporary directory")
 
     # remove grease pencil from default because this design is only allow one default importer
     operator_type: EnumProperty(
@@ -386,7 +393,7 @@ class PREF_UL_ConfigList(bpy.types.UIList):
         row.operator('spio.color_tag_selector', text='',
                      icon=get_color_tag_icon(int(item.color_tag[-1:]))).index = index
         row.prop(item, 'name', text='', emboss=False)
-        row.prop(item, 'extension', text='', emboss=False,icon = item.io_type)
+        row.prop(item, 'extension', text='', emboss=False, icon=item.io_type)
         row.prop(item, 'use_config', text='')
 
     def draw_filter(self, context, layout):
@@ -666,6 +673,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                     box4.label(text="2. If no config’s rule is matched")
                     box4.label(
                         text="   It will popup all available importer in a menu after import all file that match a rule")
+
+        elif item.io_type == 'EXPORT':
+            box2 = box.box()
+            box2.prop(item, 'temporary_directory')
 
         box3 = box.box()
         box3.prop(item, 'operator_type')
