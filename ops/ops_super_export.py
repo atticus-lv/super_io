@@ -186,7 +186,12 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
             layout.separator()
             # default popup
             pop = PopupExportMenu(temp_path=None, context=context)
-            menu = pop.default_blend_menu(return_menu=True)
+
+            if context.area.type == "IMAGE_EDITOR":
+                menu = pop.default_image_menu(return_menu=True)
+            elif context.area.type == 'VIEW_3D':
+                menu = pop.default_blend_menu(return_menu=True)
+
             menu(self, context)
 
         context.window_manager.popup_menu(draw_custom_menu, title="Super Export", icon='FILEBROWSER')

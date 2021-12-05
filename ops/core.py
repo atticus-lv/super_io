@@ -394,6 +394,7 @@ class IO_Base(bpy.types.Operator):
         self.file_list.clear()
         self.clipboard = None
         self.ext = None
+        self.use_custom_config = False
 
     def report_time(self, start_time):
         if get_pref().report_time: self.report({"INFO"},
