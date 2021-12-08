@@ -40,6 +40,7 @@ def _parse_tag(tag: str) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
 
 def _update_check() -> None:
     ssl_context = ssl.SSLContext()
+    state.status = state.CHECKING
 
     try:
 
@@ -71,6 +72,7 @@ def _update_check() -> None:
                 state.download_url = asset["browser_download_url"]
                 state.changelog_url = release["html_url"]
 
+        state.status = state.COMPLETED
 
     except (urllib.error.HTTPError, urllib.error.URLError) as e:
         state.error_msg = str(e)
@@ -103,6 +105,17 @@ def _update_download() -> None:
 import threading
 
 
+class SPIO_download_update(bpy.types.Operator):
+    bl_idname = 'spio.download_update'
+    bl_label = 'Download'
+
+    def execute(self, context):
+        if state.status in (state.INSTALLING, state.CHECKING):
+            return {'CANCELLED'}
+        threading.Thread(target=_update_download).start()
+        return {'FINISHED'}
+
+
 class SPIO_check_update(bpy.types.Operator):
     bl_idname = 'spio.check_update'
     bl_label = 'Check Update'
@@ -112,7 +125,9 @@ class SPIO_check_update(bpy.types.Operator):
 
         layout.label(text=f'Current Version: {ADDON_VERSION}')
         layout.label(
-            text="You've installed the latest verion" if state.update_version is None else f'Update Version: {state.update_version} !')
+            text="You've installed the latest verion" if not state.update_available else f'Update Version: {state.update_version} !')
+        if state.update_available:
+            layout.operator('spio.download_update')
 
     def invoke(self, context, event):
         state.update_available = state.update_version = state.download_url = state.changelog_url = state.error_msg = None
@@ -130,8 +145,10 @@ class SPIO_check_update(bpy.types.Operator):
 
 
 def register():
+    bpy.utils.register_class(SPIO_download_update)
     bpy.utils.register_class(SPIO_check_update)
 
 
 def unregister():
+    bpy.utils.unregister_class(SPIO_download_update)
     bpy.utils.unregister_class(SPIO_check_update)
