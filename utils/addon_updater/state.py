@@ -1,8 +1,7 @@
 # state
 CHECKING = 0
-INSTALLING = 1
-COMPLETED = 2
-ERROR = 3
+COMPLETED = 1
+ERROR = 2
 
 # store
 status: int = None

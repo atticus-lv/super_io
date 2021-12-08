@@ -39,7 +39,10 @@ def _parse_tag(tag: str) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
 def _update_check() -> None:
     ssl_context = ssl.SSLContext()
     state.status = state.CHECKING
-
+    # redraw
+    for window in bpy.context.window_manager.windows:
+        for area in window.screen.areas:
+            area.tag_redraw()
     try:
 
         with urllib.request.urlopen(RELEASES_URL, context=ssl_context) as response:
@@ -70,47 +73,16 @@ def _update_check() -> None:
                 state.changelog_url = release["html_url"]
 
         state.status = state.COMPLETED
+        # redraw
+        for window in bpy.context.window_manager.windows:
+            for area in window.screen.areas:
+                area.tag_redraw()
 
     except (urllib.error.HTTPError, urllib.error.URLError) as e:
         state.error_msg = str(e)
-
-
-def _update_download() -> None:
-    state.status = state.INSTALLING
-    ssl_context = ssl.SSLContext()
-    try:
-
-        with urllib.request.urlopen(state.download_url, context=ssl_context) as response:
-            with zipfile.ZipFile(io.BytesIO(response.read())) as zfile:
-                addons_dir = bpy.utils.system_resource("SCRIPTS")
-
-                extract_relpath = pathlib.Path(zfile.namelist()[0])
-                extract_dir = os.path.join(addons_dir, extract_relpath.parts[0])
-
-                shutil.rmtree(bpy.utils.user_resource("SCRIPTS") + '/addons/' + __folder_name__)
-                zfile.extractall(addons_dir)
-                os.rename(extract_dir, bpy.utils.user_resource("SCRIPTS" + '/addons/' + __folder_name__))
-
-        state.status = state.COMPLETED
-
-    except (urllib.error.HTTPError, urllib.error.URLError) as e:
-
-        state.error_msg = str(e)
-        state.status = state.ERROR
 
 
 import threading
-
-
-class SPIO_download_update(bpy.types.Operator):
-    bl_idname = 'spio.download_update'
-    bl_label = 'Download'
-
-    def execute(self, context):
-        if state.status in (state.INSTALLING, state.CHECKING):
-            return {'CANCELLED'}
-        threading.Thread(target=_update_download).start()
-        return {'FINISHED'}
 
 
 class SPIO_check_update(bpy.types.Operator):
@@ -123,13 +95,13 @@ class SPIO_check_update(bpy.types.Operator):
         layout.label(text=f'Current Version: {ADDON_VERSION}')
         if state.status == state.CHECKING:
             layout.label(text='Checking...')
-        elif state.status == state.INSTALLING:
-            layout.label(text='Installing...')
         elif state.status == state.COMPLETED:
-            if state.update_available:
-                layout.label(text=f'New Version: {state.update_version}')
-                layout.operator('spio.download_update')
-            else:
+            if state.update_available is True:
+                layout.label(text=f'Latest Version: {state.update_version}')
+                row = layout.row()
+                row.operator('wm.url_open', text='Download', icon='URL').url = state.download_url
+                row.operator('wm.url_open', text='Change Log', icon='URL').url = state.changelog_url
+            elif state.update_available is False:
                 layout.label(text="You've installed the latest version")
         else:
             if state.error_msg:
@@ -145,16 +117,12 @@ class SPIO_check_update(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
 
     def execute(self, context):
-        if state.update_available:
-            pass
         return {'FINISHED'}
 
 
 def register():
-    bpy.utils.register_class(SPIO_download_update)
     bpy.utils.register_class(SPIO_check_update)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_download_update)
     bpy.utils.unregister_class(SPIO_check_update)
