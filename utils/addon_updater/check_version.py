@@ -18,8 +18,6 @@ from ... import bl_info
 from . import state
 
 ADDON_VERSION = bl_info.get('version')
-UPDATE_VERSION = ADDON_VERSION
-
 RELEASES_URL = 'https://api.github.com/repos/atticus-lv/super_io/releases?per_page=10'
 
 
@@ -52,11 +50,10 @@ def _update_check() -> None:
                 #     continue
 
                 if not release["draft"]:
-                    update_version, required_blender = _parse_tag(release["tag_name"])
+                    update_version = _parse_tag(release["tag_name"])[0]
                     print('tag_name', update_version)
                     if update_version > ADDON_VERSION:
-                        if required_blender <= bpy.app.version:
-                            break
+                        break
 
             with urllib.request.urlopen(release["assets_url"], context=ssl_context) as response:
                 data = json.load(response)
@@ -90,9 +87,9 @@ def _update_download() -> None:
                 extract_relpath = pathlib.Path(zfile.namelist()[0])
                 extract_dir = os.path.join(addons_dir, extract_relpath.parts[0])
 
-                shutil.rmtree(bpy.utils.system_resource("SCRIPTS" + '/' + __folder_name__))
+                shutil.rmtree(bpy.utils.user_resource("SCRIPTS") + '/addons/' + __folder_name__)
                 zfile.extractall(addons_dir)
-                os.rename(extract_dir, bpy.utils.system_resource("SCRIPTS" + '/' + __folder_name__))
+                os.rename(extract_dir, bpy.utils.user_resource("SCRIPTS" + '/addons/' + __folder_name__))
 
         state.status = state.COMPLETED
 
@@ -124,10 +121,19 @@ class SPIO_check_update(bpy.types.Operator):
         layout = self.layout
 
         layout.label(text=f'Current Version: {ADDON_VERSION}')
-        layout.label(
-            text="You've installed the latest verion" if not state.update_available else f'Update Version: {state.update_version} !')
-        if state.update_available:
-            layout.operator('spio.download_update')
+        if state.status == state.CHECKING:
+            layout.label(text='Checking...')
+        elif state.status == state.INSTALLING:
+            layout.label(text='Installing...')
+        elif state.status == state.COMPLETED:
+            if state.update_available:
+                layout.label(text=f'New Version: {state.update_version}')
+                layout.operator('spio.download_update')
+            else:
+                layout.label(text="You've installed the latest version")
+        else:
+            if state.error_msg:
+                layout.label(text=state.error_msg)
 
     def invoke(self, context, event):
         state.update_available = state.update_version = state.download_url = state.changelog_url = state.error_msg = None
