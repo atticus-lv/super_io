@@ -6,6 +6,11 @@ data = {
     "Export to Clipboard": "导出到剪切板",
     "Sponsor: 只剩一瓶辣椒酱": "赞助者: 只剩一瓶辣椒酱",
     "Developer: Atticus": "开发者: Atticus",
+    "Current Version:": "当前版本:",
+    "Latest Version:": "最新版本:",
+    "Check Update":"检查更新",
+    "Download":"下载",
+    "Change Log":"更新日志",
 
     "Use N Panel": "使用侧面板",
     "Match Rule": "匹配规则",

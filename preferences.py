@@ -510,7 +510,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.label(text='Help', icon='HELP')
         row = box.row()
         row.operator('wm.url_open', text='Manual').url = 'http://atticus-lv.gitee.io/super_io/#/'
-        row.operator('spio.check_update', text='Check Update',icon = 'INFO')
+        row.operator('spio.check_update', text='Check Update')
 
         box = layout.box()
         box.label(text='Sponsor: 只剩一瓶辣椒酱', icon='FUND')

@@ -49,13 +49,10 @@ def _update_check() -> None:
             data = json.load(response)
 
             for release in data:
-                # if release["prerelease"]:
-                #     continue
-
                 if not release["draft"]:
                     update_version = _parse_tag(release["tag_name"])[0]
-                    print('tag_name', update_version)
-                    if update_version > ADDON_VERSION:
+                    print(update_version)
+                    if update_version >= ADDON_VERSION:
                         break
 
             with urllib.request.urlopen(release["assets_url"], context=ssl_context) as response:
@@ -92,7 +89,7 @@ class SPIO_check_update(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
 
-        layout.label(text=f'Current Version: {ADDON_VERSION}')
+        layout.label(text=f'Current Version: {".".join(str(x) for x in ADDON_VERSION)}')
         if state.status == state.CHECKING:
             layout.label(text='Checking...')
         elif state.status == state.COMPLETED:
