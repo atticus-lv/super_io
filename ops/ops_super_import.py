@@ -54,7 +54,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
                 self.report({"ERROR"}, "Only one type of file can be imported at a time")
                 return {"CANCELLED"}
 
-        self.CONFIGS = ConfigHelper(check_use=True, filter=self.ext)
+        self.CONFIGS = ConfigHelper(check_use=True, filter=self.ext,io_type='IMPORT')
         config_list, index_list = self.CONFIGS.config_list, self.CONFIGS.index_list
 
         # import default if not custom config for this file extension
