@@ -30,7 +30,9 @@ exporter_ops_props = {
         'use_selection': True
     },
     'gltf': {
-        'use_selection': True
+        'use_selection': True,
+        'export_format': 'GLTF_EMBEDDED'
+
     },
     'ply': {
         'use_selection': True
