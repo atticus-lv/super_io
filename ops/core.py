@@ -250,7 +250,11 @@ class PopupExportMenu():
                 layout = cls.layout
                 layout.operator_context = "INVOKE_DEFAULT"
                 col = layout.column()
-                col.operator('spio.export_blend', text='Export BLEND')
+                col.operator('spio.export_blend', text='Export Blend File')
+
+                if get_pref().experimental:
+                    col.operator('spio.export_blend', text='Export Model Asset').scripts_file_name = 'script_mark_blend_asset.py'
+                    col.operator('spio.export_blend', text='Export Material Asset').scripts_file_name = 'script_mark_blend_material_asset.py'
 
                 col.separator()
 

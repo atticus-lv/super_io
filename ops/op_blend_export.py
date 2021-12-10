@@ -29,6 +29,7 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
     bl_idname = 'spio.export_blend'
     bl_label = 'Copy Blend'
 
+    scripts_file_name:StringProperty(default = 'script_export_blend.py')
 
     def execute(self, context):
         bpy.ops.view3d.copybuffer()  # copy buffer
@@ -42,7 +43,7 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
         if os.path.exists(filepath): os.remove(filepath)
         os.rename(os.path.join(temp_dir, 'copybuffer.blend'), filepath)
 
-        post_process_blend_file(filepath)
+        post_process_blend_file(filepath,scripts_file_name=self.scripts_file_name)
 
         clipboard = PowerShellClipboard()
         clipboard.push_to_clipboard(paths=[filepath])

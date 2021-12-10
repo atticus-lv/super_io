@@ -478,6 +478,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     force_unicode: BoolProperty(name='Force Unicode',
                                 description='Force to use "utf-8" to decode filepath \nOnly enable when your system coding "utf-8"',
                                 default=False)
+
+    experimental:BoolProperty(name='Experimental',default = False)
+
     report_time: BoolProperty(name='Report Time',
                               description='Report import time', default=True)
 
@@ -529,30 +532,35 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         col = layout.column(align=True).box()
         col.use_property_split = True
 
-        row = col.row(align=True)
+        box = col.box()
+        box.label(text='Main',icon = 'PREFERENCES')
+
+        row = box.row(align=True)
         row.alert = True
         row.prop(self, 'force_unicode', text='')
         row.label(text='Force Unicode')
 
-        row = col.row(align=True)
+        row = box.row(align=True)
         row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
 
-        col.separator()
+        row = box.row(align=True)
+        row.prop(self,'experimental')
 
-        row = col.row(align=True)
+        box = col.box()
+        box.label(text ='User Interface',icon = 'WINDOW')
+
+        row = box.row(align=True)
         row.prop(self, 'use_N_panel', text='')
         row.label(text='Use N Panel')
 
-        row = col.row(align=True)
+        row = box.row(align=True)
         row.prop(self, 'report_time', text='')
         row.label(text='Report Time')
 
-        row = col.row(align=True)
+        row = box.row(align=True)
         row.prop(self, 'disable_warning_rules', text='')
         row.label(text='Close Warning Rules')
 
-        col = layout.column(align=True).box()
-        col.use_property_split = True
         self.draw_keymap(context, col)
 
     def draw_keymap(self, context, layout):

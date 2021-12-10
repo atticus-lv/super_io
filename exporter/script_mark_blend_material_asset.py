@@ -14,12 +14,9 @@ def main(args):
 
         blend = args.blend
 
-        bpy.ops.wm.open_mainfile(filepath=blend)
+        print(f"Blend to fix: {blend}")
 
-        for o in bpy.data.objects:
-            bpy.context.scene.collection.objects.link(o)
-            o.asset_mark()
-            o.asset_generate_preview()
+        bpy.ops.wm.open_mainfile(filepath=blend)
 
         # pack
         bpy.ops.file.pack_all()
@@ -27,6 +24,14 @@ def main(args):
             bpy.ops.file.pack_libraries()
         except:
             pass
+
+        # mark asset
+        for material in bpy.data.materials:
+            material.asset_mark()
+            material.asset_generate_preview()
+
+        for obj in bpy.data.objects:
+            bpy.data.objects.remove(obj)
 
         bpy.context.view_layer.update()
         bpy.context.preferences.filepaths.save_version = 0  # No backup blends needed
