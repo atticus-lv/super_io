@@ -1,7 +1,4 @@
 import bpy
-import json
-import os
-import importlib
 
 
 class TranslationHelper():
@@ -27,14 +24,25 @@ class TranslationHelper():
 
 # Set
 ############
-from . import zh_CN
+import os
+import json
 
-spio_zh_CN = TranslationHelper('spio_zh_CN', zh_CN.data)
+dir = os.path.dirname(__file__)
+help_classes = []
+
+for file in os.listdir(dir):
+    if not file.endswith('.json'): continue
+    with open(os.path.join(dir, file), 'r', encoding='utf-8') as f:
+        d = json.load(f)
+        help_cls = TranslationHelper('spio_' + file, d)
+        help_classes.append(help_cls)
 
 
 def register():
-    spio_zh_CN.register()
+    for cls in help_classes:
+        cls.register()
 
 
 def unregister():
-    spio_zh_CN.unregister()
+    for cls in help_classes:
+        cls.unregister()
