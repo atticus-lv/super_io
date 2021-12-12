@@ -184,15 +184,19 @@ class ConfigHelper():
                             config.get('extension') == '',
                             filter and config.get('extension') != filter,
                             check_use and config.get('use_config') is False,
+                            config.get('io_type') != io_type,
                             ): continue
 
                 index_list.append(config_list_index)
                 config_list[item.name] = config
+
+
             elif io_type == 'EXPORT':
                 if True in (config.get('name') == '',
                             config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '',
                             config.get('extension') == '',
                             check_use and config.get('use_config') is False,
+                            config.get('io_type') != io_type,
                             ): continue
 
                 index_list.append(config_list_index)
