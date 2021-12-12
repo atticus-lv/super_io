@@ -5,14 +5,18 @@ import sys
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
 from .ops_super_import import import_icon
-from ..clipboard.windows import PowerShellClipboard
+if sys.platform == "win32":
+    from ..clipboard.windows import PowerShellClipboard as Clipboard
+elif sys.platform == "darwin":
+    from ..clipboard.darwin.mac import MacClipboard as Clipboard
+
 from ..exporter.default_exporter import default_exporter, exporter_ops_props
 
 
 class ModeCopyDefault:
     @classmethod
     def poll(_cls, context):
-        if sys.platform == "win32":
+        if sys.platform in {"darwin", "win32"}:
             return (
                     context.area.type == "VIEW_3D"
                     and context.active_object is not None
@@ -92,7 +96,7 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
             paths = self.export_single(context, op_callable, op_args)
             self.report({'INFO'}, f'{context.active_object.name}.{self.extension} has been copied to Clipboard')
 
-        clipboard = PowerShellClipboard()
+        clipboard = Clipboard()
         clipboard.push_to_clipboard(paths=paths)
 
         return {'FINISHED'}

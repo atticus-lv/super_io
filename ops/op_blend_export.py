@@ -15,7 +15,7 @@ from ..exporter.default_blend import post_process_blend_file
 class ImageCopyDefault:
     @classmethod
     def poll(_cls, context):
-        if sys.platform == "win32":
+        if sys.platform in {"darwin", "win32"}:
             return (
                     context.area.type == "VIEW_3D"
                     and context.active_object is not None

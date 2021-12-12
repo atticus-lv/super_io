@@ -49,6 +49,9 @@ class MacClipboard():
         'end tell'
         ]
 
+        subprocess.Popen(self.get_osascript_args(command))
+
+
     def get_osascript_args(self,commands):
         args = ["osascript"]
         for command in commands:

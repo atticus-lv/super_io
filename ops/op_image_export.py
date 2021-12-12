@@ -2,13 +2,16 @@ import bpy
 import os
 import sys
 
-from ..clipboard.windows import PowerShellClipboard
+if sys.platform == "win32":
+    from ..clipboard.windows import PowerShellClipboard as Clipboard
+elif sys.platform == "darwin":
+    from ..clipboard.darwin.mac import MacClipboard as Clipboard
 
 
 class ImageCopyDefault:
     @classmethod
     def poll(_cls, context):
-        if sys.platform == "win32":
+        if sys.platform in {"darwin", "win32"}:
             return (
                     context.area.type == "IMAGE_EDITOR"
                     and context.area.spaces.active.image is not None
@@ -27,7 +30,7 @@ class SPIO_OT_export_pixel(ImageCopyDefault, bpy.types.Operator):
 
         bpy.ops.image.save_as(filepath=image_path, save_as_render=True, copy=True)
         # push to clipboard
-        clipboard = PowerShellClipboard()
+        clipboard = Clipboard()
         clipboard.push_pixel_to_clipboard(path=image_path)
 
         self.report({'INFO'}, f'{active_image.name} has been copied to Clipboard')

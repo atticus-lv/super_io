@@ -1,6 +1,7 @@
 import bpy
 import time
 import os
+import sys
 from bpy.props import (EnumProperty,
                        CollectionProperty,
                        StringProperty,
@@ -12,7 +13,11 @@ from .ops_super_import import import_icon
 from .core import is_float, get_pref, convert_value
 from ..ui.icon_utils import RSN_Preview
 
-from ..clipboard.windows import PowerShellClipboard
+if sys.platform == "win32":
+    from ..clipboard.windows import PowerShellClipboard as Clipboard
+elif sys.platform == "darwin":
+    from ..clipboard.darwin.mac import MacClipboard as Clipboard
+
 from ..exporter.default_exporter import default_exporter, exporter_ops_props
 
 export_icon = RSN_Preview(image='export.bip', name='import_icon')
@@ -23,7 +28,6 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
 
     bl_idname = 'wm.super_export'
     bl_label = 'Super Export'
-
 
     def invoke(self, context, event):
         self.restore()
@@ -135,7 +139,7 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                             self.report({'INFO'},
                                         f'{context.active_object.name}.{self.extension} has been copied to Clipboard')
 
-                        clipboard = PowerShellClipboard()
+                        clipboard = Clipboard()
                         clipboard.push_to_clipboard(paths=paths)
 
                         if get_pref().report_time: self.report({"INFO"},
