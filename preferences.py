@@ -154,6 +154,8 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('ADDONS_BLEND_WORLD', 'Append and assign world',
              'Import world from a single file and set it as context world', 'WORLD', 102),
             None,
+            ('ADDONS_INSTALL_ADDON', 'Install Addon (.py/.zip)',
+             'Import and Install addon', 'FILE_BLEND', 103),
             ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
         default='DEFAULT_OBJ', )

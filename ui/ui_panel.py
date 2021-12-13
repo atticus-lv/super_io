@@ -64,6 +64,25 @@ class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
         row.operator("wm.super_export", icon_value=export_icon.get_image_icon_id())
         row.separator()
 
+class SPIO_PT_CachePanel(SidebarSetup, bpy.types.Panel):
+    bl_label = 'Cache'
+
+    @classmethod
+    def poll(self,context):
+        return context.window_manager.spio_cache_addons != ''
+
+    def draw(self, context):
+        layout = self.layout
+        if context.window_manager.spio_cache_addons != '':
+            for name in context.window_manager.spio_cache_addons.split('$$$'):
+                if name == '':continue
+                op = layout.operator('spio.enable_addon', text='Enable' + name)
+                op.module = name
+                op.remove_cache = False
+
+        op = layout.operator('spio.enable_addon', text='Clear Cache')
+        op.module = name
+        op.remove_cache = True
 
 class SPIO_PT_ListFilterPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
@@ -88,7 +107,6 @@ class SPIO_PT_ListFilterPanel(bpy.types.Panel):
         layout.prop(filter, "reverse")
 
 
-
 def register():
     if bpy.app.version < (3, 0, 0):
         bpy.utils.register_class(SPIO_PT_PrefPanel_283)
@@ -96,6 +114,7 @@ def register():
         bpy.utils.register_class(SPIO_PT_PrefPanel_300)
     bpy.utils.register_class(SPIO_PT_ImportPanel)
     bpy.utils.register_class(SPIO_PT_ListFilterPanel)
+    bpy.utils.register_class(SPIO_PT_CachePanel)
 
 
 def unregister():
@@ -105,3 +124,4 @@ def unregister():
         bpy.utils.unregister_class(SPIO_PT_PrefPanel_300)
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
     bpy.utils.unregister_class(SPIO_PT_ListFilterPanel)
+    bpy.utils.unregister_class(SPIO_PT_CachePanel)
