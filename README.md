@@ -22,7 +22,10 @@ Currently we can not drag and drop to import model in blender, but with this add
 
 Import model / image never so easily in blender before.
 
+# Contributing
+SPIO needs help from you! 
 
+Translation, different platform support, and new features which come from great idea.
 
 # Log
 
