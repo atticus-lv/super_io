@@ -123,7 +123,7 @@ class SPIO_OT_load_and_assign_material(bpy.types.Operator):
             self.report({"ERROR"}, f'No material in this blend file')
             return {"CANCELLED"}
 
-        self.material = data_to.materials[0]
+        self.material = [mat for mat in data_to.materials if mat.is_grease_pencil is False][0]
         self.object.active_material = self.material
         return {'FINISHED'}
 
