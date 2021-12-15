@@ -23,6 +23,10 @@ class SPIO_OT_import_addon(bpy.types.Operator):
         if module not in cache_addons:
             cache_addons.append(module)
             context.window_manager.spio_cache_addons = '$$$'.join(cache_addons)
+            # redraw to show cache panel
+            for window in bpy.context.window_manager.windows:
+                for area in window.screen.areas:
+                    area.tag_redraw()
 
         return {'FINISHED'}
 
