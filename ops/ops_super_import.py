@@ -260,6 +260,7 @@ def register():
 
     # Global ext
     bpy.types.Scene.spio_ext = StringProperty(name='Filter extension', default='')
+    bpy.types.WindowManager.spio_cache_import = StringProperty()
     # Menu append
     bpy.types.NODE_MT_context_menu.prepend(node_context_menu)
 
@@ -270,3 +271,6 @@ def unregister():
     bpy.types.NODE_MT_context_menu.remove(node_context_menu)
 
     bpy.utils.unregister_class(WM_OT_super_import)
+
+    del bpy.types.Scene.spio_ext
+    del bpy.types.WindowManager.spio_cache_import

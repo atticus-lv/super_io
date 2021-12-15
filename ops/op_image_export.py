@@ -18,24 +18,50 @@ class ImageCopyDefault:
                     and context.area.spaces.active.image.has_data is True
             )
 
+    attr = [
+        'file_format',
+        'color_mode',
+        'color_depth',
+        'compression',
+    ]
+
+    def set_format(self, restore=False):
+        settings = bpy.context.scene.render.image_settings
+        for a in self.attr:
+            if restore:
+                setattr(settings, a, getattr(self, a))
+            else:
+                setattr(self, a, getattr(settings, a))
+
+    action = 'pixel'
+
+    def execute(self, context):
+        active_image = context.area.spaces.active.image
+        image_path = os.path.join(bpy.app.tempdir, f'{active_image.name}.png')
+
+        self.set_format()
+
+        bpy.ops.image.save_as(filepath=image_path, save_as_render=True, copy=True)
+        # push to clipboard
+        clipboard = Clipboard()
+        if self.action == 'pixel':
+            clipboard.push_pixel_to_clipboard(path=image_path)
+        else:
+            clipboard.push_to_clipboard(paths=[image_path])
+
+        self.set_format(restore=True)
+
+        self.report({'INFO'}, f'{active_image.name} has been copied to Clipboard')
+
+        return {'FINISHED'}
+
 
 class SPIO_OT_export_pixel(ImageCopyDefault, bpy.types.Operator):
     """Export as Image Pixel"""
     bl_idname = 'spio.export_pixel'
     bl_label = 'Copy Pixel'
 
-    def execute(self, context):
-        active_image = context.area.spaces.active.image
-        image_path = os.path.join(bpy.app.tempdir, f'{active_image.name}.png')
-
-        bpy.ops.image.save_as(filepath=image_path, save_as_render=True, copy=True)
-        # push to clipboard
-        clipboard = Clipboard()
-        clipboard.push_pixel_to_clipboard(path=image_path)
-
-        self.report({'INFO'}, f'{active_image.name} has been copied to Clipboard')
-
-        return {'FINISHED'}
+    action = 'pixel'
 
 
 class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
@@ -43,18 +69,7 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
     bl_idname = 'spio.export_image'
     bl_label = 'Copy Image'
 
-    def execute(self, context):
-        active_image = context.area.spaces.active.image
-        image_path = os.path.join(bpy.app.tempdir, f'{active_image.name}.png')
-
-        bpy.ops.image.save_as(filepath=image_path, save_as_render=True, copy=True)
-
-        clipboard = Clipboard()
-        clipboard.push_to_clipboard(paths=[image_path])
-
-        self.report({'INFO'}, f'{active_image.name} has been copied to Clipboard')
-
-        return {'FINISHED'}
+    action = 'file'
 
 
 def register():
