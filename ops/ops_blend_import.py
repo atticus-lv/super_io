@@ -91,15 +91,7 @@ class SPIO_OT_link_blend(blenderFileDefault, bpy.types.Operator):
     link = True
 
 
-from .core import viewlayer_fix_291
-from bpy_extras import view3d_utils
-
-
-class SPIO_OT_load_and_assign_material(bpy.types.Operator):
-    """Import material from a single file and assign it to active object"""
-
-    bl_idname = 'spio.load_and_assign_material'
-    bl_label = 'Import and Assign Material '
+class load_and_assign:
     bl_options = {'UNDO_GROUPED'}
 
     filepath: StringProperty()
@@ -112,6 +104,13 @@ class SPIO_OT_load_and_assign_material(bpy.types.Operator):
     @classmethod
     def poll(self, context):
         return context.area.type == "VIEW_3D" and context.active_object
+
+
+class SPIO_OT_load_and_assign_material(load_and_assign, bpy.types.Operator):
+    """Import material from a single file and assign it to active object"""
+
+    bl_idname = 'spio.load_and_assign_material'
+    bl_label = 'Import and Assign Material '
 
     def execute(self, context):
         self.object = context.active_object
@@ -128,23 +127,11 @@ class SPIO_OT_load_and_assign_material(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SPIO_OT_load_and_assign_world(bpy.types.Operator):
+class SPIO_OT_load_and_assign_world(load_and_assign, bpy.types.Operator):
     """Import material from a single file and assign it to active object"""
 
     bl_idname = 'spio.load_and_assign_world'
     bl_label = 'Import and Assign World '
-    bl_options = {'UNDO_GROUPED'}
-
-    filepath: StringProperty()
-    link = False
-
-    world = None
-    material = None  # material that import
-    object = None  # object to assign target, detect by raycast
-
-    @classmethod
-    def poll(self, context):
-        return context.area.type == "VIEW_3D" and context.active_object
 
     def execute(self, context):
         # append material
