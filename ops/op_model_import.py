@@ -2,7 +2,7 @@ import bpy
 import os
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
-from ..loader.default_importer import default_importer
+from ..importer.default_importer import default_importer
 
 
 class SPIO_OT_import_model(bpy.types.Operator):

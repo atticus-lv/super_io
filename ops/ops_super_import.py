@@ -17,8 +17,8 @@ from bpy.props import (EnumProperty,
 from .core import IO_Base,MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu
 from .core import is_float, get_pref, convert_value
 
-from ..loader.default_importer import default_importer
-from ..loader.default_blend import default_blend_lib
+from ..importer.default_importer import default_importer
+from ..importer.default_blend import default_blend_lib
 
 from ..ui.icon_utils import RSN_Preview
 

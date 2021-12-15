@@ -160,7 +160,7 @@ class SPIO_OT_batch_import_blend(bpy.types.Operator):
     # filepath join with $$
     files: StringProperty()
 
-    # property to pass in to single blend file loader
+    # property to pass in to single blend file importer
     sub_path: StringProperty()
     load_all: BoolProperty(default=True)
     data_type: StringProperty()
