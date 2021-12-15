@@ -1,5 +1,6 @@
 import bpy
 import os
+import zipfile
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
@@ -16,7 +17,11 @@ class SPIO_OT_import_addon(bpy.types.Operator):
         bpy.ops.preferences.addon_install(overwrite=True, target='DEFAULT', filepath=self.filepath,
                                           filter_folder=True, filter_python=False, filter_glob="*.py;*.zip")
 
-        module = bpy.data.window_managers["WinMan"].addon_search
+        if self.filepath.endswith('.py'):
+            module = os.path.split(self.filepath)[1][:-3] # remove .py
+        else:
+            zip = zipfile.ZipFile(self.filepath)
+            module = zip.namelist()[0].split('/')[0] # get the dir name that blender use to register in the preference
 
         cache_addons = context.window_manager.spio_cache_addons.split('$$$')
 
