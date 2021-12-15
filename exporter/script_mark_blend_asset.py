@@ -16,17 +16,18 @@ def main(args):
 
         bpy.ops.wm.open_mainfile(filepath=blend)
 
-        for o in bpy.data.objects:
-            bpy.context.scene.collection.objects.link(o)
-            o.asset_mark()
-            o.asset_generate_preview()
-
         # pack
         bpy.ops.file.pack_all()
         try:
             bpy.ops.file.pack_libraries()
         except:
             pass
+
+        for o in bpy.data.objects:
+            bpy.context.scene.collection.objects.link(o)
+            import time
+            time.sleep(0.05)
+            o.asset_generate_preview()
 
         bpy.context.view_layer.update()
         bpy.context.preferences.filepaths.save_version = 0  # No backup blends needed
