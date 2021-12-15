@@ -49,7 +49,7 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
 
         bpy.ops.image.save_as(filepath=image_path, save_as_render=True, copy=True)
 
-        clipboard = PowerShellClipboard()
+        clipboard = Clipboard()
         clipboard.push_to_clipboard(paths=[image_path])
 
         self.report({'INFO'}, f'{active_image.name} has been copied to Clipboard')

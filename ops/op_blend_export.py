@@ -9,7 +9,12 @@ import sys
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from .ops_super_import import import_icon
-from ..clipboard.windows import PowerShellClipboard
+
+if sys.platform == "win32":
+    from ..clipboard.windows import PowerShellClipboard as Clipboard
+elif sys.platform == "darwin":
+    from ..clipboard.darwin.mac import MacClipboard as Clipboard
+
 from ..exporter.default_blend import post_process_blend_file
 
 class ImageCopyDefault:
@@ -45,7 +50,7 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
 
         post_process_blend_file(filepath,scripts_file_name=self.scripts_file_name)
 
-        clipboard = PowerShellClipboard()
+        clipboard = Clipboard()
         clipboard.push_to_clipboard(paths=[filepath])
 
         self.report({'INFO'}, f'{context.active_object.name}.blend has been copied to Clipboard')
