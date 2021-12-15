@@ -2,13 +2,13 @@ bl_info = {
     "name": "Super IO (SPIO)",
     "author": "Atticus",
     "blender": (2, 83, 0),
-    "version": (1, 2, 7),
+    "version": (1, 2, 8),
     "category": "Import-Export",
     "support": "COMMUNITY",
     "doc_url": "https://atticus-lv.gitee.io/super_io/#/",
     "tracker_url": "https://github.com/atticus-lv/super_io/issues",
     "description": "Copy paste to import and export Model/Images (Inspired by Binit's ImagePaste)",
-    'warning': "Windows MacOs Support",
+    'warning': "Only support Windows/MacOS(no export in mac)",
     "location": "3DView > F3 > Super Import('Ctrl Shift V') / Super Export('Ctrl Shift C')",
 }
 

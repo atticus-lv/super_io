@@ -154,6 +154,9 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('ADDONS_BLEND_WORLD', 'Append and assign world',
              'Import world from a single file and set it as context world', 'WORLD', 102),
             None,
+            ('ADDONS_INSTALL_ADDON', 'Install Addon (.py/.zip)',
+             'Import and Install addon', 'FILE_BLEND', 103),
+            None,
             ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
         default='DEFAULT_OBJ', )
@@ -479,7 +482,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                                 description='Force to use "utf-8" to decode filepath \nOnly enable when your system coding "utf-8"',
                                 default=False)
 
-    experimental:BoolProperty(name='Experimental',default = False)
+    experimental: BoolProperty(name='Experimental', default=False)
 
     report_time: BoolProperty(name='Report Time',
                               description='Report import time', default=True)
@@ -533,21 +536,22 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         col.use_property_split = True
 
         box = col.box()
-        box.label(text='Main',icon = 'PREFERENCES')
-
+        box.label(text='Import', icon="IMPORT")
         row = box.row(align=True)
         row.alert = True
         row.prop(self, 'force_unicode', text='')
         row.label(text='Force Unicode')
 
+        box = col.box()
+        box.label(text='Export', icon="EXPORT")
         row = box.row(align=True)
         row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
 
         row = box.row(align=True)
-        row.prop(self,'experimental')
+        row.prop(self, 'experimental')
 
         box = col.box()
-        box.label(text ='User Interface',icon = 'WINDOW')
+        box.label(text='User Interface', icon='WINDOW')
 
         row = box.row(align=True)
         row.prop(self, 'use_N_panel', text='')

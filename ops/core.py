@@ -58,9 +58,9 @@ def remove_prefix(s, prefix):
         return s.removeprefix(prefix)
 
 
-from ..loader.default_importer import default_importer
-from ..loader.default_blend import default_blend_lib
-from ..loader.addon_blend import addon_blend
+from ..importer.default_importer import default_importer
+from ..importer.default_blend import default_blend_lib
+from ..importer.addon_blend import addon_blend
 
 from ..exporter.default_exporter import default_exporter, exporter_ops_props
 
@@ -153,7 +153,7 @@ class ConfigItemHelper():
 
 
 class ConfigHelper():
-    def __init__(self, check_use=False, filter=None,io_type = "IMPORT"):
+    def __init__(self, check_use=False, filter=None, io_type="IMPORT"):
         pref_config = get_pref().config_list
 
         config_list = dict()
@@ -231,47 +231,48 @@ class PopupExportMenu():
 
     def default_image_menu(self, return_menu=False):
         context = self.context
-        if context.area.type == "IMAGE_EDITOR":
-            if context.area.spaces.active.image is not None and context.area.spaces.active.image.has_data is True:
-                def draw_image_editor_menu(cls, context):
-                    layout = cls.layout
-                    layout.operator_context = "INVOKE_DEFAULT"
-                    col = layout.column()
-                    op = col.operator('spio.export_image')
-                    op = col.operator('spio.export_pixel')
+        if context.area.spaces.active.image is not None and context.area.spaces.active.image.has_data is True:
+            def draw_image_editor_menu(cls, context):
+                layout = cls.layout
+                layout.operator_context = "INVOKE_DEFAULT"
 
-                if return_menu:
-                    return draw_image_editor_menu
+                col = layout.column()
+                col.operator('spio.export_image')
+                col.operator('spio.export_pixel')
 
-                context.window_manager.popup_menu(draw_image_editor_menu,
-                                                  title=f'Super Export Image ({context.area.spaces.active.image.name})',
-                                                  icon='IMAGE_DATA')
+            if return_menu: return draw_image_editor_menu
+
+            context.window_manager.popup_menu(draw_image_editor_menu,
+                                              title=f'Super Export Image ({context.area.spaces.active.image.name})',
+                                              icon='IMAGE_DATA')
 
     def default_blend_menu(self, return_menu=False):
         context = self.context
-        if context.area.type == "VIEW_3D":
-            def draw_menu(cls, context):
-                layout = cls.layout
-                layout.operator_context = "INVOKE_DEFAULT"
-                col = layout.column()
-                col.operator('spio.export_blend', text='Export Blend File')
 
-                if get_pref().experimental:
-                    col.operator('spio.export_blend', text='Export Model Asset').scripts_file_name = 'script_mark_blend_asset.py'
-                    col.operator('spio.export_blend', text='Export Material Asset').scripts_file_name = 'script_mark_blend_material_asset.py'
+        def draw_menu(cls, context):
+            layout = cls.layout
+            layout.operator_context = "INVOKE_DEFAULT"
+            col = layout.column()
+            col.operator('spio.export_blend', text='Export Blend File')
 
-                col.separator()
+            # asset export, need blender foundation to fix in 3.1
+            if get_pref().experimental:
+                col.operator('spio.export_blend',
+                             text='Export Model Asset').scripts_file_name = 'script_mark_blend_asset.py'
+                col.operator('spio.export_blend',
+                             text='Export Material Asset').scripts_file_name = 'script_mark_blend_material_asset.py'
 
-                for ext, bl_idname in default_exporter.items():
-                    op = col.operator('spio.export_model', text=f'Export {ext.upper()}')
-                    op.extension = ext
+            col.separator()
 
-            if return_menu:
-                return draw_menu
+            for ext, bl_idname in default_exporter.items():
+                op = col.operator('spio.export_model', text=f'Export {ext.upper()}')
+                op.extension = ext
 
-            context.window_manager.popup_menu(draw_menu,
-                                              title=f'Super Export ({len(context.selected_objects)} objs)',
-                                              icon='FILE_BLEND')
+        if return_menu: return draw_menu
+
+        context.window_manager.popup_menu(draw_menu,
+                                          title=f'Super Export ({len(context.selected_objects)} objs)',
+                                          icon='FILE_BLEND')
 
 
 class PopupImportMenu():
@@ -378,6 +379,7 @@ from bpy.props import (EnumProperty,
                        IntProperty,
                        BoolProperty)
 
+
 class IO_Base(bpy.types.Operator):
     """IO template"""
 
@@ -424,7 +426,7 @@ class IO_Base(bpy.types.Operator):
 
     # Export Method (Popup)
     ##############
-    def export_custom_dynamic(self,context):
+    def export_custom_dynamic(self, context):
         pass
 
 # def ray_cast(self, context, event):
