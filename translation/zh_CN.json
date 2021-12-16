@@ -25,6 +25,10 @@
     "Endswith": "后缀",
     "Contain": "包含",
     "Regex (Match or not)": "正则表达式 (匹配与否)",
+    "Open Dir After Export": "导出后打开目录",
+    "Open the target directory after export": "导出后打开导出文件所在目录",
+    "Copy After Export": "导出后复制",
+    "Copy files to clipboard after export models / images": "导出后复制导出文件到剪切板",
 
     "Add Config": "添加配置",
     "Remove Config": "移除配置",
@@ -32,6 +36,8 @@
     "Move Up": "向上移动",
     "Move Down": "向下移动",
     "Export All": "导出全部",
+    "IO Type": "IO 类型",
+    "Import Blend": "导入blend文件",
 
     "Force Unicode": "强制使用Unicode",
     "Force to use 'utf-8' to decode filepath \nOnly enable when your system coding 'utf-8'": "强制使用utf-8来解码路径\n当你的系统使用uft-8编码时才需要启用",
@@ -42,6 +48,7 @@
     "Only one type of file can be imported at a time": "只支持一次导入一种格式的文件",
     "Show Import": "显示导入",
     "Show Export": "显示导出",
+    "Wrong IO Type / Operator Type": "错误的IO类型/操作符类型",
 
     "1. If file name not matching this rule": "1. 如果文件名不匹配规则",
     "   It will search for the next config which match": "    将会搜寻下一符合的配置",
@@ -70,6 +77,19 @@
     "Append and assign material": "导入并赋予材质",
     "Append and assign world": "导入并设置世界",
     "Import material from a single file and assign it to active object": "从单个文件导入材质并赋予到激活物体上",
-    "Import world from a single file and set it as context world": "从单个文件导入世界并设置为当前世界"
+    "Import world from a single file and set it as context world": "从单个文件导入世界并设置为当前世界",
+    "Install Addon (.py/.zip)": "导入插件 (.py/.zip)",
+
+    "Append Materials": "追加材质",
+    "Append Collections": "追加集合",
+    "Append Node Groups": "追加节点组",
+    "Append Objects": "追加物体",
+    "Append Worlds": "追加世界环境",
+
+    "Link Materials": "关联材质",
+    "Link Collections": "关联集合",
+    "Link Node Groups": "关联节点组",
+    "Link Objects": "关联物体",
+    "Link Worlds": "关联世界环境"
 
 }

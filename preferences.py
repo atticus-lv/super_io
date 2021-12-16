@@ -155,7 +155,7 @@ class ExtensionOperatorProperty(PropertyGroup):
              'Import world from a single file and set it as context world', 'WORLD', 102),
             None,
             ('ADDONS_INSTALL_ADDON', 'Install Addon (.py/.zip)',
-             'Import and Install addon', 'FILE_BLEND', 103),
+             'Import and Install addon', 'COMMUNITY', 103),
             None,
             ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
@@ -469,7 +469,7 @@ class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
 class SPIO_Preference(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    # UI
+    # Tab
     ui: EnumProperty(name='UI', items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('CONFIG', 'Config', '', 'PRESET', 1),
@@ -484,6 +484,14 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     experimental: BoolProperty(name='Experimental', default=False)
 
+    # Post option
+    post_open_dir: BoolProperty(name='Open Dir After Export',
+                                description='Open the target directory after export', default=False)
+    post_push_to_clipboard: BoolProperty(name='Copy After Export',
+                                         description='Copy files to clipboard after export models / images',
+                                         default=True)
+
+    # UI
     report_time: BoolProperty(name='Report Time',
                               description='Report import time', default=True)
 
@@ -546,6 +554,12 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.label(text='Export', icon="EXPORT")
         row = box.row(align=True)
         row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
+
+        row = box.row(align=True)
+        row.prop(self, 'post_open_dir')
+
+        row = box.row(align=True)
+        row.prop(self, 'post_push_to_clipboard')
 
         row = box.row(align=True)
         row.prop(self, 'experimental')
@@ -692,6 +706,17 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             box2.prop(item, 'temporary_directory')
 
         box3 = box.box()
+        # warning
+        if item.operator_type.startswith('EXPORT') and item.io_type not in {'EXPORT'}:
+            box3.alert = True
+            box3.label(text='Wrong IO Type / Operator Type', icon='ERROR')
+
+        elif (not (item.operator_type.startswith('EXPORT') or item.operator_type.startswith('CUSTOM')) and
+              item.io_type == 'EXPORT'):
+            box3.alert = True
+            box3.label(text='Wrong IO Type / Operator Type', icon='ERROR')
+        else:
+            box3.alert = False
         box3.prop(item, 'operator_type')
 
         if item.operator_type == 'CUSTOM':
