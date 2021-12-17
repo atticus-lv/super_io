@@ -27,7 +27,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
         elif context.area.type == "NODE_EDITOR":
             return (
                     context.area.type == "NODE_EDITOR"
-                    and context.area.ui_type in {'GeometryNodeTree', "ShaderNodeTree"}
+                    and context.area.ui_type in {'GeometryNodeTree', "ShaderNodeTree", 'CompositorNodeTree'}
                     and context.space_data.edit_tree is not None
             )
 
@@ -47,6 +47,15 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 bpy.ops.object.load_reference_image(filepath=filepath)
 
             elif self.action == 'NODES':
+                path = filepath
+                src_images = list(bpy.data.images)
+
+                # use built-in ops instead of bpy.data.images.load to detect sequence and UDIM
+                bpy.ops.image.open(filepath=path)
+                # if image already load in, reload it
+                images = [img for img in bpy.data.images if img not in src_images] + [bpy.data.images.get(os.path.basename(filepath))]
+
+                image = images[0]
                 bpy.ops.node.select_all(action='DESELECT')
                 nt = context.space_data.edit_tree
 
@@ -54,26 +63,22 @@ class SPIO_OT_import_image(bpy.types.Operator):
                     node_type = 'ShaderNodeTexImage'
                 elif context.area.ui_type == 'GeometryNodeTree':
                     node_type = 'GeometryNodeImageTexture'
+                elif context.area.ui_type == 'CompositorNodeTree':
+                    node_type = 'CompositorNodeImage'
 
                 tex_node = nt.nodes.new(node_type)
                 tex_node.location = location_X, location_Y
-                # tex_node.hide = True
+
                 location_Y -= 50
                 location_X += 25
 
                 tex_node.select = True
                 nt.nodes.active = tex_node
 
-                path = filepath
-                image_name = os.path.basename(path)
-                image = bpy.data.images.get(image_name) if image_name in bpy.data.images else bpy.data.images.load(
-                    filepath=path)
-
-                if node_type == 'ShaderNodeTexImage':
+                if node_type in {'ShaderNodeTexImage', 'CompositorNodeImage'}:
                     tex_node.image = image
                 elif node_type == 'GeometryNodeImageTexture':
                     tex_node.inputs['Image'].default_value = image
-
 
         return {'FINISHED'}
 
