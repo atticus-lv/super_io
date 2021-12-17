@@ -53,7 +53,8 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 # use built-in ops instead of bpy.data.images.load to detect sequence and UDIM
                 bpy.ops.image.open(filepath=path)
                 # if image already load in, reload it
-                images = [img for img in bpy.data.images if img not in src_images] + [bpy.data.images.get(os.path.basename(filepath))]
+                images = [img for img in bpy.data.images if img not in src_images] + [
+                    bpy.data.images.get(os.path.basename(filepath))]
 
                 image = images[0]
                 bpy.ops.node.select_all(action='DESELECT')
