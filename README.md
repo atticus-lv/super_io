@@ -29,6 +29,18 @@ Translation, different platform support, and new features which come from great 
 
 # Log
 
+### v1.2.8
+
+错误修复
++ 修复io类型弹出过滤器
++ 修复mac测试导致的导出错误
+
+本地化
++ 将翻译文件更改为json文件
+
+新
++ 实验功能：插件安装程序
+
 ### v1.2.7
 
 2021.12.10
