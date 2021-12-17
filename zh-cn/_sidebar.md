@@ -5,8 +5,8 @@
     + [运作原理](/zh-cn/Principle.md)
 
 + **自定义配置**
-    + [配置管理](/zh-cn/AddConfig.md)
-    + [文件名匹配](/zh-cn/AddRule.md)
+    + [配置管理](/zh-cn/ConfigManage.md)
+    + [设置导入配置](/zh-cn/ImportConfig.md)
+    + [设置导出配置](/zh-cn/ExportConfig.md)
     + [自定义操作符](/zh-cn/CustomOperator.md)
-    
- 
+
