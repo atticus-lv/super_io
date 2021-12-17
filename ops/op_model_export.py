@@ -4,7 +4,9 @@ import sys
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
+from .core import get_pref
 from .ops_super_import import import_icon
+
 if sys.platform == "win32":
     from ..clipboard.windows import PowerShellClipboard as Clipboard
 elif sys.platform == "darwin":
@@ -42,15 +44,17 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
 
         return temp_dir
 
-    def export_batch(self, context, op_callable, op_args):
+    def get_extra_paths(self, dir):
+        return [file for file in os.listdir(dir)]
+
+    def export_batch(self, context, op_callable, op_args, target_dir):
         paths = []
-        temp_dir = self.get_temp_dir()
 
         src_active = context.active_object
         selected_objects = context.selected_objects.copy()
 
         for obj in selected_objects:
-            filepath = os.path.join(temp_dir, obj.name + f'.{self.extension}')
+            filepath = os.path.join(target_dir, obj.name + f'.{self.extension}')
             paths.append(filepath)
 
             context.view_layer.objects.active = obj
@@ -64,10 +68,9 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
 
         return paths
 
-    def export_single(self, context, op_callable, op_args):
+    def export_single(self, context, op_callable, op_args, target_dir):
         paths = []
-        temp_dir = self.get_temp_dir()
-        filepath = os.path.join(temp_dir, context.active_object.name + f'.{self.extension}')
+        filepath = os.path.join(target_dir, context.active_object.name + f'.{self.extension}')
         paths.append(filepath)
 
         op_args.update({'filepath': filepath})
@@ -82,22 +85,38 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
     def execute(self, context):
         if self.extension not in default_exporter: return {"CANCELLED"}
 
+        temp_dir = self.get_temp_dir()
+        src_file = self.get_extra_paths(temp_dir)
+
         bl_idname = default_exporter.get(self.extension)
         op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
         op_args = exporter_ops_props.get(self.extension)
 
         if self.batch_mode:
-            paths = self.export_batch(context, op_callable, op_args)
+            paths = self.export_batch(context, op_callable, op_args, temp_dir)
             self.report({'INFO'},
                         f'{len(paths)} {self.extension} files has been copied to Clipboard')
 
         else:
-            paths = self.export_single(context, op_callable, op_args)
+            paths = self.export_single(context, op_callable, op_args, temp_dir)
             self.report({'INFO'}, f'{context.active_object.name}.{self.extension} has been copied to Clipboard')
 
-        clipboard = Clipboard()
-        clipboard.push_to_clipboard(paths=paths)
+        # push
+        if get_pref().post_push_to_clipboard:
+            new_files = self.get_extra_paths(temp_dir)
+
+            extra_files = [os.path.join(temp_dir, file) for file in new_files if file not in src_file]
+
+            clipboard = Clipboard()
+            clipboard.push_to_clipboard(paths=extra_files)
+
+        if get_pref().post_open_dir:
+            import subprocess
+            if sys.platform == 'darwin':
+                subprocess.check_call(['open', '--', temp_dir])
+            elif sys.platform == 'win32':
+                subprocess.check_call(['explorer', temp_dir])
 
         return {'FINISHED'}
 

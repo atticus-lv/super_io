@@ -84,6 +84,9 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
 
                 return temp_dir
 
+            def get_extra_paths(self, dir):
+                return [file for file in os.listdir(dir)]
+
             def export_single(self, context, op_callable, op_args):
                 paths = []
                 temp_dir = self.get_temp_dir()
@@ -128,6 +131,10 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                 op_callable, op_args, op_context = ITEM.get_operator_and_args()
 
                 if op_callable:
+
+                    temp_dir = self.get_temp_dir()
+                    src_file = self.get_extra_paths(temp_dir)
+
                     with MeasureTime() as start_time:
                         if self.batch_mode:
                             paths = self.export_batch(context, op_callable, op_args)
@@ -139,8 +146,22 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                             self.report({'INFO'},
                                         f'{context.active_object.name}.{self.extension} has been copied to Clipboard')
 
-                        clipboard = Clipboard()
-                        clipboard.push_to_clipboard(paths=paths)
+                        # push
+                        if get_pref().post_push_to_clipboard:
+                            new_files = self.get_extra_paths(temp_dir)
+
+                            extra_files = [os.path.join(temp_dir, file) for file in new_files if
+                                           file not in src_file]
+
+                            clipboard = Clipboard()
+                            clipboard.push_to_clipboard(paths=extra_files)
+
+                        if get_pref().post_open_dir:
+                            import subprocess
+                            if sys.platform == 'darwin':
+                                subprocess.check_call(['open', '--', temp_dir])
+                            elif sys.platform == 'win32':
+                                subprocess.check_call(['explorer', temp_dir])
 
                         if get_pref().report_time: self.report({"INFO"},
                                                                f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
@@ -164,6 +185,7 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                            'export_single': export_single,
                            'export_batch': export_batch,
                            'get_temp_dir': get_temp_dir,
+                           'get_extra_paths': get_extra_paths,
                            },
                           )
 
@@ -188,15 +210,17 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                     layout.operator(cls.bl_idname)
 
             layout.separator()
+
             # default popup
             pop = PopupExportMenu(temp_path=None, context=context)
+            menu = None
 
             if context.area.type == "IMAGE_EDITOR":
                 menu = pop.default_image_menu(return_menu=True)
             elif context.area.type == 'VIEW_3D':
                 menu = pop.default_blend_menu(return_menu=True)
 
-            menu(self, context)
+            if menu: menu(self, context)
 
         context.window_manager.popup_menu(draw_custom_menu, title="Super Export", icon='FILEBROWSER')
 
