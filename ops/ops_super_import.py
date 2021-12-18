@@ -14,11 +14,10 @@ from bpy.props import (EnumProperty,
                        IntProperty,
                        BoolProperty)
 
-from .core import IO_Base,MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu
+from .core import IO_Base, MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu
 from .core import is_float, get_pref, convert_value
 
 from ..importer.default_importer import default_importer
-from ..importer.default_blend import default_blend_lib
 
 from ..ui.icon_utils import RSN_Preview
 
@@ -29,7 +28,6 @@ class SuperImport(IO_Base, bpy.types.Operator):
     """Paste Model/Images"""
     bl_label = "Super Import"
     bl_options = {"UNDO_GROUPED"}
-
 
     # Build-in
     ############
@@ -54,7 +52,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
                 self.report({"ERROR"}, "Only one type of file can be imported at a time")
                 return {"CANCELLED"}
 
-        self.CONFIGS = ConfigHelper(check_use=True, filter=self.ext,io_type='IMPORT')
+        self.CONFIGS = ConfigHelper(check_use=True, filter=self.ext, io_type='IMPORT')
         config_list, index_list = self.CONFIGS.config_list, self.CONFIGS.index_list
 
         # import default if not custom config for this file extension
@@ -114,41 +112,19 @@ class SuperImport(IO_Base, bpy.types.Operator):
             config_item = get_pref().config_list[index]
             ITEM = ConfigItemHelper(config_item)
 
-            # define exec
-            def execute(self, context):
-                # use pre-define index to call config
-                ITEM = self.ITEM
-
-                op_callable, ops_args, op_context = ITEM.get_operator_and_args()
-
-                if op_callable:
-                    with MeasureTime() as start_time:
-                        for file_path in file_list:
-                            if file_path in match_file_op_dict: continue
-                            ops_args['filepath'] = file_path
-                            try:
-                                if op_context:
-                                    op_callable(op_context, **ops_args)
-                                else:
-                                    op_callable(**ops_args)
-                            except Exception as e:
-                                self.report({"ERROR"}, str(e))
-
-                        if get_pref().report_time: self.report({"INFO"},
-                                                               f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
-                else:
-                    self.report({"ERROR"}, f'{op_callable} Error!!!')
-
-                return {"FINISHED"}
+            from .op_dynamic_import import DynamicImport
 
             op_cls = type("DynOp",
                           (bpy.types.Operator,),
                           {"bl_idname": f'wm.spio_config_{index}',
                            "bl_label": ITEM.name,
                            "bl_description": ITEM.description,
-                           "execute": execute,
+                           "execute": DynamicImport.execute,
                            # custom pass in
-                           'ITEM': ITEM, },
+                           'ITEM': ITEM,
+                           'file_list': file_list,
+                           'match_file_op_dict': match_file_op_dict,
+                           },
                           )
 
             self.dep_classes.append(op_cls)
