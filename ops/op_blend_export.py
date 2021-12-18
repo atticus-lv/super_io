@@ -6,9 +6,11 @@ from os import getenv
 
 import subprocess
 import sys
+import time
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from .ops_super_import import import_icon
+from .core import get_pref
 
 if sys.platform == "win32":
     from ..clipboard.windows import PowerShellClipboard as Clipboard
@@ -16,6 +18,7 @@ elif sys.platform == "darwin":
     from ..clipboard.darwin.mac import MacClipboard as Clipboard
 
 from ..exporter.default_blend import post_process_blend_file
+
 
 class ImageCopyDefault:
     @classmethod
@@ -34,21 +37,29 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
     bl_idname = 'spio.export_blend'
     bl_label = 'Copy Blend'
 
-    scripts_file_name:StringProperty(default = 'script_export_blend.py')
+    scripts_file_name: StringProperty(default='script_export_blend.py')
 
-    def execute(self, context):
-        bpy.ops.view3d.copybuffer()  # copy buffer
 
-        ori_dir = context.preferences.filepaths.temporary_directory
+    def get_temp_dir(self):
+        ori_dir = bpy.context.preferences.filepaths.temporary_directory
         temp_dir = ori_dir
         if ori_dir == '':
+            # win temp file
             temp_dir = os.path.join(os.getenv('APPDATA'), os.path.pardir, 'Local', 'Temp')
+
+        return temp_dir
+
+    def execute(self, context):
+        # copy buffer
+        bpy.ops.view3d.copybuffer()
+        # win support only(not sure the temp dir of macOS)
+        temp_dir = self.get_temp_dir()
 
         filepath = os.path.join(temp_dir, context.active_object.name + '.blend')
         if os.path.exists(filepath): os.remove(filepath)
         os.rename(os.path.join(temp_dir, 'copybuffer.blend'), filepath)
-
-        post_process_blend_file(filepath,scripts_file_name=self.scripts_file_name)
+        # append obj to scene, mark slower
+        post_process_blend_file(filepath, scripts_file_name=self.scripts_file_name)
 
         clipboard = Clipboard()
         clipboard.push_to_clipboard(paths=[filepath])
@@ -56,7 +67,6 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
         self.report({'INFO'}, f'{context.active_object.name}.blend has been copied to Clipboard')
 
         return {'FINISHED'}
-
 
 
 def register():

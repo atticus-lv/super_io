@@ -25,8 +25,8 @@ def main(args):
         bpy.ops.file.pack_all()
         try:
             bpy.ops.file.pack_libraries()
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
         bpy.context.view_layer.update()
         bpy.context.preferences.filepaths.save_version = 0  # No backup blends needed

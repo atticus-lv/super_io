@@ -253,14 +253,9 @@ class PopupExportMenu():
             layout = cls.layout
             layout.operator_context = "INVOKE_DEFAULT"
             col = layout.column()
-            col.operator('spio.export_blend', text='Export Blend File')
-
-            # asset export, need blender foundation to fix in 3.1
-            if get_pref().experimental:
-                col.operator('spio.export_blend',
-                             text='Export Model Asset').scripts_file_name = 'script_mark_blend_asset.py'
-                col.operator('spio.export_blend',
-                             text='Export Material Asset').scripts_file_name = 'script_mark_blend_material_asset.py'
+            col.operator('spio.export_blend', text='Export BLEND')
+            # if get_pref().experimental:
+            #     col.operator('spio.export_blend', text='Export Blend File (Mat Only)').scripts_file_name = 'script_export_blend_material_only.py'
 
             col.separator()
 

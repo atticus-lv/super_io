@@ -464,6 +464,7 @@ class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
         layout = self.layout
         layout.operator('spio.import_config', icon='IMPORT')
         layout.operator('spio.export_config', icon='EXPORT')
+        layout.operator('wm.save_userpref',icon = 'PREFERENCES')
 
 
 class SPIO_Preference(bpy.types.AddonPreferences):

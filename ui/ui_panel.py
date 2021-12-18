@@ -34,7 +34,6 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
         pref = get_pref()
         if pref.ui == 'SETTINGS':
             SPIO_Preference.draw_settings(pref, context, layout)
-            layout.operator('wm.save_userpref')
         elif pref.ui == 'CONFIG':
             SPIO_Preference.draw_config(pref, context, layout)
         elif pref.ui == 'KEYMAP':
@@ -53,6 +52,10 @@ class SPIO_PT_PrefPanel_300(SPIO_PT_PrefPanel):
 
 class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
     bl_label = 'Super IO'
+
+    @classmethod
+    def poll(cls, context):
+        return True
 
     def draw(self, context):
         layout = self.layout
@@ -86,6 +89,29 @@ class SPIO_PT_InstallAddon(SidebarSetup, bpy.types.Panel):
         op.remove_cache = True
 
 
+class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
+    bl_label = 'Asset Helper'
+
+    @classmethod
+    def poll(self, context):
+        return get_pref().experimental and bpy.app.version >= (3, 0, 0)
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        row.scale_y = 1.15
+        op = row.operator('spio.object_asset', text='Mark Selected Objects As Asset', icon='ASSET_MANAGER')
+        op.clear = False
+
+        # op = row.operator('spio.material_asset', text='Mark Selected Materials As Asset', icon='MATERIAL')
+        # op.clear = False
+
+        row = layout.row()
+        row.scale_y = 1.15
+        op = row.operator('spio.object_asset', text='Clear Selected Asset', icon='X')
+        op.clear = True
+
+
 class SPIO_PT_ListFilterPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'HEADER'
@@ -117,6 +143,7 @@ def register():
     bpy.utils.register_class(SPIO_PT_ImportPanel)
     bpy.utils.register_class(SPIO_PT_ListFilterPanel)
     bpy.utils.register_class(SPIO_PT_InstallAddon)
+    bpy.utils.register_class(SPIO_PT_AssetHelper)
 
 
 def unregister():
@@ -127,3 +154,4 @@ def unregister():
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
     bpy.utils.unregister_class(SPIO_PT_ListFilterPanel)
     bpy.utils.unregister_class(SPIO_PT_InstallAddon)
+    bpy.utils.unregister_class(SPIO_PT_AssetHelper)
