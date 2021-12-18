@@ -1,13 +1,94 @@
 import bpy
 import os
 import sys
+import time
+
+from bpy.props import (EnumProperty,
+                       CollectionProperty,
+                       StringProperty,
+                       IntProperty,
+                       BoolProperty)
 
 from .core import get_pref, MeasureTime
 
-if sys.platform == "win32":
-    from ..clipboard.windows import PowerShellClipboard as Clipboard
-elif sys.platform == "darwin":
-    from ..clipboard.darwin.mac import MacClipboard as Clipboard
+
+class IO_Base(bpy.types.Operator):
+    """IO template"""
+
+    # dependant class
+    #################
+    dep_classes = []  # for easier manage, helpful for batch register and un register
+
+    # data
+    #################
+    clipboard = None  # clipboard data
+    file_list = []  # store clipboard urls for importing
+    CONFIGS = None  # config list from user preference
+
+    # state
+    ###############
+    use_custom_config = False  # if there is more then one config that advance user define
+    config_list_index: IntProperty()  # index for reading pref config list
+
+    # Utils
+    ###########
+    def restore(self):
+        self.file_list.clear()
+        self.clipboard = None
+        self.ext = None
+        self.use_custom_config = False
+
+    def report_time(self, start_time):
+        if get_pref().report_time: self.report({"INFO"},
+                                               f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
+
+    # Import Method
+    def import_blend_default(self, context):
+        """Import with default popup"""
+        pass
+
+    def import_default(self, context):
+        """Import with blender's default setting"""
+        pass
+
+    # Import Method (Popup)
+    ##############
+    def import_custom_dynamic(self, context):
+        pass
+
+    # Export Method (Popup)
+    ##############
+    def export_custom_dynamic(self, context):
+        pass
+
+
+class DynamicImport:
+    # define exec
+    def execute(self, context):
+        # use pre-define index to call config
+        ITEM = self.ITEM
+
+        op_callable, ops_args, op_context = ITEM.get_operator_and_args()
+
+        if op_callable:
+            with MeasureTime() as start_time:
+                for file_path in self.file_list:
+                    if file_path in self.match_file_op_dict: continue
+                    ops_args['filepath'] = file_path
+                    try:
+                        if op_context:
+                            op_callable(op_context, **ops_args)
+                        else:
+                            op_callable(**ops_args)
+                    except Exception as e:
+                        self.report({"ERROR"}, str(e))
+
+                if get_pref().report_time: self.report({"INFO"},
+                                                       f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
+        else:
+            self.report({"ERROR"}, f'{op_callable} Error!!!')
+
+        return {"FINISHED"}
 
 
 class DynamicExport:
@@ -89,6 +170,12 @@ class DynamicExport:
 
                 # push
                 if get_pref().post_push_to_clipboard:
+
+                    if sys.platform == "win32":
+                        from ..clipboard.windows import PowerShellClipboard as Clipboard
+                    elif sys.platform == "darwin":
+                        from ..clipboard.darwin.mac import MacClipboard as Clipboard
+
                     new_files = self.get_extra_paths(temp_dir)
 
                     extra_files = [os.path.join(temp_dir, file) for file in new_files if

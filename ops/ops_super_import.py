@@ -2,11 +2,6 @@ from __future__ import annotations
 import sys
 import time
 
-if sys.platform == "win32":
-    from ..clipboard.windows import WintypesClipboard as Clipboard
-elif sys.platform == "darwin":
-    from ..clipboard.darwin.mac import MacClipboard as Clipboard
-
 import bpy
 from bpy.props import (EnumProperty,
                        CollectionProperty,
@@ -14,7 +9,8 @@ from bpy.props import (EnumProperty,
                        IntProperty,
                        BoolProperty)
 
-from .core import IO_Base, MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu
+from .op_dynamic_io import IO_Base
+from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import is_float, get_pref, convert_value
 
 from ..importer.default_importer import default_importer
@@ -34,6 +30,10 @@ class SuperImport(IO_Base, bpy.types.Operator):
     def invoke(self, context, event):
         self.restore()
 
+        if sys.platform == "win32":
+            from ..clipboard.windows import WintypesClipboard as Clipboard
+        elif sys.platform == "darwin":
+            from ..clipboard.darwin.mac import MacClipboard as Clipboard
         # get Clipboard
         self.clipboard = Clipboard()
         self.file_list = self.clipboard.pull(force_unicode=get_pref().force_unicode)
@@ -106,13 +106,13 @@ class SuperImport(IO_Base, bpy.types.Operator):
 
         # dynamic operator
         ##################
+        from .op_dynamic_io import DynamicImport
+
         for index in self.CONFIGS.index_list:
             if index in match_index_list: continue  # not register those match config
             # only for register
             config_item = get_pref().config_list[index]
             ITEM = ConfigItemHelper(config_item)
-
-            from .op_dynamic_import import DynamicImport
 
             op_cls = type("DynOp",
                           (bpy.types.Operator,),
@@ -164,6 +164,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
 
         if len(remain_list) > 0:
             # set draw menu
+            from .core import PopupImportMenu
             import_op = self
             ext = self.ext
 
@@ -202,6 +203,7 @@ class WM_OT_super_import(SuperImport):
 
     def import_blend_default(self, context):
         """Import with default popup"""
+        from .core import PopupImportMenu
         popup = PopupImportMenu(file_list=self.file_list, context=context)
         popup.default_blend_menu()
 
@@ -213,6 +215,8 @@ class WM_OT_super_import(SuperImport):
                 op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
                 op_callable(filepath=file_path)
         else:
+            from .core import PopupImportMenu
+
             popup = PopupImportMenu(self.file_list, context)
             popup.default_image_menu()
 

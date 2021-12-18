@@ -3,7 +3,7 @@ import json
 import os
 
 from bpy.props import StringProperty, BoolProperty
-from .core import ConfigHelper, get_pref
+from .core import get_pref
 from bpy_extras.io_utils import ExportHelper, ImportHelper
 
 
@@ -22,6 +22,8 @@ class SPIO_OT_import_config(bpy.types.Operator, ImportHelper):
     )
 
     def execute(self, context):
+        from .core import ConfigHelper
+
         pref = get_pref()
         CONFIG = ConfigHelper()
         exist_config, index_list = CONFIG.config_list, CONFIG.index_list
@@ -68,8 +70,11 @@ class SPIO_OT_export_config(bpy.types.Operator, ExportHelper):
         layout.prop(self, 'export_all')
 
     def execute(self, context):
+        from .core import ConfigHelper
+
         CONFIG = ConfigHelper(check_use=self.export_all)
         config, index_list = CONFIG.config_list, CONFIG.index_list
+
         with open(self.filepath, "w", encoding='utf-8') as f:
             json.dump(config, f, indent=4, ensure_ascii=False)
             self.report({"INFO"}, f'Save config to "{self.filepath}"')

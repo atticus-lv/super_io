@@ -1,6 +1,7 @@
 import bpy
 
-from .core import IO_Base, MeasureTime, ConfigItemHelper, ConfigHelper, PopupImportMenu, PopupExportMenu
+from .op_dynamic_io import IO_Base
+from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import is_float, get_pref, convert_value
 from ..ui.icon_utils import RSN_Preview
 
@@ -31,7 +32,9 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
 
     def execute(self, context):
         if self.use_custom_config is False:
+            from .core import PopupExportMenu
             popup = PopupExportMenu(temp_path=None, context=context)
+
             if context.area.type == "VIEW_3D":
                 popup.default_blend_menu()
             elif context.area.type == "IMAGE_EDITOR":
@@ -47,12 +50,12 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
 
         # dynamic operator
         ##################
+        from .op_dynamic_io import DynamicExport
+
         for index in self.CONFIGS.index_list:
             # pass in
             config_item = get_pref().config_list[index]
             ITEM = ConfigItemHelper(config_item)
-
-            from .op_dynamic_export import DynamicExport
 
             op_cls = type("DynOp",
                           (bpy.types.Operator,),
@@ -95,6 +98,7 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
             layout.separator()
 
             # default popup
+            from .core import PopupExportMenu
             pop = PopupExportMenu(temp_path=None, context=context)
             menu = None
 
