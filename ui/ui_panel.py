@@ -101,16 +101,11 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         row.scale_y = 1.15
-        op = row.operator('spio.object_asset', text='Mark Selected Objects As Asset', icon='ASSET_MANAGER')
-        op.clear = False
-
-        # op = row.operator('spio.material_asset', text='Mark Selected Materials As Asset', icon='MATERIAL')
-        # op.clear = False
+        row.operator('spio.mark_object_asset', text='Mark Selected Objects As Asset', icon='ASSET_MANAGER')
 
         row = layout.row()
         row.scale_y = 1.15
-        op = row.operator('spio.object_asset', text='Clear Selected Asset', icon='X')
-        op.clear = True
+        row.operator('spio.clear_object_asset', text='Clear Selected Asset', icon='X')
 
 
 class SPIO_PT_ListFilterPanel(bpy.types.Panel):
