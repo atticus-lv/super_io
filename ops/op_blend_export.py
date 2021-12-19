@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import bpy
 import os
-from os import getenv
+import shutil
 
-import subprocess
 import sys
-import time
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from .ops_super_import import import_icon
@@ -59,9 +57,10 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
         if os.path.exists(self.filepath):
             os.remove(self.filepath)  # remove exist file
 
-        os.rename(os.path.join(temp_dir, 'copybuffer.blend'), self.filepath)
+        post_process_blend_file(os.path.join(temp_dir, 'copybuffer.blend'), scripts_file_name=self.scripts_file_name)
+
+        shutil.copy(os.path.join(temp_dir, 'copybuffer.blend'), self.filepath)
         # append obj to scene, mark slower
-        post_process_blend_file(self.filepath, scripts_file_name=self.scripts_file_name)
 
         # push
         if get_pref().post_push_to_clipboard:

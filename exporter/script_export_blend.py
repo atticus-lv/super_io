@@ -18,15 +18,15 @@ def main(args):
 
         bpy.ops.wm.open_mainfile(filepath=blend)
 
-        for o in bpy.data.objects:
-            bpy.context.scene.collection.objects.link(o)
-
         # pack
         bpy.ops.file.pack_all()
         try:
             bpy.ops.file.pack_libraries()
         except Exception as e:
             print(e)
+
+        for o in bpy.data.objects:
+            bpy.context.scene.collection.objects.link(o)
 
         bpy.context.view_layer.update()
         bpy.context.preferences.filepaths.save_version = 0  # No backup blends needed
