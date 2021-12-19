@@ -191,6 +191,13 @@ class DynamicExport:
                     elif sys.platform == 'win32':
                         subprocess.check_call(['explorer', temp_dir])
 
+                if get_pref().post_open_dir:
+                    import subprocess
+                    if sys.platform == 'darwin':
+                        subprocess.check_call(['open', '--', temp_dir])
+                    elif sys.platform == 'win32':
+                        subprocess.check_call(['explorer', temp_dir])
+
                 if get_pref().report_time: self.report({"INFO"},
                                                        f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
         else:

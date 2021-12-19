@@ -38,12 +38,12 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
     bl_label = 'Copy Blend'
 
     scripts_file_name: StringProperty(default='script_export_blend.py')
-
+    filepath: StringProperty(default='')
 
     def get_temp_dir(self):
         ori_dir = bpy.context.preferences.filepaths.temporary_directory
         temp_dir = ori_dir
-        if ori_dir == '':
+        if ori_dir == '' or not os.path.exists(ori_dir):
             # win temp file
             temp_dir = os.path.join(os.getenv('APPDATA'), os.path.pardir, 'Local', 'Temp')
 
@@ -54,17 +54,31 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
         bpy.ops.view3d.copybuffer()
         # win support only(not sure the temp dir of macOS)
         temp_dir = self.get_temp_dir()
+        if self.filepath == '': self.filepath = os.path.join(temp_dir, context.active_object.name + '.blend')
 
-        filepath = os.path.join(temp_dir, context.active_object.name + '.blend')
-        if os.path.exists(filepath): os.remove(filepath)
-        os.rename(os.path.join(temp_dir, 'copybuffer.blend'), filepath)
+        if os.path.exists(self.filepath):
+            os.remove(self.filepath)  # remove exist file
+        else:
+            self.report({"ERROR"}, f'Path Not Exist:{self.filepath}')
+            return {"CANCELLED"}
+
+        os.rename(os.path.join(temp_dir, 'copybuffer.blend'), self.filepath)
         # append obj to scene, mark slower
-        post_process_blend_file(filepath, scripts_file_name=self.scripts_file_name)
+        post_process_blend_file(self.filepath, scripts_file_name=self.scripts_file_name)
 
-        clipboard = Clipboard()
-        clipboard.push_to_clipboard(paths=[filepath])
+        # push
+        if get_pref().post_push_to_clipboard:
+            clipboard = Clipboard()
+            clipboard.push_to_clipboard(paths=[self.filepath])
 
-        self.report({'INFO'}, f'{context.active_object.name}.blend has been copied to Clipboard')
+            self.report({'INFO'}, f'{context.active_object.name}.blend has been copied to Clipboard')
+
+        if get_pref().post_open_dir:
+            import subprocess
+            if sys.platform == 'darwin':
+                subprocess.check_call(['open', '--', temp_dir])
+            elif sys.platform == 'win32':
+                subprocess.check_call(['explorer', temp_dir])
 
         return {'FINISHED'}
 

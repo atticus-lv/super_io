@@ -117,6 +117,7 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('DEFAULT_X3D', 'X3D (.x3d/.wrl)', '', 'IMPORT', 90),
 
             ("", "Export", "Default blender build-in exporter", "CUBE", 0),
+
             ('EXPORT_DAE', 'Collada (.dae)', '', 'EXPORT', 199),
             ('EXPORT_ABC', 'Alembic (.abc)', '', 'EXPORT', 198),
             ('EXPORT_USD', 'USD (.usd)', '', 'EXPORT', 197),
@@ -127,6 +128,8 @@ class ExtensionOperatorProperty(PropertyGroup):
             ('EXPORT_FBX', 'FBX (.fbx)', '', 'EXPORT', 192),
             ('EXPORT_GLTF', 'glTF 2.0 (.gltf)', '', 'EXPORT', 191),
             ('EXPORT_OBJ', 'Wavefront (.obj)', '', 'EXPORT', 190),
+            None,
+            ('EXPORT_BLEND', 'Blend (.blend)', '', 'BLENDER', 200),
 
             ("", "Import Blend", "Import Blend File", "BLENDER", 0),
             None,

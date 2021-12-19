@@ -44,10 +44,11 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
 
 class SPIO_PT_PrefPanel_283(SPIO_PT_PrefPanel):
     bl_label = ' '
+    bl_options = {'DEFAULT_CLOSED'}
 
 
 class SPIO_PT_PrefPanel_300(SPIO_PT_PrefPanel):
-    bl_options = {'HEADER_LAYOUT_EXPAND'}
+    bl_options = {'HEADER_LAYOUT_EXPAND','DEFAULT_CLOSED'}
 
 
 class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
