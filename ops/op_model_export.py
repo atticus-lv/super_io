@@ -116,7 +116,7 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
             if sys.platform == 'darwin':
                 subprocess.check_call(['open', '--', temp_dir])
             elif sys.platform == 'win32':
-                subprocess.check_call(['explorer', temp_dir])
+                os.startfile(temp_dir)
 
         return {'FINISHED'}
 

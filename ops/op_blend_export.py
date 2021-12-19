@@ -58,9 +58,6 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
 
         if os.path.exists(self.filepath):
             os.remove(self.filepath)  # remove exist file
-        else:
-            self.report({"ERROR"}, f'Path Not Exist:{self.filepath}')
-            return {"CANCELLED"}
 
         os.rename(os.path.join(temp_dir, 'copybuffer.blend'), self.filepath)
         # append obj to scene, mark slower
@@ -78,7 +75,7 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
             if sys.platform == 'darwin':
                 subprocess.check_call(['open', '--', temp_dir])
             elif sys.platform == 'win32':
-                subprocess.check_call(['explorer', temp_dir])
+                os.startfile(temp_dir)
 
         return {'FINISHED'}
 
