@@ -44,9 +44,6 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
 
         return temp_dir
 
-    def get_extra_paths(self, dir):
-        return [file for file in os.listdir(dir)]
-
     def export_batch(self, context, op_callable, op_args, target_dir):
         paths = []
 
@@ -86,7 +83,10 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
         if self.extension not in default_exporter: return {"CANCELLED"}
 
         temp_dir = self.get_temp_dir()
-        src_file = self.get_extra_paths(temp_dir)
+        # set dict for checking overwrite obj time
+        src_file = dict()
+        for file in os.listdir(temp_dir):
+            src_file[file] = os.path.getmtime(os.path.join(temp_dir, file))
 
         bl_idname = default_exporter.get(self.extension)
         op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
@@ -104,9 +104,12 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
 
         # push
         if get_pref().post_push_to_clipboard:
-            new_files = self.get_extra_paths(temp_dir)
+            new_files = [file for file in os.listdir(temp_dir)]
 
-            extra_files = [os.path.join(temp_dir, file) for file in new_files if file not in src_file]
+            extra_files = [os.path.join(temp_dir, file) for file in new_files if
+                           file not in src_file or src_file.get(file) != os.path.getmtime(
+                               os.path.join(temp_dir, file))]
+
 
             clipboard = Clipboard()
             clipboard.push_to_clipboard(paths=extra_files)

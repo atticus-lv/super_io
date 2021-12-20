@@ -106,9 +106,6 @@ class DynamicExport:
 
         return temp_dir
 
-    def get_extra_paths(self, dir):
-        return [file for file in os.listdir(dir)]
-
     def export_single(self, context, op_callable, op_args):
         paths = []
         temp_dir = self.get_temp_dir()
@@ -153,9 +150,11 @@ class DynamicExport:
         op_callable, op_args, op_context = ITEM.get_operator_and_args()
 
         if op_callable:
-
             temp_dir = self.get_temp_dir()
-            src_file = self.get_extra_paths(temp_dir)
+            # set dict for checking overwrite obj time
+            src_file = dict()
+            for file in os.listdir(temp_dir):
+                src_file[file] = os.path.getmtime(os.path.join(temp_dir, file))
 
             with MeasureTime() as start_time:
                 if self.batch_mode:
@@ -176,10 +175,11 @@ class DynamicExport:
                     elif sys.platform == "darwin":
                         from ..clipboard.darwin.mac import MacClipboard as Clipboard
 
-                    new_files = self.get_extra_paths(temp_dir)
+                    new_files = [file for file in os.listdir(temp_dir)]
 
                     extra_files = [os.path.join(temp_dir, file) for file in new_files if
-                                   file not in src_file]
+                                   file not in src_file or src_file.get(file) != os.path.getmtime(
+                                       os.path.join(temp_dir, file))]
 
                     clipboard = Clipboard()
                     clipboard.push_to_clipboard(paths=extra_files)

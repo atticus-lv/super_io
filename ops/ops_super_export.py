@@ -72,7 +72,7 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                            'export_single': DynamicExport.export_single,
                            'export_batch': DynamicExport.export_batch,
                            'get_temp_dir': DynamicExport.get_temp_dir,
-                           'get_extra_paths': DynamicExport.get_extra_paths, },
+                           },
                           )
 
             self.dep_classes.append(op_cls)
