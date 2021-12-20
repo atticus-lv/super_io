@@ -185,11 +185,11 @@ class SuperImport(IO_Base, bpy.types.Operator):
                 elif ext == 'blend':
                     pop = PopupImportMenu(file_list=remain_list, context=context)
                     menu = pop.default_blend_menu(return_menu=True)
-                    menu(self, context)
+                    if menu: menu(self, context)
                 else:
                     pop = PopupImportMenu(file_list=remain_list, context=context)
                     menu = pop.default_image_menu(return_menu=True)
-                    menu(self, context)
+                    if menu: menu(self, context)
 
             context.window_manager.popup_menu(draw_custom_menu, title=title, icon='FILEBROWSER')
 
