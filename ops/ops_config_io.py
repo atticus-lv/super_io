@@ -25,7 +25,7 @@ class SPIO_OT_import_config(bpy.types.Operator, ImportHelper):
         from .core import ConfigHelper
 
         pref = get_pref()
-        CONFIG = ConfigHelper()
+        CONFIG = ConfigHelper(io_type='ALL')
         exist_config, index_list = CONFIG.config_list, CONFIG.index_list
 
         with open(self.filepath, "r", encoding='utf-8') as f:

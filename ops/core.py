@@ -177,28 +177,16 @@ class ConfigHelper():
                         ops_config[prop] = convert_value(value)
                 config['prop_list'] = ops_config
 
-            if io_type == 'IMPORT':
+            if io_type == 'IMPORT' and self.is_import_config(config, check_use):
                 # check config dict
-                if True in (config.get('name') == '',
-                            config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '',
-                            config.get('extension') == '',
-                            filter and config.get('extension') != filter,
-                            check_use and config.get('use_config') is False,
-                            config.get('io_type') != io_type,
-                            ): continue
-
                 index_list.append(config_list_index)
                 config_list[item.name] = config
 
+            elif io_type == 'EXPORT' and self.is_export_config(config, check_use):
+                index_list.append(config_list_index)
+                config_list[item.name] = config
 
-            elif io_type == 'EXPORT':
-                if True in (config.get('name') == '',
-                            config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '',
-                            config.get('extension') == '',
-                            check_use and config.get('use_config') is False,
-                            config.get('io_type') != io_type,
-                            ): continue
-
+            elif io_type == 'ALL' and self.is_config_qualified(config, check_use):
                 index_list.append(config_list_index)
                 config_list[item.name] = config
 
@@ -210,6 +198,25 @@ class ConfigHelper():
 
         config_item = self.config_list[index]
         return config_item.get('prop_list')
+
+    def is_config_qualified(self, config, check_use):
+        return True not in (config.get('name') == '',
+                            config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '',
+                            config.get('extension') == '',
+                            check_use and config.get('use_config') is False)
+
+    def is_import_config(self, config, check_use, io_type="IMPORT"):
+        return (
+            self.is_config_qualified(config, check_use),
+            filter and config.get('extension') == filter and
+            config.get('io_type') == io_type
+        )
+
+    def is_export_config(self, config, check_use, io_type="EXPORT"):
+        return (
+                self.is_config_qualified(config, check_use) and
+                config.get('io_type') == io_type
+        )
 
     def is_empty(self):
         return len(self.config_list) == 0
