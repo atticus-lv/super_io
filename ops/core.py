@@ -177,7 +177,7 @@ class ConfigHelper():
                         ops_config[prop] = convert_value(value)
                 config['prop_list'] = ops_config
 
-            if io_type == 'IMPORT' and self.is_import_config(config, check_use):
+            if io_type == 'IMPORT' and self.is_import_config(config, check_use, filter):
                 # check config dict
                 index_list.append(config_list_index)
                 config_list[item.name] = config
@@ -200,16 +200,16 @@ class ConfigHelper():
         return config_item.get('prop_list')
 
     def is_config_qualified(self, config, check_use):
-        return True not in (config.get('name') == '',
-                            config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '',
-                            config.get('extension') == '',
-                            check_use and config.get('use_config') is False)
+        return not (config.get('name') == '' and
+                    config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '' and
+                    config.get('extension') == '' and
+                    check_use and config.get('use_config') is False)
 
-    def is_import_config(self, config, check_use, io_type="IMPORT"):
+    def is_import_config(self, config, check_use, filter, io_type="IMPORT"):
         return (
-            self.is_config_qualified(config, check_use),
-            filter and config.get('extension') == filter and
-            config.get('io_type') == io_type
+                self.is_config_qualified(config, check_use) and
+                filter and config.get('extension') == filter and
+                config.get('io_type') == io_type
         )
 
     def is_export_config(self, config, check_use, io_type="EXPORT"):

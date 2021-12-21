@@ -66,7 +66,7 @@ def get_color_tag_icon(index):
 enum_color_tag_items = get_color_tag_enum_items()
 
 
-class ExtensionOperatorProperty(PropertyGroup):
+class ConfigItemProperty(PropertyGroup):
     # USE
     use_config: BoolProperty(name='Use', default=True)
     # UI
@@ -210,7 +210,7 @@ class SPIO_OT_OperatorPropRemove(OperatorPropAction, bpy.types.Operator):
 from .ops.core import convert_value
 
 
-class SPIO_OT_ExtensionListAction:
+class SPIO_OT_ConfigListAction:
     """Add / Remove / Copy current config"""
     bl_label = "Config Operate"
     bl_options = {'REGISTER', 'UNDO'}
@@ -266,35 +266,35 @@ class SPIO_OT_ExtensionListAction:
         pref.config_list_index = max(0, min(new_index, len(pref.config_list) - 1))
 
 
-class SPIO_OT_ExtensionListAdd(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+class SPIO_OT_ConfigListAdd(SPIO_OT_ConfigListAction, bpy.types.Operator):
     bl_idname = "spio.config_list_add"
     bl_label = "Add Config"
 
     action = 'ADD'
 
 
-class SPIO_OT_ExtensionListRemove(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+class SPIO_OT_ConfigListRemove(SPIO_OT_ConfigListAction, bpy.types.Operator):
     bl_idname = "spio.config_list_remove"
     bl_label = "Remove Config"
 
     action = 'REMOVE'
 
 
-class SPIO_OT_ExtensionListCopy(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+class SPIO_OT_ConfigListCopy(SPIO_OT_ConfigListAction, bpy.types.Operator):
     bl_idname = "spio.config_list_copy"
     bl_label = "Copy Config"
 
     action = 'COPY'
 
 
-class SPIO_OT_ExtensionListMoveUP(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+class SPIO_OT_ConfigListMoveUP(SPIO_OT_ConfigListAction, bpy.types.Operator):
     bl_idname = "spio.config_list_move_up"
     bl_label = 'Move Up'
 
     action = 'UP'
 
 
-class SPIO_OT_ExtensionListMoveDown(SPIO_OT_ExtensionListAction, bpy.types.Operator):
+class SPIO_OT_ConfigListMoveDown(SPIO_OT_ConfigListAction, bpy.types.Operator):
     bl_idname = "spio.config_list_move_down"
     bl_label = 'Move Down'
 
@@ -501,7 +501,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     disable_warning_rules: BoolProperty(name='Close Warning Rules', default=False)
     # Preset
-    config_list: CollectionProperty(type=ExtensionOperatorProperty)
+    config_list: CollectionProperty(type=ConfigItemProperty)
     config_list_index: IntProperty(min=0, default=0)
 
     def draw(self, context):
@@ -762,9 +762,9 @@ classes = [
     OperatorProperty,
     SPIO_OT_OperatorPropAdd, SPIO_OT_OperatorPropRemove,
 
-    ExtensionOperatorProperty,
-    SPIO_OT_ExtensionListAdd, SPIO_OT_ExtensionListRemove, SPIO_OT_ExtensionListCopy, SPIO_OT_ExtensionListMoveUP,
-    SPIO_OT_ExtensionListMoveDown,
+    ConfigItemProperty,
+    SPIO_OT_ConfigListAdd, SPIO_OT_ConfigListRemove, SPIO_OT_ConfigListCopy, SPIO_OT_ConfigListMoveUP,
+    SPIO_OT_ConfigListMoveDown,
 
     SPIO_OT_color_tag_selector,
 
@@ -814,7 +814,7 @@ def register():
 
     try:
         for key in get_pref().config_list.__annotations__.keys():
-            the_value = getattr(ExtensionOperatorProperty, key)
+            the_value = getattr(ConfigItemProperty, key)
     except Exception as e:
         print(e)
 
