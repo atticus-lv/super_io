@@ -8,7 +8,7 @@ class MacClipboard():
         # file_urls: list[str] = None
         self.file_urls = file_urls
 
-    def push(self, force_unicode=False):
+    def pull(self, force_unicode=False):
         self.file_urls = []
         from .pasteboard import _native as pasteboard
 
