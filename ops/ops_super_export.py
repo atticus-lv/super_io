@@ -64,6 +64,7 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                            "bl_description": ITEM.description,
                            "execute": DynamicExport.execute,
                            "invoke": DynamicExport.invoke,
+                           "poll": DynamicExport.poll,
                            # custom pass in
                            'ITEM': ITEM,
                            'batch_mode': False,

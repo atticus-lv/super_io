@@ -92,6 +92,11 @@ class DynamicImport:
 
 
 class DynamicExport:
+
+    @classmethod
+    def poll(self, context):
+        return context.active_object is not None and len(context.selected_objects) != 0
+
     def get_temp_dir(self):
         temp_dir = self.ITEM.temporary_directory
         if temp_dir == '':
