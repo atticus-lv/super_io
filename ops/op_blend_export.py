@@ -8,14 +8,7 @@ import sys
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from .ops_super_import import import_icon
-from .core import get_pref
-
-if sys.platform == "win32":
-    from ..clipboard.windows import PowerShellClipboard as Clipboard
-elif sys.platform == "darwin":
-    from ..clipboard.darwin.mac import MacClipboard as Clipboard
-
-from ..exporter.default_blend import post_process_blend_file
+from .core import get_pref, PostProcess
 
 
 class ImageCopyDefault:
@@ -50,32 +43,19 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
     def execute(self, context):
         # copy buffer
         bpy.ops.view3d.copybuffer()
-        # win support only(not sure the temp dir of macOS)
-        temp_dir = self.get_temp_dir()
+        temp_dir = self.get_temp_dir() # win support only(not sure the temp dir of macOS)
         if self.filepath == '': self.filepath = os.path.join(temp_dir, context.active_object.name + '.blend')
 
         if os.path.exists(self.filepath):
             os.remove(self.filepath)  # remove exist file
 
-        post_process_blend_file(os.path.join(temp_dir, 'copybuffer.blend'), scripts_file_name=self.scripts_file_name)
-
+        POST = PostProcess()
+        POST.fix_blend(os.path.join(temp_dir, 'copybuffer.blend'), scripts_file_name=self.scripts_file_name)
+        # Copy
         shutil.copy(os.path.join(temp_dir, 'copybuffer.blend'), self.filepath)
-        # append obj to scene, mark slower
-
-        # push
-        if get_pref().post_push_to_clipboard:
-            clipboard = Clipboard()
-            clipboard.push_to_clipboard(paths=[self.filepath])
-
-            self.report({'INFO'}, f'{context.active_object.name}.blend has been copied to Clipboard')
-
-        if get_pref().post_open_dir:
-            import subprocess
-            if sys.platform == 'darwin':
-                subprocess.check_call(['open', '--', temp_dir])
-            elif sys.platform == 'win32':
-                os.startfile(temp_dir)
-
+        # Prefs
+        POST.copy_to_clipboard(paths=[self.filepath], op=self)
+        POST.open_dir(temp_dir)
         return {'FINISHED'}
 
 

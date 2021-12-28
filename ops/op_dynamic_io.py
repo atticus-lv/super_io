@@ -9,7 +9,7 @@ from bpy.props import (EnumProperty,
                        IntProperty,
                        BoolProperty)
 
-from .core import get_pref, MeasureTime
+from .core import get_pref, MeasureTime, PostProcess
 
 
 class IO_Base(bpy.types.Operator):
@@ -172,36 +172,10 @@ class DynamicExport:
                     self.report({'INFO'},
                                 f'{context.active_object.name}.{self.extension} has been copied to Clipboard')
 
-                # push
-                if get_pref().post_push_to_clipboard:
-
-                    if sys.platform == "win32":
-                        from ..clipboard.windows import PowerShellClipboard as Clipboard
-                    elif sys.platform == "darwin":
-                        from ..clipboard.darwin.mac import MacClipboard as Clipboard
-
-                    new_files = [file for file in os.listdir(temp_dir)]
-
-                    extra_files = [os.path.join(temp_dir, file) for file in new_files if
-                                   file not in src_file or src_file.get(file) != os.path.getmtime(
-                                       os.path.join(temp_dir, file))]
-
-                    clipboard = Clipboard()
-                    clipboard.push_to_clipboard(paths=extra_files)
-
-                if get_pref().post_open_dir:
-                    import subprocess
-                    if sys.platform == 'darwin':
-                        subprocess.check_call(['open', '--', temp_dir])
-                    elif sys.platform == 'win32':
-                        subprocess.check_call(['explorer', temp_dir])
-
-                if get_pref().post_open_dir:
-                    import subprocess
-                    if sys.platform == 'darwin':
-                        subprocess.check_call(['open', '--', temp_dir])
-                    elif sys.platform == 'win32':
-                        subprocess.check_call(['explorer', temp_dir])
+                # Pref
+                POST = PostProcess()
+                POST.copy_to_clipboard(paths=PostProcess.get_update_files(src_file, temp_dir), op=self)
+                POST.open_dir(temp_dir)
 
                 if get_pref().report_time: self.report({"INFO"},
                                                        f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')

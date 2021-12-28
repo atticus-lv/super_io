@@ -374,6 +374,49 @@ class PopupImportMenu():
                                           title=f'Super Import Blend ({len(self.file_list)} files)',
                                           icon='FILE_BLEND')
 
+
+import sys
+
+
+class PostProcess():
+
+    def fix_blend(self, filepath, scripts_file_name):
+        # append obj to scene, mark slower
+        from ..exporter.default_blend import post_process_blend_file
+        post_process_blend_file(filepath, scripts_file_name)
+
+    def open_dir(self, temp_dir):
+        if get_pref().post_open_dir:
+            import subprocess
+            if sys.platform == 'darwin':
+                subprocess.check_call(['open', '--', temp_dir])
+            elif sys.platform == 'win32':
+                os.startfile(temp_dir)
+
+    @staticmethod
+    def get_update_files(src_file, temp_dir):
+        new_files = [file for file in os.listdir(temp_dir)]
+
+        extra_files = [os.path.join(temp_dir, file) for file in new_files if
+                       file not in src_file or src_file.get(file) != os.path.getmtime(
+                           os.path.join(temp_dir, file))]
+
+        return extra_files
+
+    def copy_to_clipboard(self, paths, op):
+        """Win only now, need to test mac"""
+        if get_pref().post_push_to_clipboard:
+
+            if sys.platform == "win32":
+                from ..clipboard.windows import PowerShellClipboard as Clipboard
+            elif sys.platform == "darwin":
+                from ..clipboard.darwin.mac import MacClipboard as Clipboard
+
+            clipboard = Clipboard()
+            clipboard.push_to_clipboard(paths=paths)
+            if op:
+                op.report({'INFO'}, f'{bpy.context.active_object.name}.blend has been copied to Clipboard')
+
 # def ray_cast(self, context, event):
 #     # Get the mouse position
 #     self.mouse_pos = event.mouse_region_x, event.mouse_region_y
