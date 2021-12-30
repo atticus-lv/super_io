@@ -1,16 +1,14 @@
 # log
 # v1.0
 # initial win
-# Know issue:
-# Use fbx to export instead of obj
-# Because C4d's obj exporter has some error with python
+
 from __future__ import annotations
 
-import c4d
-from c4d import gui, plugins
-
-import os
 import sys
+
+import hou
+import os
+import numpy as np
 
 # Custom Temp Path
 TEMP_DIR = ''
@@ -28,39 +26,27 @@ def get_dir():
 
 def main():
     if sys.platform != "win32":
-        return gui.MessageDialog("Not Support this platform!")
+        return print("Not Support this platform!")
 
-    filename = c4d.documents.GetActiveDocument().GetDocumentName()
-    filePath = os.path.join(get_dir(), filename + '.fbx')
-    # c4d.storage.LoadDialog(title="Test", flags=c4d.FILESELECT_SAVE, force_suffix="abc")
+    # create or set nodes
+    if len(hou.selectedNodes()) == 0:
+        return
 
-    # Retrieves FBX exporter plugin, 1026370
-    fbxExportId = 1026370
-    plug = plugins.FindPlugin(fbxExportId, c4d.PLUGINTYPE_SCENESAVER)
-    if plug is None:
-        return gui.MessageDialog('Failed to retrieves Exporter!')
-    # check exporter
-    op = dict()
+    file_list = list()
 
-    if not plug.Message(c4d.MSG_RETRIEVEPRIVATEDATA, op):
-        return gui.MessageDialog('Failed to retrieves private data')
+    for node in hou.selectedNodes():
+        name = node.path().split('/')[-1]
+        filepath = os.path.join(get_dir(), name + '.obj')
+        print(filepath)
+        node.geometry().saveToFile(filepath)
+        file_list.append(filepath)
 
-    fbxExport = op.get("imexporter", None)
-    if fbxExport is None:
-        return gui.MessageDialog('Exporter Not Found!')
-
-    # set fbx exporter
-    fbxExport[c4d.FBXEXPORT_ASCII] = False
-    fbxExport[c4d.FBXEXPORT_SELECTION_ONLY] = True
-
-    # save
-    if not c4d.documents.SaveDocument(doc, filePath, c4d.SAVEDOCUMENTFLAGS_DONTADDTORECENTLIST, fbxExportId):
-        return gui.MessageDialog('Exporter Failed!')
-
-    print("Document successfully exported to:", filePath)
-    # copy
     clipboard = PowerShellClipboard()
-    clipboard.push_to_clipboard(paths=[filePath])
+    clipboard.push_to_clipboard(paths=file_list)
+
+
+def set_node_path(node, path):
+    node.parm('file').set(path)
 
 
 import subprocess
@@ -123,5 +109,4 @@ class PowerShellClipboard():
         self.push(script)
 
 
-if __name__ == '__main__':
-    main()
+main()

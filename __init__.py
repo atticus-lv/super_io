@@ -26,6 +26,7 @@ black_list = (
     'c4d_spio_import.py',
     'c4d_spio_export.py',
     'houdini_spio_import.py',
+    'houdini_spio_export.py',
 )
 
 # get all .py file dir
