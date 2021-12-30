@@ -37,7 +37,6 @@ def main():
     for node in hou.selectedNodes():
         name = node.path().split('/')[-1]
         filepath = os.path.join(get_dir(), name + '.obj')
-        print(filepath)
         node.geometry().saveToFile(filepath)
         file_list.append(filepath)
 
