@@ -1,3 +1,6 @@
+# log
+# v1.0 base importer finish
+
 from __future__ import annotations
 
 import sys
@@ -14,28 +17,29 @@ FORCE_UNICORE = False
 
 
 def main():
-    if sys.platform != "win32": return {"Not Support this platform"}
+    if sys.platform != "win32": return gui.MessageDialog("Not Support this platform!")
 
     clipboard = WintypesClipboard()
     file_list = clipboard.pull(force_unicode=FORCE_UNICORE)
     del clipboard  # release clipboard
 
     if len(file_list) == 0:
-        return {"No files found"}
+        return gui.MessageDialog('No files found!')
 
     op = {}
     plug = plugins.FindPlugin(1030177, c4d.PLUGINTYPE_SCENELOADER)
 
     if plug is None:
-        return
+        return gui.MessageDialog('Importer Not Found!')
+
     if plug.Message(c4d.MSG_RETRIEVEPRIVATEDATA, op):
         print(op)
         if "imexporter" not in op:
-            return
+            return gui.MessageDialog('Importer Not Found!')
 
         objImport = op["imexporter"]
         if objImport is None:
-            return
+            return gui.MessageDialog('Importer Not Found!')
 
         objs = [file for file in file_list if file.lower().endswith('.obj')]
 

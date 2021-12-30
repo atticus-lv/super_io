@@ -158,7 +158,7 @@ class ConfigItemProperty(PropertyGroup):
              'Import world from a single file and set it as context world', 'WORLD', 102),
             None,
             ('ADDONS_INSTALL_ADDON', 'Install Addon (.py/.zip)',
-             'Import and Install addon', 'COMMUNITY', 103),
+             'Import and Install extra_addon', 'COMMUNITY', 103),
             None,
             ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
@@ -467,7 +467,7 @@ class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
         layout = self.layout
         layout.operator('spio.import_config', icon='IMPORT')
         layout.operator('spio.export_config', icon='EXPORT')
-        layout.operator('wm.save_userpref',icon = 'PREFERENCES')
+        layout.operator('wm.save_userpref', icon='PREFERENCES')
 
 
 class SPIO_Preference(bpy.types.AddonPreferences):
@@ -527,8 +527,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box = layout.box()
         box.label(text='Help', icon='HELP')
         row = box.row()
-        row.operator('wm.url_open', text='Manual').url = 'http://atticus-lv.gitee.io/super_io/#/'
-        row.operator('spio.check_update', text='Check Update')
+        row.operator('wm.url_open', text='Manual', icon='URL').url = 'http://atticus-lv.gitee.io/super_io/#/'
+        row.operator('spio.check_update', text='Check Update',icon = 'INFO')
+        box.operator('spio.copy_c4d_plugin',icon = 'EVENT_C')
 
         box = layout.box()
         box.label(text='Sponsor: 只剩一瓶辣椒酱', icon='FUND')
