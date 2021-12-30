@@ -4,7 +4,7 @@ import os
 
 class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
     bl_idname = 'spio.copy_c4d_plugin'
-    bl_label = 'Get Cinema 4d Plugin'
+    bl_label = 'Get Cinema 4d Script'
 
     def execute(self, context):
         cur_dir = os.path.split(os.path.realpath(__file__))[0]
@@ -26,7 +26,3 @@ def register():
 
 def unregister():
     bpy.utils.unregister_class(SPIO_OT_copy_c4d_plugin)
-
-
-for file in os.listdir(os.getcwd()):
-    print(file)

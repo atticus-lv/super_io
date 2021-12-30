@@ -1,5 +1,7 @@
 # log
-#
+# v1.0
+# initial win
+
 
 from __future__ import annotations
 

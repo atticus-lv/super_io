@@ -529,7 +529,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         row = box.row()
         row.operator('wm.url_open', text='Manual', icon='URL').url = 'http://atticus-lv.gitee.io/super_io/#/'
         row.operator('spio.check_update', text='Check Update',icon = 'INFO')
-        box.operator('spio.copy_c4d_plugin',icon = 'EVENT_C')
 
         box = layout.box()
         box.label(text='Sponsor: 只剩一瓶辣椒酱', icon='FUND')
@@ -543,6 +542,11 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         row.operator('wm.url_open', text='Atticus Github', icon='URL').url = 'https://github.com/atticus-lv'
         row.row(align=True).operator('wm.url_open', text='AtticusB站频道',
                                      icon='URL').url = 'https://space.bilibili.com/1509173'
+
+        box = layout.box()
+        box.label(text='Third-party Script', icon='EXPERIMENTAL')
+        box.operator('spio.copy_c4d_plugin', icon='EVENT_C')
+        box.operator('spio.copy_houdini_script', icon='EVENT_H')
 
     def draw_settings(self, context, layout):
         col = layout.column(align=True).box()

@@ -11,7 +11,11 @@
     "Check Update":"检查更新",
     "Download":"下载",
     "Change Log":"更新日志",
-    "Get Cinema 4d Plugin":"获取C4d 插件",
+    "Third-party Script":"第三方脚本",
+    "Get Cinema 4d Script":"获取C4d脚本",
+    "C4d Plugin has been copied to clipboard!":"C4d脚本文件已经复制到剪贴板！",
+    "Get Houdini Script":"获取houdini脚本",
+    "Houdini Scripts has been copied to clipboard!":"houdini脚本已经复制到剪贴板！",
 
     "Use N Panel": "使用侧面板",
     "Match Rule": "匹配规则",

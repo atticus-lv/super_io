@@ -1,3 +1,7 @@
+# log
+# v1.0
+# initial win
+
 import c4d
 from c4d import gui, plugins
 
