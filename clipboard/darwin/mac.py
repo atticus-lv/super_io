@@ -3,8 +3,9 @@ from __future__ import annotations
 import sys
 import subprocess
 
+
 class MacClipboard():
-    def __init__(self, file_urls = None):
+    def __init__(self, file_urls=None):
         # file_urls: list[str] = None
         self.file_urls = file_urls
 
@@ -29,30 +30,38 @@ class MacClipboard():
 
         subprocess.Popen(self.get_osascript_args(commands))
 
-    def push_to_clipboard(self,paths):
+    def push_to_clipboard(self, paths):
         join_s = ''
         for path in paths:
-            join_s+=f'(POSIX file "{path}"),'
+            join_s += f'(POSIX file "{path}"),'
         if join_s.endswith(','): join_s = join_s[:-1]
         command = [
-        f'set f to {{join_s}}'
-        'tell application "Finder'
-            'try -- to delete any old temp folder'
-                'delete folder "SPIO_Copy" of (path to temporary items)'
-            'end try'
-            'set tmp to make new folder at (path to temporary items) with properties {name:"SPIO_Copy"}'
-            'duplicate f to tmp'
-            'select files of tmp'
-            'activate'
-            'tell application "System Events" to keystroke "c" using command down'
-            'delete tmp'
-        'end tell'
+            f'set f to {{join_s}}',
+            'tell application "Finder',
+            'try -- to delete any old temp folder',
+            'delete folder "SPIO_Copy" of (path to temporary items)',
+            'end try',
+            'set tmp to make new folder at (path to temporary items) with properties {name:"SPIO_Copy"}',
+            'duplicate f to tmp',
+            'select files of tmp',
+            'activate',
+            'tell application "System Events" to keystroke "c" using command down',
+            'delete tmp',
+            'end tell',
         ]
 
         subprocess.Popen(self.get_osascript_args(command))
 
+        # pbadd()
+        # {
+        #     osascript
+        # "/Path/To/Saved AppleScript.scpt" "$@"
+        # }
+        #
+        # pbadd ~/Pictures/*.jpg
+        # pbadd ~/Documents/Some\ file.pdf ~/Music/A\ Random\ Song.mp3
 
-    def get_osascript_args(self,commands):
+    def get_osascript_args(self, commands):
         args = ["osascript"]
         for command in commands:
             args += ["-e", command]
