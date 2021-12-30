@@ -22,9 +22,13 @@ __folder_name__ = __name__
 __dict__ = {}
 addon_dir = os.path.dirname(__file__)
 
+black_list = (
+    'c4d_spio_import.py',
+)
+
 # get all .py file dir
 py_paths = [os.path.join(root, f) for root, dirs, files in os.walk(addon_dir) for f in files if
-            f.endswith('.py') and f != '__init__.py']
+            f.endswith('.py') and f != '__init__.py' and f not in black_list]
 
 for path in py_paths:
     name = os.path.basename(path)[:-3]
