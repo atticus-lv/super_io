@@ -37,21 +37,21 @@ def main():
 
     # create or set nodes
     if len(hou.selectedNodes()) == 0:
-        return print('Select at least one node')
+        paneTabObj = hou.ui.paneTabUnderCursor()
+        parent = paneTabObj.pwd()
+        create_node_from_path_list(parent, file_list, cursor_pos)
 
-    node = hou.selectedNodes()[-1]
+    elif len(hou.selectedNodes()) == 1:
+        node = hou.selectedNodes()[-1]
 
-    if node.type() == hou.sopNodeTypeCategory().nodeTypes()['file']:
-        set_node_path(node, file_list[0])
-        file_list = file_list[1:]
+        if node.type() == hou.sopNodeTypeCategory().nodeTypes()['file']:
+            set_node_path(node, file_list[0])
+            file_list = file_list[1:]
+            node.setSelected(True, clear_all_selected=True)
 
-    parent = node.parent()
+        parent = node.parent()
 
-    for i, file in enumerate(file_list):
-        node = parent.createNode('file')
-        pos = np.subtract(cursor_pos, [-0.5 * i, 1 * i])
-        node.setPosition(pos)
-        set_node_path(node, file)
+        create_node_from_path_list(parent, file_list, cursor_pos)
 
 
 def create_node_from_path_list(obj, file_list, start_pos):
@@ -60,6 +60,7 @@ def create_node_from_path_list(obj, file_list, start_pos):
         pos = np.subtract(start_pos, [-0.5, 1 * i])
         node.setPosition(pos)
         set_node_path(node, file)
+        node.setSelected(True, clear_all_selected=True)
 
 
 def set_node_path(node, path):
