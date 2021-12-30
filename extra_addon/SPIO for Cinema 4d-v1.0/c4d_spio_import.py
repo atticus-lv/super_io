@@ -25,35 +25,36 @@ def main():
 
     if len(file_list) == 0:
         return gui.MessageDialog('No files found!')
-
-    op = {}
+    # check importer
+    op = dict()
     plug = plugins.FindPlugin(1030177, c4d.PLUGINTYPE_SCENELOADER)
 
     if plug is None:
-        return gui.MessageDialog('Importer Not Found!')
+        return gui.MessageDialog('Failed to retrieves Importer!')
 
     if plug.Message(c4d.MSG_RETRIEVEPRIVATEDATA, op):
-        print(op)
-        if "imexporter" not in op:
-            return gui.MessageDialog('Importer Not Found!')
+        return gui.MessageDialog('Failed to retrieves private data')
 
-        objImport = op["imexporter"]
-        if objImport is None:
-            return gui.MessageDialog('Importer Not Found!')
+    if "imexporter" not in op:
+        return gui.MessageDialog('Importer Not Found!')
 
-        objs = [file for file in file_list if file.lower().endswith('.obj')]
+    objImport = op["imexporter"]
+    if objImport is None:
+        return gui.MessageDialog('Importer Not Found!')
 
-        unit_scale = c4d.UnitScaleData()
-        unit_scale.SetUnitScale(1, c4d.DOCUMENT_UNIT_M)
-        objImport[c4d.OBJIMPORTOPTIONS_SCALE] = unit_scale
+    objs = [file for file in file_list if file.lower().endswith('.obj')]
+    # set exporter
+    unit_scale = c4d.UnitScaleData()
+    unit_scale.SetUnitScale(1, c4d.DOCUMENT_UNIT_M)
+    objImport[c4d.OBJIMPORTOPTIONS_SCALE] = unit_scale
 
-        objImport[c4d.OBJIMPORTOPTIONS_NORMALS] = c4d.OBJIMPORTOPTIONS_NORMALS_VERTEX
-        objImport[c4d.OBJIMPORTOPTIONS_IMPORT_UVS] = c4d.OBJIMPORTOPTIONS_UV_ORIGINAL
-        objImport[c4d.OBJIMPORTOPTIONS_SPLITBY] = c4d.OBJIMPORTOPTIONS_SPLITBY_OBJECT
-        objImport[c4d.OBJIMPORTOPTIONS_MATERIAL] = c4d.OBJIMPORTOPTIONS_MATERIAL_MTLFILE
-
-        for obj in objs[:]:
-            c4d.documents.MergeDocument(doc, obj, c4d.SCENEFILTER_OBJECTS | c4d.SCENEFILTER_MATERIALS, None)
+    objImport[c4d.OBJIMPORTOPTIONS_NORMALS] = c4d.OBJIMPORTOPTIONS_NORMALS_VERTEX
+    objImport[c4d.OBJIMPORTOPTIONS_IMPORT_UVS] = c4d.OBJIMPORTOPTIONS_UV_ORIGINAL
+    objImport[c4d.OBJIMPORTOPTIONS_SPLITBY] = c4d.OBJIMPORTOPTIONS_SPLITBY_OBJECT
+    objImport[c4d.OBJIMPORTOPTIONS_MATERIAL] = c4d.OBJIMPORTOPTIONS_MATERIAL_MTLFILE
+    # save
+    for obj in objs[:]:
+        c4d.documents.MergeDocument(doc, obj, c4d.SCENEFILTER_OBJECTS | c4d.SCENEFILTER_MATERIALS, None)
 
 
 class WintypesClipboard():
