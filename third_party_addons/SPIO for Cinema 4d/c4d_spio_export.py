@@ -16,22 +16,6 @@ import sys
 TEMP_DIR = ''
 
 
-def get_dir():
-    global TEMP_DIR
-    if TEMP_DIR == '':
-        TEMP_DIR = os.path.join(os.path.expanduser('~'), 'spio_temp')
-        if not "spio_temp" in os.listdir(os.path.expanduser('~')):
-            os.makedirs(TEMP_DIR)
-
-    return TEMP_DIR
-
-
-def report(msg, dialog=True):
-    if dialog:
-        gui.MessageDialog(msg)
-    return print(msg)
-
-
 def main():
     if sys.platform != "win32":
         return report("Not Support this platform!")
@@ -67,6 +51,22 @@ def main():
     # copy
     clipboard = PowerShellClipboard()
     clipboard.push_to_clipboard(paths=[filePath])
+
+
+def get_dir():
+    global TEMP_DIR
+    if TEMP_DIR == '':
+        TEMP_DIR = os.path.join(os.path.expanduser('~'), 'spio_temp')
+        if not "spio_temp" in os.listdir(os.path.expanduser('~')):
+            os.makedirs(TEMP_DIR)
+
+    return TEMP_DIR
+
+
+def report(msg, dialog=True):
+    if dialog:
+        gui.MessageDialog(msg)
+    return print(msg)
 
 
 import subprocess

@@ -477,12 +477,14 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     ui: EnumProperty(name='UI', items=[
         ('SETTINGS', 'Settings', '', 'PREFERENCES', 0),
         ('CONFIG', 'Config', '', 'PRESET', 1),
-        ('URL', 'Help', '', 'URL', 2),
     ], default='CONFIG')
     settings_ui: EnumProperty(name='UI', items=[
         ('IO', 'IO', '', 'FILE_CACHE', 0),
         ('UI', 'User Interface', '', 'WINDOW', 1),
         ('KEYMAP', 'Keymap', '', 'KEYINGSET', 2),
+        ('ADDONS', 'Addons', '', 'EXPERIMENTAL', 3),
+        ('URL', 'Url', '', 'HELP', 4),
+
     ], default='IO')
 
     use_N_panel: BoolProperty(name='Use N Panel', default=True)
@@ -492,6 +494,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                                 description='Force to use "utf-8" to decode filepath \nOnly enable when your system coding "utf-8"',
                                 default=False)
 
+    # addon
+    asset_helper: BoolProperty(name='Asset Helper', default=False)
     experimental: BoolProperty(name='Experimental', default=False)
 
     # Export
@@ -528,41 +532,43 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         elif self.ui == 'CONFIG':
             self.draw_config(context, col)
 
-        elif self.ui == 'URL':
-            self.draw_url(context, col)
-
     def draw_url(self, context, layout):
         box = layout.box()
-        box.label(text='Help', icon='HELP')
+        box.label(text='Help', icon='QUESTION')
         row = box.row()
-        row.operator('wm.url_open', text='Manual', icon='URL').url = 'http://atticus-lv.gitee.io/super_io/#/'
-        row.operator('spio.check_update', text='Check Update', icon='INFO')
+        box.operator('wm.url_open', text='Manual', icon='URL').url = 'http://atticus-lv.gitee.io/super_io/#/'
 
         box = layout.box()
         box.label(text='Sponsor: 只剩一瓶辣椒酱', icon='FUND')
-        row = box.row()
-        row.operator('wm.url_open', text='斑斓魔法CG官网', icon='URL').url = 'https://www.blendermagic.cn/'
-        row.row(align=True).operator('wm.url_open', text='辣椒B站频道',
+        box.operator('wm.url_open', text='斑斓魔法CG官网', icon='URL').url = 'https://www.blendermagic.cn/'
+        box.row(align=True).operator('wm.url_open', text='辣椒B站频道',
                                      icon='URL').url = 'https://space.bilibili.com/35723238'
 
-        box.label(text='Developer: Atticus', icon='MONKEY')
-        row = box.row()
-        row.operator('wm.url_open', text='Atticus Github', icon='URL').url = 'https://github.com/atticus-lv'
-        row.row(align=True).operator('wm.url_open', text='AtticusB站频道',
+        box.label(text='Developer: Atticus', icon='SCRIPT')
+        box.operator('wm.url_open', text='Atticus Github', icon='URL').url = 'https://github.com/atticus-lv'
+        box.row(align=True).operator('wm.url_open', text='AtticusB站频道',
                                      icon='URL').url = 'https://space.bilibili.com/1509173'
 
+    def draw_addons(self, context, layout):
         box = layout.box()
-        box.label(text='Third-party Script', icon='EXPERIMENTAL')
+        box.operator('spio.check_update', text='Check Update', icon='INFO')
+
+        box = layout.box()
+        box.label(text='Addons', icon='EXPERIMENTAL')
+        box.prop(self, 'asset_helper')
+        box.prop(self, 'experimental')
+
+        box = layout.box()
+        box.label(text='Third-party Script', icon='SCRIPT')
         box.operator('spio.copy_c4d_plugin', icon='EVENT_C')
         box.operator('spio.copy_houdini_script', icon='EVENT_H')
 
     def draw_settings(self, context, layout):
-        s = layout.row(align = False)
+        s = layout.row(align=False)
         col = s.column(align=True)
         col.scale_x = 1.5
         col.scale_y = 1.5
-        col.prop(self,'settings_ui',expand = True,text = '')
-
+        col.prop(self, 'settings_ui', expand=True, text='')
 
         col = s.column(align=True).box()
         col.use_property_split = True
@@ -589,9 +595,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             row = box.row(align=True)
             row.prop(self, 'post_push_to_clipboard')
 
-            row = box.row(align=True)
-            row.prop(self, 'experimental')
-
         def draw_ui():
             box = col.box()
             box.label(text='User Interface', icon='WINDOW')
@@ -610,11 +613,14 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         if self.settings_ui == 'IO':
             draw_io()
-
         elif self.settings_ui == 'UI':
             draw_ui()
-        else:
+        elif self.settings_ui == 'KEYMAP':
             self.draw_keymap(context, col)
+        elif self.settings_ui == 'ADDONS':
+            self.draw_addons(context, col)
+        elif self.settings_ui == 'URL':
+            self.draw_url(context, col)
 
     def draw_keymap(self, context, layout):
         col = layout.box().column()

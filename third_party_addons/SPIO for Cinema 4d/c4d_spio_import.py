@@ -17,7 +17,7 @@ FORCE_UNICORE = False
 
 
 def main():
-    if sys.platform != "win32": return gui.MessageDialog("Not Support this platform!")
+    if sys.platform != "win32": return report("Not Support this platform!")
 
     clipboard = WintypesClipboard()
     file_list = clipboard.pull(force_unicode=FORCE_UNICORE)
@@ -30,15 +30,15 @@ def main():
     plug = plugins.FindPlugin(1030177, c4d.PLUGINTYPE_SCENELOADER)
 
     if plug is None:
-        return gui.MessageDialog('Failed to retrieves Importer!')
+        return report('Failed to retrieves Importer!')
 
     if plug.Message(c4d.MSG_RETRIEVEPRIVATEDATA, op):
         if "imexporter" not in op:
-            return gui.MessageDialog('Failed to retrieves private data')
+            return report('Failed to retrieves private data')
 
         objImport = op["imexporter"]
         if objImport is None:
-            return gui.MessageDialog('Importer Not Found!')
+            return report('Importer Not Found!')
 
         objs = [file for file in file_list if file.lower().endswith('.obj')]
         # set exporter
@@ -53,6 +53,12 @@ def main():
 
         for obj in objs[:]:
             c4d.documents.MergeDocument(doc, obj, c4d.SCENEFILTER_OBJECTS | c4d.SCENEFILTER_MATERIALS, None)
+
+
+def report(msg, dialog=True):
+    if dialog:
+        gui.MessageDialog(msg)
+    return print(msg)
 
 
 class WintypesClipboard():
