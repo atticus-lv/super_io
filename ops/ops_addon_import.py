@@ -13,7 +13,7 @@ class SPIO_OT_import_addon(bpy.types.Operator):
     filepath: StringProperty()  # list of filepath, join with$$
 
     def execute(self, context):
-        bpy.ops.screen.userpref_show()
+        # bpy.ops.screen.userpref_show()
         bpy.ops.preferences.addon_install(overwrite=True, target='DEFAULT', filepath=self.filepath,
                                           filter_folder=True, filter_python=False, filter_glob="*.py;*.zip")
 
