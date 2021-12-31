@@ -24,7 +24,7 @@ exporter_extend = {
     # 'wrl': 'import_scene.x3d',
     #
     # 'svg': 'import_curve.svg',
-    'blend': 'spio.export_blend',
+    # 'blend': 'spio.export_blend',
 }
 
 exporter_ops_props = {
@@ -54,7 +54,7 @@ exporter_ops_props = {
     'usdc': {
         'selected_objects_only': True
     },
-    'blend': {
-    },
+    # 'blend': {
+    # },
 
 }

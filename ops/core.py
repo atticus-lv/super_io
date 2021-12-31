@@ -1,6 +1,5 @@
 import bpy
 from .. import __folder_name__
-from bpy.props import CollectionProperty
 
 import time
 import os
@@ -58,9 +57,9 @@ def remove_prefix(s, prefix):
         return s.removeprefix(prefix)
 
 
-from ..importer.default_importer import default_importer
-from ..importer.default_blend import default_blend_lib
-from ..importer.addon_blend import addon_blend
+from ..imexporter.default_importer import importer
+from ..imexporter.lib_blend import default_blend_lib
+from ..imexporter.default_addon import importer_addon
 
 
 class ConfigItemHelper():
@@ -81,11 +80,11 @@ class ConfigItemHelper():
             self.__setattr__('prop_list', ops_config)
 
     def get_operator_and_args(self):
-        from ..exporter.default_exporter import exporter_ops_props
+        from ..imexporter.default_exporter import exporter_ops_props
         if get_pref().extend_default_exporter:
-            from ..exporter.default_exporter import exporter_extend as default_exporter
+            from ..imexporter.default_exporter import exporter_extend as default_exporter
         else:
-            from ..exporter.default_exporter import exporter_min as default_exporter
+            from ..imexporter.default_exporter import exporter_min as default_exporter
 
         op_callable = None
         ops_args = dict()
@@ -102,7 +101,7 @@ class ConfigItemHelper():
 
         # default operator
         elif operator_type.startswith('DEFAULT'):
-            bl_idname = default_importer.get(remove_prefix(operator_type, 'DEFAULT_').lower())
+            bl_idname = importer.get(remove_prefix(operator_type, 'DEFAULT_').lower())
             op_callable = get_op_by_idname(bl_idname)
 
         elif operator_type.startswith('APPEND_BLEND'):
@@ -124,7 +123,7 @@ class ConfigItemHelper():
                         'load_all': True}
 
         elif operator_type.startswith('ADDONS'):
-            bl_idname = addon_blend.get(operator_type)
+            bl_idname = importer_addon.get(operator_type)
             op_callable = get_op_by_idname(bl_idname)
 
         elif operator_type.startswith('EXPORT'):
@@ -268,9 +267,9 @@ class PopupExportMenu():
             col.separator()
 
             if get_pref().extend_default_exporter:
-                from ..exporter.default_exporter import exporter_extend as default_exporter
+                from ..imexporter.default_exporter import exporter_extend as default_exporter
             else:
-                from ..exporter.default_exporter import exporter_min as default_exporter
+                from ..imexporter.default_exporter import exporter_min as default_exporter
 
             for ext, bl_idname in default_exporter.items():
                 op = col.operator('spio.export_model', text=f'Export {ext.upper()}')
@@ -388,7 +387,7 @@ class PostProcess():
 
     def fix_blend(self, filepath, scripts_file_name):
         # append obj to scene, mark slower
-        from ..exporter.default_blend import post_process_blend_file
+        from ..imexporter.execute_blend import post_process_blend_file
         post_process_blend_file(filepath, scripts_file_name)
 
     def open_dir(self, temp_dir):

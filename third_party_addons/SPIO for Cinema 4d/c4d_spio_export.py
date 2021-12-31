@@ -26,9 +26,15 @@ def get_dir():
     return TEMP_DIR
 
 
+def report(msg, dialog=True):
+    if dialog:
+        gui.MessageDialog(msg)
+    return print(msg)
+
+
 def main():
     if sys.platform != "win32":
-        return gui.MessageDialog("Not Support this platform!")
+        return report("Not Support this platform!")
 
     filename = c4d.documents.GetActiveDocument().GetDocumentName()
     filePath = os.path.join(get_dir(), filename + '.fbx')
@@ -38,16 +44,16 @@ def main():
     fbxExportId = 1026370
     plug = plugins.FindPlugin(fbxExportId, c4d.PLUGINTYPE_SCENESAVER)
     if plug is None:
-        return gui.MessageDialog('Failed to retrieves Exporter!')
+        return report('Failed to retrieves Exporter!')
     # check exporter
     op = dict()
 
     if not plug.Message(c4d.MSG_RETRIEVEPRIVATEDATA, op):
-        return gui.MessageDialog('Failed to retrieves private data')
+        return report('Failed to retrieves private data')
 
     fbxExport = op.get("imexporter", None)
     if fbxExport is None:
-        return gui.MessageDialog('Exporter Not Found!')
+        return report('Exporter Not Found!')
 
     # set fbx exporter
     fbxExport[c4d.FBXEXPORT_ASCII] = False
@@ -55,9 +61,9 @@ def main():
 
     # save
     if not c4d.documents.SaveDocument(doc, filePath, c4d.SAVEDOCUMENTFLAGS_DONTADDTORECENTLIST, fbxExportId):
-        return gui.MessageDialog('Exporter Failed!')
+        return report('Exporter Failed!')
 
-    print("Document successfully exported to:", filePath)
+    report(f"Document successfully exported to:{filePath}", dialog=False)
     # copy
     clipboard = PowerShellClipboard()
     clipboard.push_to_clipboard(paths=[filePath])

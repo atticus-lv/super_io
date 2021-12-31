@@ -1,19 +1,14 @@
 from __future__ import annotations
 import sys
-import time
 
 import bpy
-from bpy.props import (EnumProperty,
-                       CollectionProperty,
-                       StringProperty,
-                       IntProperty,
-                       BoolProperty)
+from bpy.props import (StringProperty)
 
 from .op_dynamic_io import IO_Base
 from .core import MeasureTime, ConfigItemHelper, ConfigHelper
-from .core import is_float, get_pref, convert_value
+from .core import get_pref
 
-from ..importer.default_importer import default_importer
+from ..imexporter.default_importer import importer
 
 from ..ui.icon_utils import RSN_Preview
 
@@ -179,7 +174,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
 
                 layout.separator()
                 # default popup
-                if ext in default_importer:
+                if ext in importer:
                     layout.operator('spio.import_model').files = '$$'.join(
                         remain_list)
                 elif ext == 'blend':
@@ -209,9 +204,9 @@ class WM_OT_super_import(SuperImport):
 
     def import_default(self, context):
         ext = self.ext
-        if ext in default_importer:
+        if ext in importer:
             for file_path in self.file_list:
-                bl_idname = default_importer.get(ext)
+                bl_idname = importer.get(ext)
                 op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
                 op_callable(filepath=file_path)
         else:
