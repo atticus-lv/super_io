@@ -479,6 +479,12 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         ('CONFIG', 'Config', '', 'PRESET', 1),
         ('URL', 'Help', '', 'URL', 2),
     ], default='CONFIG')
+    settings_ui: EnumProperty(name='UI', items=[
+        ('IO', 'IO', '', 'FILE_CACHE', 0),
+        ('UI', 'User Interface', '', 'WINDOW', 1),
+        ('KEYMAP', 'Keymap', '', 'KEYINGSET', 2),
+    ], default='IO')
+
     use_N_panel: BoolProperty(name='Use N Panel', default=True)
 
     # Settings
@@ -507,10 +513,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     config_list_index: IntProperty(min=0, default=0)
 
     def draw(self, context):
-        layout = self.layout.split(factor=0.2)
-        layout.scale_y = 1.2
+        layout = self.layout
 
-        col = layout.column(align=True)
+        col = layout.row(align=True)
+        col.scale_y = 1.2
         col.prop(self, 'ui', expand=True)
 
         col.separator(factor=2)
@@ -551,49 +557,64 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.operator('spio.copy_houdini_script', icon='EVENT_H')
 
     def draw_settings(self, context, layout):
-        col = layout.column(align=True).box()
+        s = layout.row(align = False)
+        col = s.column(align=True)
+        col.scale_x = 1.5
+        col.scale_y = 1.5
+        col.prop(self,'settings_ui',expand = True,text = '')
+
+
+        col = s.column(align=True).box()
         col.use_property_split = True
 
-        box = col.box()
-        box.label(text='Import', icon="IMPORT")
-        row = box.row(align=True)
-        row.alert = True
-        row.prop(self, 'force_unicode', text='')
-        row.label(text='Force Unicode')
+        def draw_io():
+            box = col.box()
+            box.label(text='Import', icon="IMPORT")
+            row = box.row(align=True)
+            row.alert = True
+            row.prop(self, 'force_unicode', text='')
+            row.label(text='Force Unicode')
 
-        box = col.box()
-        box.label(text='Export', icon="EXPORT")
-        row = box.row(align=True)
-        row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
+            box = col.box()
+            box.label(text='Export', icon="EXPORT")
+            row = box.row(align=True)
+            row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
 
-        row = box.row(align=True)
-        row.prop(self, 'extend_default_exporter')
+            row = box.row(align=True)
+            row.prop(self, 'extend_default_exporter')
 
-        row = box.row(align=True)
-        row.prop(self, 'post_open_dir')
+            row = box.row(align=True)
+            row.prop(self, 'post_open_dir')
 
-        row = box.row(align=True)
-        row.prop(self, 'post_push_to_clipboard')
+            row = box.row(align=True)
+            row.prop(self, 'post_push_to_clipboard')
 
-        row = box.row(align=True)
-        row.prop(self, 'experimental')
+            row = box.row(align=True)
+            row.prop(self, 'experimental')
 
-        box = col.box()
-        box.label(text='User Interface', icon='WINDOW')
+        def draw_ui():
+            box = col.box()
+            box.label(text='User Interface', icon='WINDOW')
 
-        row = box.row(align=True)
-        row.prop(self, 'use_N_panel', text='')
-        row.label(text='Use N Panel')
+            row = box.row(align=True)
+            row.prop(self, 'use_N_panel', text='')
+            row.label(text='Use N Panel')
 
-        row = box.row(align=True)
-        row.prop(self, 'report_time', text='')
-        row.label(text='Report Time')
+            row = box.row(align=True)
+            row.prop(self, 'report_time', text='')
+            row.label(text='Report Time')
 
-        row = box.row(align=True)
-        row.prop(self, 'disable_warning_rules', text='')
-        row.label(text='Close Warning Rules')
+            row = box.row(align=True)
+            row.prop(self, 'disable_warning_rules', text='')
+            row.label(text='Close Warning Rules')
 
-        self.draw_keymap(context, col)
+        if self.settings_ui == 'IO':
+            draw_io()
+
+        elif self.settings_ui == 'UI':
+            draw_ui()
+        else:
+            self.draw_keymap(context, col)
 
     def draw_keymap(self, context, layout):
         col = layout.box().column()
