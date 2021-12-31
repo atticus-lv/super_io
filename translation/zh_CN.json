@@ -58,6 +58,7 @@
     "Show Import": "显示导入",
     "Show Export": "显示导出",
     "Wrong IO Type / Operator Type": "错误的IO类型/操作符类型",
+    "Extend Default Exporter": "扩展默认导出器",
 
     "1. If file name not matching this rule": "1. 如果文件名不匹配规则",
     "   It will search for the next config which match": "    将会搜寻下一符合的配置",

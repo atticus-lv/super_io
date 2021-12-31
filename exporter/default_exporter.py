@@ -1,4 +1,11 @@
-default_exporter = {
+exporter_min = {
+    'stl': 'export_mesh.stl',
+    'obj': 'export_scene.obj',
+    'fbx': 'export_scene.fbx',
+
+}
+
+exporter_extend = {
     # 'usd': 'wm.usd_import',
     'usdc': 'wm.usd_export',
     # 'usda': 'wm.usd_import',

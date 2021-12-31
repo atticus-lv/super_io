@@ -62,8 +62,6 @@ from ..importer.default_importer import default_importer
 from ..importer.default_blend import default_blend_lib
 from ..importer.addon_blend import addon_blend
 
-from ..exporter.default_exporter import default_exporter, exporter_ops_props
-
 
 class ConfigItemHelper():
     def __init__(self, item):
@@ -83,6 +81,12 @@ class ConfigItemHelper():
             self.__setattr__('prop_list', ops_config)
 
     def get_operator_and_args(self):
+        from ..exporter.default_exporter import exporter_ops_props
+        if get_pref().extend_default_exporter:
+            from ..exporter.default_exporter import exporter_extend as default_exporter
+        else:
+            from ..exporter.default_exporter import exporter_min as default_exporter
+
         op_callable = None
         ops_args = dict()
         operator_type = self.operator_type
@@ -228,9 +232,6 @@ class ConfigHelper():
         return len(self.config_list) > 1
 
 
-from ..exporter.default_exporter import default_exporter
-
-
 class PopupExportMenu():
     def __init__(self, temp_path, context):
         self.path = temp_path
@@ -265,6 +266,11 @@ class PopupExportMenu():
             #     col.operator('spio.export_blend', text='Export Blend File (Mat Only)').scripts_file_name = 'script_export_blend_material_only.py'
 
             col.separator()
+
+            if get_pref().extend_default_exporter:
+                from ..exporter.default_exporter import exporter_extend as default_exporter
+            else:
+                from ..exporter.default_exporter import exporter_min as default_exporter
 
             for ext, bl_idname in default_exporter.items():
                 op = col.operator('spio.export_model', text=f'Export {ext.upper()}')

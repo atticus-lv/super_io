@@ -5,7 +5,6 @@ import sys
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
 from .core import get_pref, PostProcess
-from ..exporter.default_exporter import default_exporter, exporter_ops_props
 
 
 class ModeCopyDefault:
@@ -73,6 +72,13 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
         return self.execute(context)
 
     def execute(self, context):
+        from ..exporter.default_exporter import exporter_ops_props
+
+        if get_pref().extend_default_exporter:
+            from ..exporter.default_exporter import exporter_extend as default_exporter
+        else:
+            from ..exporter.default_exporter import exporter_min as default_exporter
+
         if self.extension not in default_exporter: return {"CANCELLED"}
 
         temp_dir = self.get_temp_dir()

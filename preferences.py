@@ -488,7 +488,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     experimental: BoolProperty(name='Experimental', default=False)
 
-    # Post option
+    # Export
+    extend_default_exporter: BoolProperty(name='Extend Default Exporter', default=False)
+
     post_open_dir: BoolProperty(name='Open Dir After Export',
                                 description='Open the target directory after export', default=False)
     post_push_to_clipboard: BoolProperty(name='Copy After Export',
@@ -528,7 +530,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.label(text='Help', icon='HELP')
         row = box.row()
         row.operator('wm.url_open', text='Manual', icon='URL').url = 'http://atticus-lv.gitee.io/super_io/#/'
-        row.operator('spio.check_update', text='Check Update',icon = 'INFO')
+        row.operator('spio.check_update', text='Check Update', icon='INFO')
 
         box = layout.box()
         box.label(text='Sponsor: 只剩一瓶辣椒酱', icon='FUND')
@@ -563,6 +565,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.label(text='Export', icon="EXPORT")
         row = box.row(align=True)
         row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
+
+        row = box.row(align=True)
+        row.prop(self, 'extend_default_exporter')
 
         row = box.row(align=True)
         row.prop(self, 'post_open_dir')
