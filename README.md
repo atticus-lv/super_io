@@ -23,7 +23,11 @@ in your File Explorer, then paste in blender with just one click/shortcut,
 
 which has improved the efficiency of importing and exporting blender files / Models / pictures
 
-Support windows / Mac platforms
+With third-party Scripts, you are allowed to copy/paste amonng blender, Cinema 4d and Houdini
+
+> Support windows / Mac platforms(Not Fully Support)
+>
+> (Third Party Scripts Support Cinema4d R23+ and Houdini H18+ on windows)
 
 # Contributing
 
@@ -38,6 +42,19 @@ Check the document above
 # Log
 
 > English Log at release panel
+
+### v1.3.5
+
+新
+
++ c4d spio脚本，现可在c4d与blender之间快速传输模型
++ houdini spio 脚本，现可在houdini与blender之间快速传输模型
+
+UI
+
++ 改进ui，更加易于使用
++ 将asset helper从实验项移动到单独的偏好选项
++ 减少默认导出器至三个，但可从偏好设置进行扩展
 
 ### v1.3.0.3
 
