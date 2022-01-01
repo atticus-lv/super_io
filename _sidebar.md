@@ -5,8 +5,9 @@
     + [Principle](/Principle.md)
 
 + **Custom Config**
-    + [Config Manage](/AddConfig.md)
-    + [Match Rule](/AddRule.md)
+    + [Config Manage](/ConfigManage.md)
+    + [Set Import Config](/ImportConfig.md)
+    + [Set Export Config](/ExportConfig.md)
     + [Custom Operator](/CustomOperator.md)
     
 

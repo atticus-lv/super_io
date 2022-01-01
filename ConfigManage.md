@@ -12,7 +12,7 @@ After adding the config, you can specify the name, prompt, applicable format, an
 
 <img src="media/img/cn/0.png" alt="0" style="zoom:67%;" />
 
-Different configs can be for the same extension, when multiple configs conflict（Use [Match Rule](/AddRule.md) to avoid
+Different configs can be for the same extension, when multiple configs conflict（Use [Match Rule](/ImportConfig.md) to avoid
 conflict），A selection menu will pop up for the user to select the corresponding config to import.<br>The config name and
 prompt will be used as the **button name** and **button tips** on this
 
@@ -46,6 +46,8 @@ Use the import configuration command to import the file config exported by the a
 SPIO provides a rich filtering system to ensure that you can quickly find the config you want to edit
 
 <img src="media/img/cn/3.png" alt="3" style="zoom: 67%;" />
+
++ Show import/Show export: display import configuration display export configuration
 
 + Name: The name of the search config (default)
 

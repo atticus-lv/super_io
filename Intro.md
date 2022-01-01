@@ -20,7 +20,7 @@ In the **shading editor** and **geometry node editor**, import it as an image te
 
 SPIO allows highly customized import config to meet complex import requirements
 
-For specific usage methods, please refer to [Config Manage](/AddConfig.md)
+For specific usage methods, please refer to [Config Manage](/ConfigManage.md)
 
 
 
