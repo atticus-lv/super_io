@@ -9,4 +9,5 @@
     + [设置导入配置](/zh-cn/ImportConfig.md)
     + [设置导出配置](/zh-cn/ExportConfig.md)
     + [自定义操作符](/zh-cn/CustomOperator.md)
+    + [第三方插件](/zh-cn/Addons.md)
 
