@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import os.path
 import sys
 
 import bpy
@@ -31,22 +33,34 @@ class SuperImport(IO_Base, bpy.types.Operator):
             from ..clipboard.darwin.mac import MacClipboard as Clipboard
         # get Clipboard
         self.clipboard = Clipboard()
-        self.file_list = self.clipboard.pull(force_unicode=get_pref().force_unicode)
+        file_list = self.clipboard.pull(force_unicode=get_pref().force_unicode)
 
         del self.clipboard  # release clipboard
 
-        if len(self.file_list) == 0:
+        if len(file_list) == 0:
             self.report({"ERROR"}, "No file found in clipboard!")
             return {"CANCELLED"}
 
-        for file_path in self.file_list:
-            extension = file_path.split('.')[-1].lower()
-            if self.ext is None:
-                self.ext = extension
-            elif self.ext != extension:
-                self.report({"ERROR"}, "Only one type of file can be imported at a time")
-                return {"CANCELLED"}
+        for file_path in file_list:
+            if os.path.isdir(file_path):
+                continue
+            elif not os.path.exists(file_path):
+                self.report({"ERROR"}, file_path + f" not exist!")
 
+            # pass extra file
+            extension = file_path.split('.')[-1].lower()
+            if extension in {'mtl'}:
+                continue
+
+            self.file_list.append(file_path)
+        # report if more than one extension is selected
+        if len(set([file.split('.')[-1].lower() for file in self.file_list])) != 1:
+            self.report({"ERROR"}, "Only one type of file can be imported at a time")
+            return {"CANCELLED"}
+
+        # set the only one ext
+        self.ext = self.file_list[-1].split('.')[-1].lower()
+        # call for match configs
         self.CONFIGS = ConfigHelper(check_use=True, filter=self.ext, io_type='IMPORT')
         config_list, index_list = self.CONFIGS.config_list, self.CONFIGS.index_list
 
@@ -61,9 +75,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
                 return self.execute(context)
 
         self.use_custom_config = True
-        # set default index to prevent default index is not in the filter list ui
 
-        self.config_list_index = index_list[0]
         return self.import_custom_dynamic(context)
 
     def execute(self, context):
