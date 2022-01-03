@@ -83,7 +83,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
         return {'FINISHED'}
 
 if sys.platform == "win32":
-    from ..clipboard.windows import PowerShellClipboard as Clipboard
+    from ..clipboard.windows import Clipboard as Clipboard
 elif sys.platform == "darwin":
     from ..clipboard.darwin.mac import MacClipboard as Clipboard
 

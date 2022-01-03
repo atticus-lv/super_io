@@ -28,7 +28,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
         self.restore()
 
         if sys.platform == "win32":
-            from ..clipboard.windows import WintypesClipboard as Clipboard
+            from ..clipboard.windows import Clipboard as Clipboard
         elif sys.platform == "darwin":
             from ..clipboard.darwin.mac import MacClipboard as Clipboard
         # get Clipboard

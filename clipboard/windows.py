@@ -9,24 +9,13 @@ import ctypes.wintypes as w
 from locale import getdefaultlocale
 
 
-# class DROPFILES(ctypes.Structure):
-#     _fields_ = (('pFiles', w.DWORD),
-#                 ('x', w.LONG),
-#                 ('y', w.LONG),
-#                 ('fNC', w.BOOL),
-#                 ('fWide', w.BOOL))
-#
-#
-# pDropFiles = DROPFILES()
-# pDropFiles.pFiles = ctypes.sizeof(DROPFILES)
-# pDropFiles.fWide = True
-# metadata = bytes(DROPFILES)
-
-
-class WintypesClipboard():
+class Clipboard():
     def __init__(self, file_urls=None):
-        # file_urls: list[str] = None
-        self.file_urls = file_urls
+        pass
+
+    def pull(self, force_unicode=False):
+        # init
+        self.file_urls = []
 
         self.CF_HDROP = 15
 
@@ -51,21 +40,7 @@ class WintypesClipboard():
         self.DragQueryFile = s32.DragQueryFile
         self.DragQueryFile.argtypes = [w.HANDLE, w.UINT, ctypes.c_void_p, w.UINT]
 
-    # def pull(self, file_list):
-    #     files = ('\0'.join(file_list)).replace('/', '\\')
-    #     data = files.encode('U16')[2:] + b'\0\0'
-    #
-    #     if self.OpenClipboard(None):
-    #         try:
-    #             self.SetClipboardData(self.CF_HDROP, metadata + data)
-    #         except Exception as e:
-    #             print(e)
-    #         finally:
-    #             self.CloseClipboard()
-
-    def pull(self, force_unicode=False):
-        self.file_urls = []
-
+        # get
         if self.OpenClipboard(None):
             h_hdrop = self.GetClipboardData(self.CF_HDROP)
 
@@ -81,11 +56,6 @@ class WintypesClipboard():
 
         self.CloseClipboard()
         return self.file_urls
-
-
-class PowerShellClipboard():
-    def __init__(self, file_urls=None):
-        pass
 
     def get_args(self, script):
         powershell_args = [
