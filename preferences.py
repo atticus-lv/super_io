@@ -559,7 +559,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.prop(self, 'experimental')
 
         box = layout.box()
-        box.label(text='Third-party Script', icon='SCRIPT')
+        box.label(text='Third-party Plugin', icon='SCRIPT')
         box.operator('spio.copy_c4d_plugin', icon='EVENT_C')
         box.operator('spio.copy_houdini_script', icon='EVENT_H')
 

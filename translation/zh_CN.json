@@ -11,9 +11,9 @@
     "Check Update":"检查更新",
     "Download":"下载",
     "Change Log":"更新日志",
-    "Third-party Script":"第三方脚本",
-    "Get Cinema 4d Script":"获取C4d脚本",
-    "C4d Plugin has been copied to clipboard!":"C4d脚本文件已经复制到剪贴板！",
+    "Third-party Plugin":"第三方插件",
+    "Get Cinema 4d Plugin":"获取c4d插件",
+    "Cinema 4d Plugin has been copied to clipboard!":"c4d插件文件夹已经复制到剪贴板！",
     "Get Houdini Script":"获取houdini脚本",
     "Houdini Scripts has been copied to clipboard!":"houdini脚本已经复制到剪贴板！",
 
@@ -100,6 +100,17 @@
     "Link Collections": "关联集合",
     "Link Node Groups": "关联节点组",
     "Link Objects": "关联物体",
-    "Link Worlds": "关联世界环境"
+    "Link Worlds": "关联世界环境",
+
+    "This is a plugin suitable for c4d R23+": "这是一个适用于c4d R23以上的插件",
+    "After clicking confirm, the plugin folder will be copied to the clipboard for pasting": "点击确认后插件文件夹将复制到剪切板以供黏贴",
+    "Paste it under c4d plugins folder": "黏贴到c4d plugins文件夹下",
+    "You can find it in extension menu": "你可以在扩展菜单中找到它",
+
+    "This is a plugin suitable for houdini 18+(python3)": "这是一个适用于houdini 18+(python3)的插件",
+    "After clicking confirm, the shelf tool folder will be copied to the clipboard for pasting": "点击确认后，工具架文件夹将被复制到剪贴板进行粘贴",
+    "Please paste it to \"C:/Users/{User-Name}/Documents/houdini{version}/toolbar/\"": "请将其粘贴到\"C:/Users/{User-Name}/Documents/houdini{version}/toolbar/\"",
+    "You can find the icon in the folder and assign it at the shelf tool": "你可以在文件夹中找到图标并在工具架中进行分配"
+
 
 }

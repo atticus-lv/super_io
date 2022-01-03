@@ -20,18 +20,12 @@ from itertools import groupby
 # get folder name
 __folder_name__ = __name__
 __dict__ = {}
-addon_dir = os.path.dirname(__file__)
 
-black_list = (
-    'c4d_spio_import.py',
-    'c4d_spio_export.py',
-    'houdini_spio_import.py',
-    'houdini_spio_export.py',
-)
+addon_dir = os.path.dirname(__file__)
 
 # get all .py file dir
 py_paths = [os.path.join(root, f) for root, dirs, files in os.walk(addon_dir) for f in files if
-            f.endswith('.py') and f != '__init__.py' and f not in black_list]
+            f.endswith('.py') and f != '__init__.py']
 
 for path in py_paths:
     name = os.path.basename(path)[:-3]
@@ -40,7 +34,7 @@ for path in py_paths:
     dir_list = [list(g) for k, g in groupby(correct_path.split('/'), lambda x: x == __folder_name__) if
                 not k]
     # combine dir and make dict like this: 'name:folder.name'
-    if 'preset' not in dir_list[-1]:
+    if 'third_party_addons' not in dir_list[-1]:
         r_name_raw = __folder_name__ + '.' + '.'.join(dir_list[-1])
         __dict__[name] = r_name_raw[:-3]
 
