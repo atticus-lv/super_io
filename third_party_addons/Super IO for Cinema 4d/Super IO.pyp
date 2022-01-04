@@ -11,6 +11,13 @@ importer_ext = [
     'c4d', 'abc', '3ds', 'dae', 'fbx', 'obj', 'stl', 'usda', 'usdc', 'ai'
 ]
 
+# fix scale
+importer_plugin_id = {
+    'obj': 1030177,
+    'stl': 1001020,
+    'abc': 1028081,
+}
+
 exporter_plugin_id = {
     'c4d': 1001026,
     'abc': 1028082,
@@ -40,7 +47,8 @@ class PluginInfo():
         for p in c4d.plugins.FilterPluginList(c4d.PLUGINTYPE_SCENESAVER, True):
             d[p.GetID()] = p.GetName()
 
-    def get_plug_from_id(self, id, loader=False):
+    @staticmethod
+    def get_plug_from_id(id, loader=False):
         op = dict()
         plug = plugins.FindPlugin(id, c4d.PLUGINTYPE_SCENESAVER if not loader else c4d.PLUGINTYPE_SCENELOADER)
         plug.Message(c4d.MSG_RETRIEVEPRIVATEDATA, op)
@@ -190,6 +198,10 @@ class SuperImport(c4d.plugins.CommandData):
 
         for obj in objs[:]:
             try:
+                ext = obj.split('.')[-1]
+                if ext in importer_plugin_id:
+                    self.fix_scale(ext)
+
                 c4d.documents.MergeDocument(doc, obj, c4d.SCENEFILTER_OBJECTS | c4d.SCENEFILTER_MATERIALS, None)
             except Exception as e:
                 print(e)
@@ -197,6 +209,20 @@ class SuperImport(c4d.plugins.CommandData):
         c4d.EventAdd()
 
         return True
+
+    def fix_scale(self, ext):
+        id = importer_plugin_id.get(ext)
+        imexporter = PluginInfo.get_plug_from_id(id, loader=True)
+
+        unit_scale = c4d.UnitScaleData()
+        unit_scale.SetUnitScale(1, c4d.DOCUMENT_UNIT_M)
+
+        if ext == 'obj':
+            imexporter[c4d.OBJIMPORTOPTIONS_SCALE] = unit_scale
+        elif ext == 'abc':
+            imexporter[c4d.ABCIMPORT_SCALE] = unit_scale
+        elif ext == 'stl':
+            imexporter[c4d.STLIMPORTFILTER_SCALE] = unit_scale
 
 
 class SuperExport(c4d.plugins.CommandData):
@@ -222,7 +248,7 @@ class SuperExport(c4d.plugins.CommandData):
         filename = c4d.documents.GetActiveDocument().GetDocumentName()
         filePath = os.path.join(TEMP_DIR, filename + '.' + self.ext)
 
-        self.set_export_scalue()
+        self.set_export_scale()
         sobj = doc.GetActiveObjects(c4d.GETACTIVEOBJECTFLAGS_CHILDREN)
 
         # seem that fbx not work with c4d.documents.IsolateObjects()
@@ -263,7 +289,7 @@ class SuperExport(c4d.plugins.CommandData):
             entries.SetString(i + 2, key.upper())
         return c4d.gui.ShowPopupDialog(cd=None, bc=entries, x=pos_x, y=pos_y) - 2
 
-    def set_export_scalue(self):
+    def set_export_scale(self):
         unit_scale = c4d.UnitScaleData()
         unit_scale.SetUnitScale(1, c4d.DOCUMENT_UNIT_M)
 
