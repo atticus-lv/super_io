@@ -219,6 +219,11 @@ class SuperImport(c4d.plugins.CommandData):
 
         if ext == 'obj':
             imexporter[c4d.OBJIMPORTOPTIONS_SCALE] = unit_scale
+            imexporter[c4d.OBJIMPORTOPTIONS_NORMALS] = c4d.OBJIMPORTOPTIONS_NORMALS_VERTEX
+            imexporter[c4d.OBJIMPORTOPTIONS_IMPORT_UVS] = c4d.OBJIMPORTOPTIONS_UV_ORIGINAL
+            imexporter[c4d.OBJIMPORTOPTIONS_SPLITBY] = c4d.OBJIMPORTOPTIONS_SPLITBY_OBJECT
+            imexporter[c4d.OBJIMPORTOPTIONS_MATERIAL] = c4d.OBJIMPORTOPTIONS_MATERIAL_MTLFILE
+
         elif ext == 'abc':
             imexporter[c4d.ABCIMPORT_SCALE] = unit_scale
         elif ext == 'stl':
