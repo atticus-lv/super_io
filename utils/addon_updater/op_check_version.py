@@ -58,16 +58,23 @@ def _update_check() -> None:
             with urllib.request.urlopen(release["assets_url"], context=ssl_context) as response:
                 data = json.load(response)
 
+                links = list()
+                names = list()
+
                 for asset in data:
-                    if re.match(r".+\d+.\d+.\d+.+", asset["name"]):
-                        break
+                    # if re.match(r".+\d+.\d+.\d+.+", asset["name"]):
+                    links.append(asset["browser_download_url"])
+                    names.append(asset["name"])
 
                 prerelease_note = " (pre-release)" if release["prerelease"] else ""
 
                 state.update_available = True
                 state.update_version = ".".join(str(x) for x in update_version) + prerelease_note
-                state.download_url = asset["browser_download_url"]
-                state.changelog_url = release["html_url"]
+                state.download_url = links
+                state.download_name = names
+                state.changelog = release["body"].split('\r\n')
+                print(state.changelog)
+
 
         state.status = state.COMPLETED
         # redraw
@@ -89,15 +96,27 @@ class SPIO_check_update(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
 
-        layout.label(text=f'Current Version: {".".join(str(x) for x in ADDON_VERSION)}')
+        layout.box().label(text=f'Current Version: {".".join(str(x) for x in ADDON_VERSION)}',icon = 'BLENDER')
         if state.status == state.CHECKING:
-            layout.label(text='Checking...')
+            layout.box().label(text='Checking...',icon = 'VIEWZOOM')
         elif state.status == state.COMPLETED:
             if state.update_available is True:
-                layout.label(text=f'Latest Version: {state.update_version}')
-                row = layout.row()
-                row.operator('wm.url_open', text='Download', icon='URL').url = state.download_url
-                row.operator('wm.url_open', text='Change Log', icon='URL').url = state.changelog_url
+                col = layout.column()
+
+                box = col.box().column(align=True)
+                box.label(text=f'Latest Version: {state.update_version}',icon = 'ERROR')
+                for line in state.changelog:
+                    if line.startswith('+'):
+                        box.label(text = line.replace('+',''),icon = 'DOT')
+                    else:
+                        box.label(text=line)
+
+                box = col.box().column(align=False)
+                box.label(text='Download',icon = 'IMPORT')
+                for i,url in enumerate(state.download_url):
+                    text = state.download_name[i]
+                    col.operator('wm.url_open', text=text).url = url
+
             elif state.update_available is False:
                 layout.label(text="You've installed the latest version")
         else:
@@ -105,13 +124,13 @@ class SPIO_check_update(bpy.types.Operator):
                 layout.label(text=state.error_msg)
 
     def invoke(self, context, event):
-        state.update_available = state.update_version = state.download_url = state.changelog_url = state.error_msg = None
+        state.update_available = state.update_version = state.download_url = state.changelog = state.error_msg = None
 
         threading.Thread(target=_update_check, args=()).start()
         if state.error_msg is not None:
             return {'CANCELLED'}
 
-        return context.window_manager.invoke_props_dialog(self)
+        return context.window_manager.invoke_props_dialog(self,width = 500)
 
     def execute(self, context):
         return {'FINISHED'}
