@@ -8,7 +8,7 @@ class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
     bl_label = 'Get Cinema 4d Plugin'
 
     def execute(self, context):
-        file = os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Cinema 4d')
+        file =  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Cinema 4d'))
         full_path = os.path.abspath(file)
 
         from ..clipboard.windows import Clipboard as Clipboard
@@ -42,7 +42,7 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
     ])
 
     def execute(self, context):
-        file = os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Houdini')
+        file = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Houdini'))
 
         from ..clipboard.windows import Clipboard as Clipboard
         clipboard = Clipboard()

@@ -21,10 +21,8 @@ exporter_extend = {
     'gltf': 'export_scene.gltf',
     #
     # 'x3d': 'import_scene.x3d',
-    # 'wrl': 'import_scene.x3d',
     #
-    # 'svg': 'import_curve.svg',
-    # 'blend': 'spio.export_blend',
+    'svg': 'export_curve.svg',
 }
 
 exporter_ops_props = {
