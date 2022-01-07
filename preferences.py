@@ -470,6 +470,21 @@ class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
         layout.operator('wm.save_userpref', icon='PREFERENCES')
 
 
+def update_category(self, context):
+    from .ui import ui_panel
+    try:
+        for panel in ui_panel.panels:
+            if "bl_rna" in panel.__dict__:
+                bpy.utils.unregister_class(panel)
+
+        for panel in ui_panel.panels:
+            panel.bl_category = get_pref().category
+            bpy.utils.register_class(panel)
+
+    except(Exception) as e:
+        self.report({'ERROR'}, f'Category change failed:\n{e}')
+
+
 class SPIO_Preference(bpy.types.AddonPreferences):
     bl_idname = __package__
 
@@ -487,7 +502,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     ], default='IO')
 
-    use_N_panel: BoolProperty(name='Use N Panel', default=True)
+    category: StringProperty(name="Category", default="SPIO", update=update_category)
 
     # Settings
     force_unicode: BoolProperty(name='Force Unicode',
@@ -600,8 +615,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             box.label(text='User Interface', icon='WINDOW')
 
             row = box.row(align=True)
-            row.prop(self, 'use_N_panel', text='')
-            row.label(text='Use N Panel')
+            row.prop(self, 'category')
 
             row = box.row(align=True)
             row.prop(self, 'report_time', text='')

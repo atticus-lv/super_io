@@ -14,7 +14,7 @@ class SidebarSetup:
 
     @classmethod
     def poll(cls, context):
-        return get_pref().use_N_panel
+        return True
 
 
 class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
@@ -42,9 +42,17 @@ class SPIO_PT_PrefPanel_283(SPIO_PT_PrefPanel):
     bl_label = ' '
     bl_options = {'DEFAULT_CLOSED'}
 
+    @classmethod
+    def poll(self, context):
+        return super().poll(context) and bpy.app.version < (3, 0, 0)
+
 
 class SPIO_PT_PrefPanel_300(SPIO_PT_PrefPanel):
-    bl_options = {'HEADER_LAYOUT_EXPAND','DEFAULT_CLOSED'}
+    bl_options = {'HEADER_LAYOUT_EXPAND', 'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(self, context):
+        return super().poll(context) and not bpy.app.version < (3, 0, 0)
 
 
 class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
@@ -125,6 +133,16 @@ class SPIO_PT_ListFilterPanel(bpy.types.Panel):
         col.prop(filter, 'filter_type', icon='FILTER', expand=True)
 
         layout.prop(filter, "reverse")
+
+
+panels = (
+    SPIO_PT_PrefPanel_283,
+    SPIO_PT_PrefPanel_300,
+    SPIO_PT_ImportPanel,
+    SPIO_PT_ListFilterPanel,
+    SPIO_PT_InstallAddon,
+    SPIO_PT_AssetHelper,
+)
 
 
 def register():
