@@ -30,7 +30,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
         from ..clipboard.clipboard import Clipboard as Clipboard
         # get Clipboard
         self.clipboard = Clipboard()
-        file_list = self.clipboard.pull(force_unicode=get_pref().force_unicode)
+        file_list = self.clipboard.pull_files_from_clipboard(force_unicode=get_pref().force_unicode)
 
         del self.clipboard  # release clipboard
 
