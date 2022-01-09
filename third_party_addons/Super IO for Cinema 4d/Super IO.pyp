@@ -5,6 +5,7 @@
 # promote into a plugin for cinema4d
 #
 
+from __future__ import annotations
 
 ####
 importer_ext = [
@@ -33,44 +34,120 @@ exporter_plugin_id = {
     'usdc': 1055179,
 }
 
-import c4d
-from c4d import plugins, gui
-
+import subprocess
 import os
-
-
-class PluginInfo():
-    def get_import_plugin_id(self):
-        d = dict()
-        for p in c4d.plugins.FilterPluginList(c4d.PLUGINTYPE_SCENELOADER, True):
-            d[p.GetID()] = p.GetName()
-
-    def get_export_plugin_id(self):
-        d = dict()
-        for p in c4d.plugins.FilterPluginList(c4d.PLUGINTYPE_SCENESAVER, True):
-            d[p.GetID()] = p.GetName()
-
-    @staticmethod
-    def get_plug_from_id(id, loader=False):
-        op = dict()
-        plug = plugins.FindPlugin(id, c4d.PLUGINTYPE_SCENESAVER if not loader else c4d.PLUGINTYPE_SCENELOADER)
-        plug.Message(c4d.MSG_RETRIEVEPRIVATEDATA, op)
-        imexporter = op.get("imexporter", None)
-        return imexporter
-
-
 import sys
 import ctypes
 import ctypes.wintypes as w
 
 from locale import getdefaultlocale
 
-import subprocess
-
 
 class Clipboard():
     def __init__(self, file_urls=None):
-        pass
+        if sys.platform not in {'win32', 'darwin'}:
+            raise EnvironmentError
+
+    def pull_files_from_clipboard(self, force_unicode):
+        file_list = []
+
+        if sys.platform == 'win32':
+            clipboard = WinTypeClipboard()
+            file_list = clipboard.pull(force_unicode)
+
+            del clipboard
+
+            if file_list is None:
+                clipboard = PowerShellClipboard()
+                file_list = clipboard.pull()
+
+        elif sys.platform == 'darwin':
+            clipboard = MacClipboard()
+            file_list = clipboard.pull()
+
+        return file_list
+
+    def push_to_clipboard(self, paths):
+        if sys.platform == 'win32':
+            clipboard = PowerShellClipboard()
+        elif sys.platform == 'darwin':
+            clipboard = MacClipboard()
+
+        clipboard.push_to_clipboard(paths)
+
+    def push_pixel_to_clipboard(self, path):
+        if sys.platform == 'win32':
+            clipboard = PowerShellClipboard()
+        elif sys.platform == 'darwin':
+            clipboard = MacClipboard()
+
+        clipboard.push_pixel_to_clipboard(path)
+
+
+class MacClipboard():
+
+    def pull(self, force_unicode=False):
+        self.file_urls = []
+        from .res import _native as pasteboard
+
+        pb = pasteboard.Pasteboard()
+
+        urls = pb.get_file_urls()
+
+        if urls is not None:
+            self.file_urls = list(urls)
+
+        return self.file_urls
+
+    def push_pixel_to_clipboard(self, path):
+        commands = [
+            "set the clipboard to "
+            f'(read file POSIX file "{path}" as «class PNGf»)'
+        ]
+
+        subprocess.Popen(self.get_osascript_args(commands))
+
+    def push_to_clipboard(self, paths):
+        commands = [
+            "set the clipboard to "
+            f'(POSIX file "{paths[0]}")'
+        ]
+
+        subprocess.Popen(self.get_osascript_args(commands))
+
+    def get_osascript_args(self, commands):
+        args = ["osascript"]
+        for command in commands:
+            args += ["-e", command]
+        return args
+
+
+class PowerShellClipboard:
+    def get_args(self, script):
+        powershell_args = [
+            os.path.join(
+                os.getenv("SystemRoot"),
+                "System32",
+                "WindowsPowerShell",
+                "v1.0",
+                "powershell.exe",
+            ),
+            "-NoProfile",
+            "-NoLogo",
+            "-NonInteractive",
+            "-WindowStyle",
+            "Hidden",
+        ]
+        script = (
+                "$OutputEncoding = "
+                "[System.Console]::OutputEncoding = "
+                "[System.Console]::InputEncoding = "
+                "[System.Text.Encoding]::UTF8; "
+                + "$PSDefaultParameterValues['*:Encoding'] = 'utf8'; "
+                + script
+        )
+        args = powershell_args + ["& { " + script + " }"]
+        return args
 
     def push_pixel_to_clipboard(self, path):
         script = (
@@ -102,8 +179,34 @@ class Clipboard():
 
         self.execute_powershell(script)
 
-    def pull(self, force_unicode):
-        """faster c type pull"""
+    def pull(self):
+        script = (
+            "Add-Type -AssemblyName System.Windows.Forms; "
+            "$files = Get-Clipboard -Format FileDropList; "
+            "if ($files) { $files.fullname }"
+        )
+
+        popen, stdout, stderr = self.execute_powershell(script)
+
+        self.file_urls = stdout.split('\n')
+        self.file_urls[:] = [file for file in self.file_urls if file != '']
+
+        return self.file_urls
+
+    def execute_powershell(self, script):
+        parms = {
+            'args': self.get_args(script),
+            'encoding': 'utf-8',
+            'stdout': subprocess.PIPE,
+            'stderr': subprocess.PIPE,
+        }
+        popen = subprocess.Popen(**parms)
+        stdout, stderr = popen.communicate()
+        return popen, stdout, stderr
+
+
+class WinTypeClipboard:
+    def __init__(self):
         self.file_urls = []
 
         self.CF_HDROP = 15
@@ -129,6 +232,11 @@ class Clipboard():
         self.DragQueryFile = s32.DragQueryFile
         self.DragQueryFile.argtypes = [w.HANDLE, w.UINT, ctypes.c_void_p, w.UINT]
 
+    @property
+    def file_list(self):
+        return self.file_urls
+
+    def pull(self, force_unicode=False):
         # get
         try:
             if self.OpenClipboard(None):
@@ -143,63 +251,38 @@ class Clipboard():
                         buf = ctypes.c_buffer(260)
                         self.DragQueryFile(h_hdrop, index, buf, ctypes.sizeof(buf))
                         self.file_urls.append(buf.value.decode(FS_ENCODING))
+
+            return self.file_urls
         except UnicodeError:
-            self.pull_files_from_clipboard()
+            pass
         finally:
             self.CloseClipboard()
 
-        return self.file_urls
 
-    def pull_files_from_clipboard(self):
-        script = (
-            "Add-Type -AssemblyName System.Windows.Forms; "
-            "$files = Get-Clipboard -Format FileDropList; "
-            "if ($files) { $files.fullname }"
-        )
+import c4d
+from c4d import plugins, gui
 
-        popen, stdout, stderr = self.execute_powershell(script)
+import os
 
-        self.file_urls = stdout.split('\n')
-        self.file_urls[:] = [file for file in self.file_urls if file != '']
 
-        return self.file_urls
+class PluginInfo():
+    def get_import_plugin_id(self):
+        d = dict()
+        for p in c4d.plugins.FilterPluginList(c4d.PLUGINTYPE_SCENELOADER, True):
+            d[p.GetID()] = p.GetName()
 
-    def get_args(self, script):
-        powershell_args = [
-            os.path.join(
-                os.getenv("SystemRoot"),
-                "System32",
-                "WindowsPowerShell",
-                "v1.0",
-                "powershell.exe",
-            ),
-            "-NoProfile",
-            "-NoLogo",
-            "-NonInteractive",
-            "-WindowStyle",
-            "Hidden",
-        ]
-        script = (
-                "$OutputEncoding = "
-                "[System.Console]::OutputEncoding = "
-                "[System.Console]::InputEncoding = "
-                "[System.Text.Encoding]::UTF8; "
-                + "$PSDefaultParameterValues['*:Encoding'] = 'utf8'; "
-                + script
-        )
-        args = powershell_args + ["& { " + script + " }"]
-        return args
+    def get_export_plugin_id(self):
+        d = dict()
+        for p in c4d.plugins.FilterPluginList(c4d.PLUGINTYPE_SCENESAVER, True):
+            d[p.GetID()] = p.GetName()
 
-    def execute_powershell(self, script):
-        parms = {
-            'args': self.get_args(script),
-            'encoding': 'utf-8',
-            'stdout': subprocess.PIPE,
-            'stderr': subprocess.PIPE,
-        }
-        popen = subprocess.Popen(**parms)
-        stdout, stderr = popen.communicate()
-        return popen, stdout, stderr
+    @staticmethod
+    def get_plug_from_id(id, loader=False):
+        op = dict()
+        plug = plugins.FindPlugin(id, c4d.PLUGINTYPE_SCENESAVER if not loader else c4d.PLUGINTYPE_SCENELOADER)
+        plug.Message(c4d.MSG_RETRIEVEPRIVATEDATA, op)
+        imexporter = op.get("imexporter", None)
+        return imexporter
 
 
 def get_config():
@@ -238,7 +321,6 @@ def import_image_as_plane(doc, image_path):
         mat[c4d.MATERIAL_USE_REFLECTION] = False
         mat[c4d.MATERIAL_PREVIEWSIZE] = + 12
         mat[c4d.MATERIAL_ANIMATEPREVIEW] = True
-
 
         doc.InsertMaterial(mat)
         ##add image to shader
@@ -287,7 +369,7 @@ class SuperImport(c4d.plugins.CommandData):
         FORCE_UNICORE, TEMP_DIR = get_config()
 
         clipboard = Clipboard()
-        file_list = clipboard.pull(force_unicode=FORCE_UNICORE)
+        file_list = clipboard.pull_files_from_clipboard(force_unicode=FORCE_UNICORE)
         del clipboard  # release clipboard
 
         objs = [file for file in file_list if file.split('.')[-1] in importer_ext]
