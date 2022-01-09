@@ -85,8 +85,10 @@ class Clipboard():
                         self.DragQueryFile(h_hdrop, index, buf, ctypes.sizeof(buf))
                         self.file_urls.append(buf.value.decode(FS_ENCODING))
         except UnicodeError:
-            self.CloseClipboard()
             self.pull_files_from_clipboard()
+        finally:
+            self.CloseClipboard()
+
         return self.file_urls
 
     def pull_files_from_clipboard(self):

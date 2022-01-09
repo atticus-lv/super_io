@@ -10,6 +10,9 @@
 importer_ext = [
     'c4d', 'abc', '3ds', 'dae', 'fbx', 'obj', 'stl', 'usda', 'usdc', 'ai'
 ]
+image_ext = [
+    'jpg', 'png', 'jpeg', 'tif', 'tiff', 'tga', 'exr', 'hdr', 'psd'
+]
 
 # fix scale
 importer_plugin_id = {
@@ -141,8 +144,10 @@ class Clipboard():
                         self.DragQueryFile(h_hdrop, index, buf, ctypes.sizeof(buf))
                         self.file_urls.append(buf.value.decode(FS_ENCODING))
         except UnicodeError:
-            self.CloseClipboard()
             self.pull_files_from_clipboard()
+        finally:
+            self.CloseClipboard()
+
         return self.file_urls
 
     def pull_files_from_clipboard(self):
@@ -216,6 +221,64 @@ def report(msg, dialog=True):
     return print(msg)
 
 
+def import_image_as_plane(doc, image_path):
+    img = image_path
+    if not img:
+        return 'Canvas Cancelled.'
+    else:
+        path, filename = os.path.split(img)
+        # get filename
+        fname, ext = filename.split('.')
+
+        # create material
+        mat = c4d.BaseMaterial(5703)
+        mat[c4d.MATERIAL_USE_COLOR] = False
+        mat[c4d.MATERIAL_USE_LUMINANCE] = True
+        mat[c4d.MATERIAL_USE_ALPHA] = True
+        mat[c4d.MATERIAL_USE_REFLECTION] = False
+        mat[c4d.MATERIAL_PREVIEWSIZE] = + 12
+        mat[c4d.MATERIAL_ANIMATEPREVIEW] = True
+
+
+        doc.InsertMaterial(mat)
+        ##add image to shader
+        shdr_texture = c4d.BaseList2D(c4d.Xbitmap)
+        shdr_texture[c4d.BITMAPSHADER_FILENAME] = img
+        mat[c4d.MATERIAL_LUMINANCE_SHADER] = shdr_texture
+        mat.InsertShader(shdr_texture)
+
+        # create bitmap
+        bm = c4d.bitmaps.BaseBitmap()
+        bm.InitWith(img)
+        getsize = bm.GetSize()
+        x = getsize[0]
+        y = getsize[1]
+
+        ### check if image has alpha channel
+        if bm.GetChannelCount() > 0:
+            alpha_texture = c4d.BaseList2D(c4d.Xbitmap)
+            alpha_texture[c4d.BITMAPSHADER_FILENAME] = img
+            mat[c4d.MATERIAL_ALPHA_SHADER] = alpha_texture
+            mat.InsertShader(alpha_texture)
+            doc.AddUndo(c4d.UNDOTYPE_NEW, alpha_texture)
+
+        ### create plane
+        plane = c4d.BaseObject(5168)
+        plane[c4d.PRIM_PLANE_SUBW] = 1
+        plane[c4d.PRIM_PLANE_SUBH] = 1
+        plane[c4d.PRIM_PLANE_WIDTH] = x
+        plane[c4d.PRIM_PLANE_HEIGHT] = y
+        doc.InsertObject(plane)
+        ##assign texture tag to plane
+        tag = plane.MakeTag(c4d.Ttexture)
+        tag[c4d.TEXTURETAG_PROJECTION] = 6
+        tag[c4d.TEXTURETAG_MATERIAL] = mat
+
+        ## edit name
+        mat[c4d.ID_BASELIST_NAME] = filename
+        plane[c4d.ID_BASELIST_NAME] = fname
+
+
 class SuperImport(c4d.plugins.CommandData):
     """Command Data class that holds the ExampleDialog instance."""
     dialog = None
@@ -228,16 +291,21 @@ class SuperImport(c4d.plugins.CommandData):
         del clipboard  # release clipboard
 
         objs = [file for file in file_list if file.split('.')[-1] in importer_ext]
+        images = [file for file in file_list if file.split('.')[-1] in image_ext]
 
+        # import objects
         for obj in objs[:]:
             try:
                 ext = obj.split('.')[-1]
                 if ext in importer_plugin_id:
                     self.fix_scale(ext)
-
                 c4d.documents.MergeDocument(doc, obj, c4d.SCENEFILTER_OBJECTS | c4d.SCENEFILTER_MATERIALS, None)
             except Exception as e:
                 print(e)
+
+        # import images
+        for img in images:
+            import_image_as_plane(doc, img)
 
         c4d.EventAdd()
 
