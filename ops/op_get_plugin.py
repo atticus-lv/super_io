@@ -8,19 +8,20 @@ class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
     bl_label = 'Get Cinema 4d Plugin'
 
     def execute(self, context):
-        file =  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Cinema 4d'))
+        file = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Cinema 4d'))
         full_path = os.path.abspath(file)
 
-        from ..clipboard.windows import Clipboard as Clipboard
-        clipboard = Clipboard()
-        clipboard.push_to_clipboard([full_path])
+        from .core import PostProcess
+        post = PostProcess()
+        post.copy_to_clipboard([full_path], op=None)
 
         self.report({'INFO'}, 'C4d Plugin has been copied to clipboard!')
 
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(self,width = 500)
+        return context.window_manager.invoke_props_dialog(self, width=500)
 
     def draw(self, context):
         layout = self.layout.box()
@@ -42,17 +43,18 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
     ])
 
     def execute(self, context):
-        file = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Houdini'))
+        file = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Houdini'))
 
-        from ..clipboard.windows import Clipboard as Clipboard
-        clipboard = Clipboard()
-        clipboard.push_to_clipboard([file])
+        from .core import PostProcess
+        post = PostProcess()
+        post.copy_to_clipboard([file], op=None)
 
         self.report({'INFO'}, 'Houdini tool shelf file has been copied to clipboard!')
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(self,width = 500)
+        return context.window_manager.invoke_props_dialog(self, width=500)
 
     def draw(self, context):
         layout = self.layout.box()
@@ -60,6 +62,7 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
         layout.label(text='After clicking confirm, the shelf tool folder will be copied to the clipboard for pasting')
         layout.label(text=r'Please paste it to "C:/Users/{User-Name}/Documents/houdini{version}/toolbar/"')
         layout.label(text='You can find the icon in the folder and assign it at the shelf tool')
+
 
 def register():
     bpy.utils.register_class(SPIO_OT_copy_c4d_plugin)

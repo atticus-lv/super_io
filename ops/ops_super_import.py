@@ -45,7 +45,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
             if os.path.isdir(file_path):
                 continue
             elif not os.path.exists(file_path):
-                self.report({"ERROR"}, file_path + f" not exist!")
+                self.report({"ERROR"}, f"{file_path} not exist!")
 
             # pass extra file
             extension = file_path.split('.')[-1].lower()
