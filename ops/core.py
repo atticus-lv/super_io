@@ -410,10 +410,7 @@ class PostProcess():
         """Win only now, need to test mac"""
         if get_pref().post_push_to_clipboard:
 
-            if sys.platform == "win32":
-                from ..clipboard.windows import Clipboard as Clipboard
-            elif sys.platform == "darwin":
-                from ..clipboard.darwin.mac import MacClipboard as Clipboard
+            from ..clipboard.clipboard import Clipboard as Clipboard
 
             clipboard = Clipboard()
             clipboard.push_to_clipboard(paths=paths)
