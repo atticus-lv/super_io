@@ -46,6 +46,14 @@ for name in __dict__.values():
         globals()[name] = importlib.import_module(name)
         setattr(globals()[name], 'modules', __dict__)
 
+def prepare():
+    from addon_utils import enable
+    addons = [
+        'io_import_images_as_planes',
+        'io_import_dxf',
+    ]
+    for addon in addons:
+        enable(addon)
 
 def register():
     for name in __dict__.values():
@@ -55,6 +63,7 @@ def register():
             except ValueError:  # open template file may cause this problem
                 pass
 
+    prepare()
 
 def unregister():
     for name in __dict__.values():

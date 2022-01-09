@@ -31,10 +31,6 @@ class SPIO_OT_import_image(bpy.types.Operator):
             )
 
     def execute(self, context):
-        if self.action == 'PLANE':
-            from addon_utils import enable
-            enable("io_import_images_as_planes")
-
         if self.action == 'NODES':
             location_X, location_Y = context.space_data.cursor_location
 
@@ -82,11 +78,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
 
         return {'FINISHED'}
 
-if sys.platform == "win32":
-    from ..clipboard.windows import Clipboard as Clipboard
-elif sys.platform == "darwin":
-    from ..clipboard.darwin.mac import MacClipboard as Clipboard
-
+from ..clipboard.clipboard import Clipboard as Clipboard
 
 class ImageCopyDefault:
     @classmethod

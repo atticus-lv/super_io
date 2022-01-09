@@ -18,4 +18,5 @@ importer = {
     'wrl': 'import_scene.x3d',
 
     'svg': 'import_curve.svg',
+    'dxf': 'import_scene.dxf',
 }

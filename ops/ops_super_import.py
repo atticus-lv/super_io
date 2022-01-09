@@ -27,10 +27,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
     def invoke(self, context, event):
         self.restore()
 
-        if sys.platform == "win32":
-            from ..clipboard.windows import Clipboard as Clipboard
-        elif sys.platform == "darwin":
-            from ..clipboard.darwin.mac import MacClipboard as Clipboard
+        from ..clipboard.clipboard import Clipboard as Clipboard
         # get Clipboard
         self.clipboard = Clipboard()
         file_list = self.clipboard.pull(force_unicode=get_pref().force_unicode)
