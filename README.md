@@ -23,7 +23,7 @@ in your File Explorer, then paste in blender with just one click/shortcut,
 
 which has improved the efficiency of importing and exporting blender files / Models / pictures
 
-With third-party Scripts, you are allowed to copy/paste amonng blender, Cinema 4d and Houdini
+With third-party Scripts, you are allowed to copy/paste among blender, Cinema 4d and Houdini
 
 > Support windows / Mac platforms(Not Fully Support)
 >
