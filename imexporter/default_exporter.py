@@ -1,6 +1,8 @@
+import bpy.app
+
 exporter_min = {
     'stl': 'export_mesh.stl',
-    'obj': 'export_scene.obj',
+    'obj': 'export_scene.obj' if not getattr(bpy.ops.wm, 'obj_export') else 'wm.obj_export',
     'fbx': 'export_scene.fbx',
 
 }
@@ -14,7 +16,7 @@ exporter_extend = {
     'stl': 'export_mesh.stl',
     'dae': 'wm.collada_export',
     'abc': 'wm.alembic_export',
-    'obj': 'export_scene.obj',
+    'obj': 'export_scene.obj' if not getattr(bpy.ops.wm, 'obj_export') else 'wm.obj_export',
     'fbx': 'export_scene.fbx',
     #
     # 'glb': 'export_scene.gltf',
@@ -28,6 +30,8 @@ exporter_extend = {
 exporter_ops_props = {
     'obj': {
         'use_selection': True
+    } if not getattr(bpy.ops.wm, 'obj_export') else {
+        'export_selected_objects': True
     },
     'fbx': {
         'use_selection': True
