@@ -470,16 +470,21 @@ class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
         layout.operator('wm.save_userpref', icon='PREFERENCES')
 
 
-def update_category(self, context):
+def change_panel_category():
     from .ui import ui_panel
-    try:
-        for panel in ui_panel.panels:
-            if "bl_rna" in panel.__dict__:
-                bpy.utils.unregister_class(panel)
 
-        for panel in ui_panel.panels:
-            panel.bl_category = get_pref().category
-            bpy.utils.register_class(panel)
+    for panel in ui_panel.panels:
+        if "bl_rna" in panel.__dict__:
+            bpy.utils.unregister_class(panel)
+
+    for panel in ui_panel.panels:
+        panel.bl_category = get_pref().category
+        bpy.utils.register_class(panel)
+
+
+def update_category(self, context):
+    try:
+        change_panel_category()
 
     except(Exception) as e:
         self.report({'ERROR'}, f'Category change failed:\n{e}')
@@ -870,6 +875,12 @@ def register():
         print(e)
 
     bpy.types.WindowManager.spio_filter = PointerProperty(type=ConfigListFilterProperty)
+
+    try:
+        change_panel_category()
+
+    except(Exception) as e:
+        print(e)
 
 
 def unregister():
