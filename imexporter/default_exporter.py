@@ -2,7 +2,7 @@ import bpy.app
 
 exporter_min = {
     'stl': 'export_mesh.stl',
-    'obj': 'export_scene.obj' if not getattr(bpy.ops.wm, 'obj_export') else 'wm.obj_export',
+    'obj': 'export_scene.obj' if bpy.app.version < (3, 1, 0) else 'wm.obj_export',
     'fbx': 'export_scene.fbx',
 
 }
