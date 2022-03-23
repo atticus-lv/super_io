@@ -814,7 +814,32 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 d.config_list_index = self.config_list_index
 
 
+class SPIO_PT_ListFilterPanel(bpy.types.Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'HEADER'
+    bl_category = ''
+    bl_label = "Filter Type"
+    bl_idname = "SPIO_PT_ListFilterPanel"
+
+    def draw(self, context):
+        """UI code for the filtering/sorting/search area."""
+        filter = context.window_manager.spio_filter
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.prop(filter, 'show_import')
+        layout.prop(filter, 'show_export')
+
+        col = layout.column(align=True)
+        col.prop(filter, 'filter_type', icon='FILTER', expand=True)
+
+        layout.prop(filter, "reverse")
+
+
 classes = [
+    SPIO_PT_ListFilterPanel,
+
     OperatorProperty,
     SPIO_OT_OperatorPropAdd, SPIO_OT_OperatorPropRemove,
 

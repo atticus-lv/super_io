@@ -112,34 +112,13 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
         row.operator('spio.clear_object_asset', text='Clear Selected Asset', icon='X')
 
 
-class SPIO_PT_ListFilterPanel(bpy.types.Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'HEADER'
-    bl_category = ''
-    bl_label = "Filter Type"
-    bl_idname = "SPIO_PT_ListFilterPanel"
 
-    def draw(self, context):
-        """UI code for the filtering/sorting/search area."""
-        filter = context.window_manager.spio_filter
-        layout = self.layout
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        layout.prop(filter, 'show_import')
-        layout.prop(filter, 'show_export')
-
-        col = layout.column(align=True)
-        col.prop(filter, 'filter_type', icon='FILTER', expand=True)
-
-        layout.prop(filter, "reverse")
 
 
 panels = (
     SPIO_PT_PrefPanel_283,
     SPIO_PT_PrefPanel_300,
     SPIO_PT_ImportPanel,
-    SPIO_PT_ListFilterPanel,
     SPIO_PT_InstallAddon,
     SPIO_PT_AssetHelper,
 )
@@ -150,8 +129,8 @@ def register():
         bpy.utils.register_class(SPIO_PT_PrefPanel_283)
     else:
         bpy.utils.register_class(SPIO_PT_PrefPanel_300)
+
     bpy.utils.register_class(SPIO_PT_ImportPanel)
-    bpy.utils.register_class(SPIO_PT_ListFilterPanel)
     bpy.utils.register_class(SPIO_PT_InstallAddon)
     bpy.utils.register_class(SPIO_PT_AssetHelper)
 
@@ -161,7 +140,7 @@ def unregister():
         bpy.utils.unregister_class(SPIO_PT_PrefPanel_283)
     else:
         bpy.utils.unregister_class(SPIO_PT_PrefPanel_300)
+
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
-    bpy.utils.unregister_class(SPIO_PT_ListFilterPanel)
     bpy.utils.unregister_class(SPIO_PT_InstallAddon)
     bpy.utils.unregister_class(SPIO_PT_AssetHelper)
