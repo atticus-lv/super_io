@@ -1,6 +1,8 @@
 import bpy.app
 
 exporter_min = {
+    'blend': 'spio.export_blend',
+
     'stl': 'export_mesh.stl',
     'obj': 'export_scene.obj' if bpy.app.version < (3, 1, 0) else 'wm.obj_export',
     'fbx': 'export_scene.fbx',
@@ -8,6 +10,7 @@ exporter_min = {
 }
 
 exporter_extend = {
+    'blend': 'spio.export_blend',
     # 'usd': 'wm.usd_import',
     'usdc': 'wm.usd_export',
     # 'usda': 'wm.usd_import',
@@ -56,7 +59,7 @@ exporter_ops_props = {
     'usdc': {
         'selected_objects_only': True
     },
-    # 'blend': {
-    # },
+    'blend': {
+    },
 
 }

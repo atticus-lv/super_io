@@ -260,9 +260,9 @@ class PopupExportMenu():
             layout = cls.layout
             layout.operator_context = "INVOKE_DEFAULT"
             col = layout.column()
-            col.operator('spio.export_blend', text='Export BLEND')
+            # col.operator('spio.export_blend', text='Export BLEND')
 
-            col.separator()
+            # col.separator()
 
             if get_pref().extend_default_exporter:
                 from ..imexporter.default_exporter import exporter_extend as default_exporter
