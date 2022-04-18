@@ -9,7 +9,7 @@ importer = {
     'stl': 'import_mesh.stl',
     'dae': 'wm.collada_import',
     'abc': 'wm.alembic_import',
-    'obj': 'import_scene.obj' if bpy.app.version < (3, 2, 0) else 'wm.obj_import',
+    'obj': 'import_scene.obj' if bpy.app.version < (3, 1, 2) else 'wm.obj_import',
     'fbx': 'import_scene.fbx',
 
     'glb': 'import_scene.gltf',
