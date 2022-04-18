@@ -513,12 +513,13 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     force_unicode: BoolProperty(name='Force Unicode',
                                 description='Force to use "utf-8" to decode filepath \nOnly enable when your system coding "utf-8"',
                                 default=False)
-
+    cpp_obj_importer: BoolProperty(name='Use C++ obj importer',default=True)
     # addon
     asset_helper: BoolProperty(name='Asset Helper', default=False)
     experimental: BoolProperty(name='Experimental', default=False)
 
     # Export
+    cpp_obj_exporter: BoolProperty(name='Use C++ obj exporter', default=True)
     extend_default_exporter: BoolProperty(name='Extend Default Exporter', default=False)
 
     post_open_dir: BoolProperty(name='Open Dir After Export',
@@ -601,10 +602,16 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             row.prop(self, 'force_unicode', text='')
             row.label(text='Force Unicode')
 
+            row = box.row(align = True)
+            row.prop(self,'cpp_obj_importer')
+
             box = col.box()
             box.label(text='Export', icon="EXPORT")
             row = box.row(align=True)
             row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
+
+            row = box.row(align=True)
+            row.prop(self, 'cpp_obj_exporter')
 
             row = box.row(align=True)
             row.prop(self, 'extend_default_exporter')

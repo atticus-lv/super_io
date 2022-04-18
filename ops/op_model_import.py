@@ -1,7 +1,8 @@
 import bpy
 
 from bpy.props import StringProperty
-from ..imexporter.default_importer import importer
+from ..imexporter.default_importer import get_importer
+from ..preferences import get_pref
 
 
 class SPIO_OT_import_model(bpy.types.Operator):
@@ -28,6 +29,8 @@ class SPIO_OT_import_model(bpy.types.Operator):
             )
 
     def execute(self, context):
+        importer = get_importer(cpp_obj_importer=get_pref().cpp_obj_importer)
+
         for filepath in self.files.split('$$'):
             ext = filepath.split('.')[-1]
             if ext in importer:

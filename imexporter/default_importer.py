@@ -9,7 +9,7 @@ importer = {
     'stl': 'import_mesh.stl',
     'dae': 'wm.collada_import',
     'abc': 'wm.alembic_import',
-    'obj': 'import_scene.obj' if bpy.app.version < (3, 1, 2) else 'wm.obj_import',
+    'obj': 'import_scene.obj',
     'fbx': 'import_scene.fbx',
 
     'glb': 'import_scene.gltf',
@@ -21,3 +21,11 @@ importer = {
     'svg': 'import_curve.svg',
     'dxf': 'import_scene.dxf',
 }
+
+
+def get_importer(cpp_obj_importer=True):
+    im = importer.copy()
+    if cpp_obj_importer and bpy.app.version >= (3, 1, 2):
+        im['obj'] = 'wm.obj_import'
+
+    return im

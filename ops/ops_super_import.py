@@ -10,8 +10,6 @@ from .op_dynamic_io import IO_Base
 from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import get_pref
 
-from ..imexporter.default_importer import importer
-
 from ..ui.icon_utils import RSN_Preview
 
 import_icon = RSN_Preview(image='import.bip', name='import_icon')
@@ -111,6 +109,9 @@ class SuperImport(IO_Base, bpy.types.Operator):
         # dynamic operator
         ##################
         from .op_dynamic_io import DynamicImport
+        from ..imexporter.default_importer import get_importer
+
+        importer = get_importer(cpp_obj_importer=get_pref().cpp_obj_importer)
 
         for index in self.CONFIGS.index_list:
             if index in match_index_list: continue  # not register those match config
@@ -212,6 +213,10 @@ class WM_OT_super_import(SuperImport):
         popup.default_blend_menu()
 
     def import_default(self, context):
+        from ..imexporter.default_importer import get_importer
+
+        importer = get_importer(cpp_obj_importer=get_pref().cpp_obj_importer)
+
         ext = self.ext
         if ext in importer:
             for file_path in self.file_list:

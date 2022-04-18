@@ -57,7 +57,7 @@ def remove_prefix(s, prefix):
         return s.removeprefix(prefix)
 
 
-from ..imexporter.default_importer import importer
+from ..imexporter.default_importer import get_importer
 from ..imexporter.lib_blend import default_blend_lib
 from ..imexporter.default_addon import importer_addon
 
@@ -80,12 +80,13 @@ class ConfigItemHelper():
             self.__setattr__('prop_list', ops_config)
 
     def get_operator_and_args(self):
-        from ..imexporter.default_exporter import exporter_ops_props
-        if get_pref().extend_default_exporter:
-            from ..imexporter.default_exporter import exporter_extend as default_exporter
-        else:
-            from ..imexporter.default_exporter import exporter_min as default_exporter
+        from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
+        # get exporter by preferences
+        default_exporter = get_exporter(cpp_obj_exporter=get_pref().cpp_obj_exporter,
+                                        extend=get_pref().extend_default_exporter)
+        exporter_ops_props = get_exporter_ops_props(cpp_obj_exporter=get_pref().cpp_obj_exporter)
 
+        # init
         op_callable = None
         ops_args = dict()
         operator_type = self.operator_type
@@ -101,6 +102,7 @@ class ConfigItemHelper():
 
         # default operator
         elif operator_type.startswith('DEFAULT'):
+            importer = get_importer(cpp_obj_importer=get_pref().cpp_obj_importer)
             bl_idname = importer.get(remove_prefix(operator_type, 'DEFAULT_').lower())
             op_callable = get_op_by_idname(bl_idname)
 
@@ -263,11 +265,11 @@ class PopupExportMenu():
             # col.operator('spio.export_blend', text='Export BLEND')
 
             # col.separator()
-
-            if get_pref().extend_default_exporter:
-                from ..imexporter.default_exporter import exporter_extend as default_exporter
-            else:
-                from ..imexporter.default_exporter import exporter_min as default_exporter
+            from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
+            # get exporter by preferences
+            default_exporter = get_exporter(cpp_obj_exporter=get_pref().cpp_obj_exporter,
+                                            extend=get_pref().extend_default_exporter)
+            exporter_ops_props = get_exporter_ops_props(cpp_obj_exporter=get_pref().cpp_obj_exporter)
 
             for ext, bl_idname in default_exporter.items():
                 op = col.operator('spio.export_model', text=f'Export {ext.upper()}')

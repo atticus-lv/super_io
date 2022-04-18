@@ -72,12 +72,12 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
         return self.execute(context)
 
     def execute(self, context):
-        from ..imexporter.default_exporter import exporter_ops_props
 
-        if get_pref().extend_default_exporter:
-            from ..imexporter.default_exporter import exporter_extend as default_exporter
-        else:
-            from ..imexporter.default_exporter import exporter_min as default_exporter
+        from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
+        # get exporter by preferences
+        default_exporter = get_exporter(cpp_obj_exporter=get_pref().cpp_obj_exporter,
+                                        extend=get_pref().extend_default_exporter)
+        exporter_ops_props = get_exporter_ops_props(cpp_obj_exporter=get_pref().cpp_obj_exporter)
 
         if self.extension not in default_exporter: return {"CANCELLED"}
 
