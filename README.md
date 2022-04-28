@@ -28,6 +28,10 @@ With third-party Scripts, you are allowed to copy/paste among blender, Cinema 4d
 > Support windows / Mac platforms(Not Fully Support)
 >
 > (Third Party Scripts Support Cinema4d R23+ and Houdini H18+ on windows)
+>
+> + C4D plugin support / Houdini Shelf support in v1.3.7 and above
+> 
+
 
 # Contributing
 
@@ -42,6 +46,46 @@ Check the document above
 # Log
 
 > English Log at release panel
+
+### v1.3.10
+
++ blender 
+  + 修复安装包错误
+  + 添加对新的obj导入器支持
+  + 现在可以在偏好设置中切换新旧的obj导入/导出器
+
+### v1.3.9
+
+修复
+
++ blender
+  + 修复自定义配置导出错误
+
+### v1.3.8
+
+修复
+
++ blender
+  + 列表过滤项
+  + 资产助手面板
+  + 最小导入弹出菜单
+
+### v1.3.7
+
+新
+
++ blender
+  + 添加3.1支持
+  + 启用dxf导入
+
+### v1.3.6
+
+新
+
++ c4d: **使用插件代替脚本，支持更多导入格式和导出弹出菜单**
++ houdini: **脚本打包成架子工具，可以直接安装**
++ blender: 将obj/mtl 粘贴在一起现在将忽略 mtl 文件
++ blender: 新的更新检查器允许查看更改日志并下载多个资产
 
 ### v1.3.5
 
