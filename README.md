@@ -47,6 +47,13 @@ Check the document above
 
 > English Log at release panel
 
+### v1.4.10
+
++ blender 
+  + 添加导入图片为世界（3d视口）
+  + 导入图像为环境纹理（着色编辑器>世界）
+  + 资产助手现在可以标记世界
+
 ### v1.3.10
 
 + blender 
