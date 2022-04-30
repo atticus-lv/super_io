@@ -26,6 +26,10 @@ def update_mark_list(self, context):
                     if mat not in mark_list:
                         mark_list.append(mat)
 
+    def mark_world():
+        for world in bpy.data.worlds:
+            mark_list.append(world)
+
     if self.action == 'OBJECT':
         mark_obj()
     elif self.action == 'MATERIAL':
@@ -33,6 +37,8 @@ def update_mark_list(self, context):
     elif self.action == 'ALL':
         mark_obj()
         mark_mat()
+    elif self.action == 'WORLD':
+        mark_world()
 
     redraw_window()
 
@@ -45,7 +51,8 @@ class object_asset(bpy.types.Operator):
     action: EnumProperty(name='Type', items=[
         ('OBJECT', 'Object', '', 'OBJECT_DATA', 0),
         ('MATERIAL', 'Material', '', 'MATERIAL', 1),
-        ('ALL', 'All', '', 'MATSHADERBALL', 2),
+        ('ALL', 'Separate', '', 'MATSHADERBALL', 2),
+        ('WORLD', 'World', '', 'WORLD', 4),
     ], update=update_mark_list)
 
     def draw(self, context):
@@ -55,13 +62,22 @@ class object_asset(bpy.types.Operator):
 
         col = layout.box().column(align=True)
         if len(mark_list) == 0:
-            col.label(text = 'None')
+            col.label(text='None')
+
         for obj in mark_list:
+            if isinstance(obj,bpy.types.Object):
+                icon = 'OBJECT_DATA'
+            elif isinstance(obj,bpy.types.Material):
+                icon = 'MATERIAL'
+            elif isinstance(obj,bpy.types.World):
+                icon = 'WORLD'
+            else:
+                icon = 'X'
             if self.clear:
                 if obj.asset_data is None: continue
-                col.label(text=obj.name, icon='OBJECT_DATA' if isinstance(obj, bpy.types.Object) else 'MATERIAL')
+                col.label(text=obj.name, icon=icon)
             else:
-                col.label(text=obj.name, icon='OBJECT_DATA' if isinstance(obj, bpy.types.Object) else 'MATERIAL')
+                col.label(text=obj.name, icon=icon)
 
     def invoke(self, context, event):
         update_mark_list(self, context)
