@@ -3,8 +3,9 @@ import os
 import sys
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
+
 class SPIO_OT_import_image(bpy.types.Operator):
-    """Import all image as reference (Empty object)"""
+    """Import all image as reference/plane/nodes/world"""
 
     bl_idname = 'spio.import_image'
     bl_label = 'Import Image'
@@ -14,6 +15,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
         ('REF', 'Reference', ''),
         ('PLANE', 'PLANE', ''),
         ('NODES', 'NodeTree', ''),
+        ('WORLD', 'World', ''),
     ])
 
     @classmethod
@@ -30,33 +32,44 @@ class SPIO_OT_import_image(bpy.types.Operator):
                     and context.space_data.edit_tree is not None
             )
 
+    def load_image_by_path(self, path):
+        src_images = list(bpy.data.images)
+
+        # use built-in ops instead of bpy.data.images.load to detect sequence and UDIM
+        bpy.ops.image.open(filepath=path)
+        # if image already load in, reload it
+        images = [img for img in bpy.data.images if img not in src_images] + [
+            bpy.data.images.get(os.path.basename(path))]
+
+        image = images[0]
+
+        return image
+
     def execute(self, context):
         if self.action == 'NODES':
             location_X, location_Y = context.space_data.cursor_location
 
         for filepath in self.files.split('$$'):
+            ### Plane
             if self.action == 'PLANE':
                 bpy.ops.import_image.to_plane(files=[{"name": filepath}])
 
+            ### References Empty
             elif self.action == 'REF':
                 bpy.ops.object.load_reference_image(filepath=filepath)
 
+            ### Nodes
             elif self.action == 'NODES':
-                path = filepath
-                src_images = list(bpy.data.images)
+                image = self.load_image_by_path(filepath)
 
-                # use built-in ops instead of bpy.data.images.load to detect sequence and UDIM
-                bpy.ops.image.open(filepath=path)
-                # if image already load in, reload it
-                images = [img for img in bpy.data.images if img not in src_images] + [
-                    bpy.data.images.get(os.path.basename(filepath))]
-
-                image = images[0]
                 bpy.ops.node.select_all(action='DESELECT')
                 nt = context.space_data.edit_tree
 
                 if context.area.ui_type == 'ShaderNodeTree':
-                    node_type = 'ShaderNodeTexImage'
+                    if context.space_data.shader_type == 'WORLD':
+                        node_type = 'ShaderNodeTexEnvironment'
+                    else:
+                        node_type = 'ShaderNodeTexImage'
                 elif context.area.ui_type == 'GeometryNodeTree':
                     node_type = 'GeometryNodeImageTexture'
                 elif context.area.ui_type == 'CompositorNodeTree':
@@ -71,14 +84,34 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 tex_node.select = True
                 nt.nodes.active = tex_node
 
-                if node_type in {'ShaderNodeTexImage', 'CompositorNodeImage'}:
+                if node_type in {'ShaderNodeTexImage', 'ShaderNodeTexEnvironment', 'CompositorNodeImage'}:
                     tex_node.image = image
                 elif node_type == 'GeometryNodeImageTexture':
                     tex_node.inputs['Image'].default_value = image
 
+            # Worlds
+            elif self.action == 'WORLD':
+                # get preset node group
+                cur_dir = os.path.dirname(__file__)
+                node_group_file = os.path.join(cur_dir, "node_group.blend")
+
+                img = self.load_image_by_path(filepath)
+
+                with bpy.data.libraries.load(node_group_file, link=False) as (data_from, data_to):
+                    setattr(data_to, 'worlds', getattr(data_from, 'worlds'))
+
+                world = data_to.worlds[0]
+                world.name = img.name
+
+                for node in world.node_tree.nodes:
+                    if node.name == 'Environment Texture':
+                        node.image = img
+
         return {'FINISHED'}
 
+
 from ..clipboard.clipboard import Clipboard as Clipboard
+
 
 class ImageCopyDefault:
     @classmethod

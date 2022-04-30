@@ -305,6 +305,10 @@ class PopupImportMenu():
                 op.action = 'PLANE'
                 op.files = join_paths
 
+                op = col.operator('spio.import_image', text=f'Import as World')
+                op.action = 'WORLD'
+                op.files = join_paths
+
             if return_menu:
                 return draw_3dview_menu
 
