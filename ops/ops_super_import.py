@@ -48,16 +48,28 @@ class SuperImport(IO_Base, bpy.types.Operator):
                 continue
 
             self.file_list.append(file_path)
+        # count ext type
+        ext_list = [file.split('.')[-1].lower() for file in self.file_list]
         # report if more than one extension is selected
-        if len(set([file.split('.')[-1].lower() for file in self.file_list])) != 1:
-            self.report({"ERROR"}, "Only one type of file can be imported at a time")
-            return {"CANCELLED"}
+        if len(set(ext_list)) > 1:
+            self.report({"WARNING"}, "More than one format of file is copied!")
+            # return {"CANCELLED"}
+        ext_count_dict = dict()
 
-        # set the only one ext
-        self.ext = self.file_list[-1].split('.')[-1].lower()
+        for ext in ext_list:
+            if ext not in ext_count_dict:
+                ext_count_dict[ext] = 1
+            else:
+                ext_count_dict[ext] += 1
+
+        # set the main ext
+        for key, value in ext_count_dict.items():
+            if (value == max(ext_count_dict.values())):
+                self.ext = key
+                break
+
         # call for match configs
         self.CONFIGS = ConfigHelper(check_use=True, filter=self.ext, io_type='IMPORT')
-        config_list, index_list = self.CONFIGS.config_list, self.CONFIGS.index_list
 
         # import default if not custom config for this file extension
         if self.CONFIGS.is_empty():
@@ -160,7 +172,15 @@ class SuperImport(IO_Base, bpy.types.Operator):
                 if get_pref().report_time: self.report_time(start_time)
 
         # then popup menu to select the remain not matching file
-        remain_list = [file for file in file_list if file not in match_file_op_dict]
+        remain_list = list()
+        for file in file_list:
+            # file match ext but not in config
+            if file not in match_file_op_dict:
+                remain_list.append(file)
+            # file not match ext
+            if file.split('.')[-1] != self.ext:
+                remain_list.append(file)
+
         # menu title
         if len(match_file_op_dict) > 0:
             title = f'Match {self.ext.upper()} import finish (Import {len(match_file_op_dict)} files)'

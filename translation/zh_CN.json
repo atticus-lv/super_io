@@ -62,7 +62,7 @@
     "Report import time": "报告导入时间",
     "Close Warning Rules": "关闭规则警告",
     "No file found in clipboard!": "剪贴板没有找到文件！",
-    "Only one type of file can be imported at a time": "只支持一次导入一种格式的文件",
+    "More than one format of file is copied!": "复制了多种文件格式！",
     "Show Import": "显示导入",
     "Show Export": "显示导出",
     "Wrong IO Type / Operator Type": "错误的IO类型/操作符类型",
