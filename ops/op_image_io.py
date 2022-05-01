@@ -93,8 +93,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
             elif self.action == 'WORLD':
                 # get preset node group
                 cur_dir = os.path.dirname(__file__)
-                addon_dir = os.path.dirname(cur_dir)
-                node_group_file = os.path.join(addon_dir,'imexporter','templates', "World.blend")
+                node_group_file = os.path.join(cur_dir,'templates', "World.blend")
 
                 img = self.load_image_by_path(filepath)
 
