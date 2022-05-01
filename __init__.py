@@ -59,6 +59,7 @@ def prepare():
         'io_curve_svg',
         'io_mesh_stl',
         'io_mesh_ply',
+        'node_wrangler', # use to set up pbr textures
 
     ]
     for addon in addons:

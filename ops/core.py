@@ -323,8 +323,28 @@ class PopupImportMenu():
             context.window_manager.popup_menu(draw_3dview_menu,
                                               title=f'Super Import Image ({len(self.file_list)} files)',
                                               icon='IMAGE_DATA')
+
         elif context.area.type == "NODE_EDITOR":
-            bpy.ops.spio.import_image(action='NODES', files=join_paths)
+            def draw_node_editor_menu(cls, context):
+                layout = cls.layout
+                layout.operator_context = "INVOKE_DEFAULT"
+                # only one blend need to deal with
+                col = layout.column()
+                op = col.operator('spio.import_image', text=f'Import as Nodes')
+                op.action = 'NODES'
+                op.files = join_paths
+
+                col = layout.column()
+                op = col.operator('spio.import_image', text=f'Add Principled Setup')
+                op.action = 'PBR_SETUP'
+                op.files = join_paths
+
+            if return_menu:
+                return draw_node_editor_menu
+
+            context.window_manager.popup_menu(draw_node_editor_menu,
+                                              title=f'Super Import Image ({len(self.file_list)} files)',
+                                              icon='NODE_SEL')
 
     def default_blend_menu(self, return_menu=False):
         context = self.context

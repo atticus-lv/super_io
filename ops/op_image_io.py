@@ -11,12 +11,14 @@ Alt Click to mark asset(world and light)"""
 
     bl_idname = 'spio.import_image'
     bl_label = 'Import Image'
+    bl_options = {'UNDO_GROUPED'}
 
     files: StringProperty()  # list of filepath, join with$$
     action: EnumProperty(items=[
         ('REF', 'Reference', ''),
         ('PLANE', 'PLANE', ''),
         ('NODES', 'NodeTree', ''),
+        ('PBR_SETUP', 'PBR Set Up', ''),
         ('WORLD', 'World', ''),
         ('GOBOS', 'Light Gobos', ''),
     ])
@@ -48,9 +50,30 @@ Alt Click to mark asset(world and light)"""
 
         return image
 
-    def invoke(self, context,event):
+    def invoke(self, context, event):
         if self.action == 'NODES':
             location_X, location_Y = context.space_data.cursor_location
+
+        if self.action == 'PBR_SETUP':
+            # from addon_utils import enable
+            # enable('node_wrangler')
+
+            filepaths = self.files.split('$$')
+            dir = os.path.dirname(filepaths[0]) + '\\'
+            files = [{"name": os.path.basename(filepath)} for filepath in
+                     filepaths]
+
+            print(filepaths[0])
+            print(dir)
+            print(files)
+
+            bpy.ops.node.nw_add_textures_for_principled(
+                filepath=filepaths[0],
+                directory=dir,
+                files=files,
+                relative_path=True)
+
+            return {'FINISHED'}
 
         for filepath in self.files.split('$$'):
             ### Plane
@@ -147,7 +170,6 @@ Alt Click to mark asset(world and light)"""
                     override = context.copy()
                     override['id'] = light
                     bpy.ops.ed.lib_id_load_custom_preview(override, filepath=filepath)
-
 
         return {'FINISHED'}
 
