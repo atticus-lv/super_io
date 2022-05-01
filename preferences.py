@@ -152,13 +152,17 @@ class ConfigItemProperty(PropertyGroup):
 
             ("", "Add-ons", "Custom operator and properties input", "USER", 0),
             # ('ADDONS_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 100),
-            ('ADDONS_BLEND_MATERIAL', 'Append and assign material',
+            ('ADDONS_BLEND_MATERIAL', 'Append and assign material (.blend)',
              'Import material from a single file and assign it to active object', 'MATERIAL', 101),
-            ('ADDONS_BLEND_WORLD', 'Append and assign world',
+            ('ADDONS_BLEND_WORLD', 'Append and assign world (.blend)',
              'Import world from a single file and set it as context world', 'WORLD', 102),
+
             None,
             ('ADDONS_INSTALL_ADDON', 'Install Addon (.py/.zip)',
              'Import and Install extra_addon', 'COMMUNITY', 103),
+
+            ('ADDONS_IMPORT_IES', 'Import IES (.ies)', 'Import IES file as light', 'LIGHT_SPOT', 104),
+
             None,
             ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
