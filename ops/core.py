@@ -309,6 +309,10 @@ class PopupImportMenu():
                 op.action = 'WORLD'
                 op.files = join_paths
 
+                op = col.operator('spio.import_image', text=f'Import as Light Gobos')
+                op.action = 'GOBOS'
+                op.files = join_paths
+
             if return_menu:
                 return draw_3dview_menu
 

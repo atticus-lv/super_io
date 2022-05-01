@@ -1,6 +1,7 @@
 import bpy
 import os
 import sys
+import math
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
 
@@ -16,6 +17,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
         ('PLANE', 'PLANE', ''),
         ('NODES', 'NodeTree', ''),
         ('WORLD', 'World', ''),
+        ('GOBOS', 'Light Gobos', ''),
     ])
 
     @classmethod
@@ -93,7 +95,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
             elif self.action == 'WORLD':
                 # get preset node group
                 cur_dir = os.path.dirname(__file__)
-                node_group_file = os.path.join(cur_dir,'templates', "World.blend")
+                node_group_file = os.path.join(cur_dir, 'templates', "World.blend")
 
                 img = self.load_image_by_path(filepath)
 
@@ -106,6 +108,34 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 for node in world.node_tree.nodes:
                     if node.name == 'Environment Texture':
                         node.image = img
+
+            # Light Gobos
+            elif self.action == 'GOBOS':
+                img = self.load_image_by_path(filepath)
+
+                bpy.ops.object.light_add(type='AREA')
+                light = context.object
+                light.name = ".".join(os.path.basename(filepath).split('.')[:-1])  # get file name without extension
+
+                d = light.data
+                d.shadow_soft_size = 1  # set a small shadow soft size to get clear shapes
+                d.use_nodes = True
+                d.spread = math.radians(2)  # 2 degrees spread angle
+                nt = d.node_tree
+
+                # create nodes
+                n_emi = nt.nodes['Emission']
+
+                n_img = nt.nodes.new('ShaderNodeTexImage')
+                n_img.location = -200, 300
+                n_img.image = img
+
+                n_geo = nt.nodes.new('ShaderNodeNewGeometry')
+                n_geo.location = -400, 300
+
+                # create links
+                nt.links.new(n_geo.outputs[5], n_img.inputs[0])
+                nt.links.new(n_img.outputs[0], n_emi.inputs[1])
 
         return {'FINISHED'}
 
