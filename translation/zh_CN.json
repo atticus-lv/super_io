@@ -84,8 +84,8 @@
     "Export Selected objects to a blend file": "导出所选物体为单个blend文件",
     "Temporary Directory to store export files.\nIf empty, use blender's default temporary directory": "储存导出文件的临时文件夹\n如果为空，则使用blender的临时文件夹路径",
 
-    "Append and assign material": "导入并赋予材质",
-    "Append and assign world": "导入并设置世界",
+    "Append and assign material (.blend)": "导入并赋予材质 (.blend)",
+    "Append and assign world (.blend)": "导入并设置世界 (.blend)",
     "Import material from a single file and assign it to active object": "从单个文件导入材质并赋予到激活物体上",
     "Import world from a single file and set it as context world": "从单个文件导入世界并设置为当前世界",
     "Install Addon (.py/.zip)": "导入插件 (.py/.zip)",
