@@ -47,7 +47,7 @@ Check the document above
 
 > English Log at release panel
 
-### v1.4.10
+### v1.4.0
 
 + blender 
   + 添加导入图片为世界（3d视口）
