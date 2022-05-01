@@ -120,8 +120,8 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
         box.operator('SPIO_OT_asset_snap_shot', icon='RENDER_STILL')
 
         box = layout.box()
-        box.label(text = 'Batch Matching Thumbs(WIP)',icon = 'IMAGE_PLANE')
-
+        box.label(text = 'Batch Replace Asset Thumbs',icon = 'IMAGE_PLANE')
+        box.operator('spio.batch_generate_thumbs_from_clipboard', icon='IMAGE_PLANE')
 panels = (
     SPIO_PT_PrefPanel_283,
     SPIO_PT_PrefPanel_300,

@@ -1,3 +1,5 @@
+import os.path
+
 import bpy
 from bpy.props import BoolProperty, StringProperty, EnumProperty, IntProperty
 
@@ -182,10 +184,78 @@ class SPIO_OT_asset_snap_shot(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class SPIO_OT_batch_generate_thumbs_from_clipboard(bpy.types.Operator):
+    """Generate selected asset' thumbs from clipboard images (match by name)"""
+    bl_label = 'Generate Thumbnails from Clipboard Images'
+    bl_idname = 'spio.batch_generate_thumbs_from_clipboard'
+
+    match_obj = []
+    clipboard = None
+    filepaths = None
+
+    @classmethod
+    def poll(cls, context):
+        return len(context.selected_objects) != 0
+
+    def invoke(self, context, event):
+        self.match_obj = []
+        self.clipboard = None
+
+        from ...clipboard.clipboard import Clipboard
+        from ...preferences import get_pref
+
+        self.clipboard = Clipboard()
+        filepaths = self.clipboard.pull_files_from_clipboard(force_unicode=get_pref().force_unicode)
+        if len(filepaths) == 0:
+            return {'CANCELLED'}
+
+        self.filepaths = filepaths
+
+        for obj in context.selected_objects:
+            if obj.asset_data:
+                self.match_obj.append(obj.name)
+
+        return context.window_manager.invoke_props_dialog(self)
+
+    def draw(self, context):
+        self.layout.label(text="Matched objects:")
+
+        for path in self.filepaths:
+            basename = os.path.basename(path)
+            base, sep, ext = basename.rpartition('.')
+            if base == '' and sep == '':
+                name = ext  # 若无分隔，ext为名字
+            else:
+                name = base  # 若有分隔，base为名字
+
+            if name in self.match_obj:
+                self.layout.label(text=name, icon='OBJECT_DATA')
+
+    def execute(self, context):
+        for path in self.filepaths:
+            basename = os.path.basename(path)
+            base, sep, ext = basename.rpartition('.')
+            if base == '' and sep == '':
+                name = ext  # 若无分隔，ext为名字
+            else:
+                name = base  # 若有分隔，base为名字
+
+            if name in self.match_obj:
+                obj = bpy.data.objects[name]
+                override = context.copy()
+                override['id'] = obj
+                bpy.ops.ed.lib_id_load_custom_preview(override, filepath=path)
+
+        redraw_window()
+
+        return {"FINISHED"}
+
+
 def register():
     bpy.utils.register_class(SPIO_OT_mark_object_asset)
     bpy.utils.register_class(SPIO_OT_clear_object_asset)
     bpy.utils.register_class(SPIO_OT_asset_snap_shot)
+    bpy.utils.register_class(SPIO_OT_batch_generate_thumbs_from_clipboard)
 
     bpy.types.Scene.spio_snapshot_resolution = IntProperty(
         name="Snapshot Resolution",
@@ -200,4 +270,6 @@ def unregister():
     bpy.utils.unregister_class(SPIO_OT_mark_object_asset)
     bpy.utils.unregister_class(SPIO_OT_clear_object_asset)
     bpy.utils.unregister_class(SPIO_OT_asset_snap_shot)
+    bpy.utils.unregister_class(SPIO_OT_batch_generate_thumbs_from_clipboard)
+
     del bpy.types.Scene.spio_snapshot_resolution

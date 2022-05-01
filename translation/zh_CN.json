@@ -47,8 +47,12 @@
     "Mark Selected Materials": "标记选中材质为",
     "Clear Selected Asset": "清除选中项资产",
     "Snapshot Thumbs": "缩略图截图",
-    "Snap Resolution": "截图分辨率",
+    "Snapshot Resolution": "截图分辨率",
     "Snapshot Asset": "截图",
+    "Batch Replace Asset Thumbs": "批量替换资产缩略图",
+    "Generate Thumbnails from Clipboard Images": "从剪贴板图像生成缩略图",
+    "Snapshot Active Object": "为激活项物体截图",
+    "Generate selected asset' thumbs from clipboard images (match by name)": "从剪贴板图像生成选中项资产的缩略图 (根据名称匹配)",
 
     "Export BLEND": "导出BLEND",
 
