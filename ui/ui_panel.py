@@ -103,17 +103,24 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        row.scale_y = 1.15
-        row.operator('spio.mark_object_asset', text='Mark Selected Objects As Asset', icon='ASSET_MANAGER')
 
-        row = layout.row()
+        box = layout.box()
+        box.label(text = 'Mark as Asset',icon = 'ASSET_MANAGER')
+        row = box.row()
+        row.scale_y = 1.15
+        row.operator('spio.mark_object_asset', text='Mark Selected Objects', icon='ADD')
+        row = box.row()
         row.scale_y = 1.15
         row.operator('spio.clear_object_asset', text='Clear Selected Asset', icon='X')
+        
+        box = layout.box()
+        box.label(text='Snapshot Thumbs', icon='RENDER_STILL')
+        box.box().label(text=context.object.name if context.object else 'No Active Object',icon = 'OBJECT_DATA' if context.object else 'ERROR')
+        box.prop(context.scene, 'spio_snapshot_resolution', slider=True)
+        box.operator('SPIO_OT_asset_snap_shot', icon='RENDER_STILL')
 
-
-
-
+        box = layout.box()
+        box.label(text = 'Batch Matching Thumbs(WIP)',icon = 'IMAGE_PLANE')
 
 panels = (
     SPIO_PT_PrefPanel_283,

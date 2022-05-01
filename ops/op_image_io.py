@@ -6,7 +6,8 @@ from bpy.props import StringProperty, BoolProperty, EnumProperty
 
 
 class SPIO_OT_import_image(bpy.types.Operator):
-    """Import all image as reference/plane/nodes/world"""
+    """Import all image as reference/plane/nodes/world/light
+Alt Click to mark asset(world and light)"""
 
     bl_idname = 'spio.import_image'
     bl_label = 'Import Image'
@@ -47,7 +48,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
 
         return image
 
-    def execute(self, context):
+    def invoke(self, context,event):
         if self.action == 'NODES':
             location_X, location_Y = context.space_data.cursor_location
 
@@ -91,6 +92,7 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 elif node_type == 'GeometryNodeImageTexture':
                     tex_node.inputs['Image'].default_value = image
 
+
             # Worlds
             elif self.action == 'WORLD':
                 # get preset node group
@@ -108,6 +110,9 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 for node in world.node_tree.nodes:
                     if node.name == 'Environment Texture':
                         node.image = img
+
+                if event.alt:
+                    world.asset_mark()
 
             # Light Gobos
             elif self.action == 'GOBOS':
@@ -136,6 +141,13 @@ class SPIO_OT_import_image(bpy.types.Operator):
                 # create links
                 nt.links.new(n_geo.outputs[5], n_img.inputs[0])
                 nt.links.new(n_img.outputs[0], n_emi.inputs[1])
+
+                if event.alt:
+                    light.asset_mark()
+                    override = context.copy()
+                    override['id'] = light
+                    bpy.ops.ed.lib_id_load_custom_preview(override, filepath=filepath)
+
 
         return {'FINISHED'}
 

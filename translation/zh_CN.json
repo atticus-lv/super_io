@@ -43,9 +43,13 @@
     "Export All": "导出全部",
     "IO Type": "IO 类型",
     "Import Blend": "导入blend文件",
-    "Mark Selected Objects As Asset": "将选中物体标记为资产",
-    "Mark Selected Materials As Asset": "将选中材质标记为资产",
+    "Mark Selected Objects": "标记选中物体",
+    "Mark Selected Materials": "标记选中材质为",
     "Clear Selected Asset": "清除选中项资产",
+    "Snapshot Thumbs": "缩略图截图",
+    "Snap Resolution": "截图分辨率",
+    "Snapshot Asset": "截图",
+
     "Export BLEND": "导出BLEND",
 
     "Force Unicode": "强制使用Unicode",

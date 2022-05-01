@@ -305,6 +305,8 @@ class PopupImportMenu():
                 op.action = 'PLANE'
                 op.files = join_paths
 
+                col.separator()
+
                 op = col.operator('spio.import_image', text=f'Import as World')
                 op.action = 'WORLD'
                 op.files = join_paths
@@ -312,6 +314,8 @@ class PopupImportMenu():
                 op = col.operator('spio.import_image', text=f'Import as Light Gobos')
                 op.action = 'GOBOS'
                 op.files = join_paths
+
+                col.label(text='Alt to mark asset')
 
             if return_menu:
                 return draw_3dview_menu

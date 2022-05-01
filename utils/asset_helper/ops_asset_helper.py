@@ -1,5 +1,5 @@
 import bpy
-from bpy.props import BoolProperty, StringProperty, EnumProperty
+from bpy.props import BoolProperty, StringProperty, EnumProperty, IntProperty
 
 mark_list = []
 
@@ -65,11 +65,11 @@ class object_asset(bpy.types.Operator):
             col.label(text='None')
 
         for obj in mark_list:
-            if isinstance(obj,bpy.types.Object):
+            if isinstance(obj, bpy.types.Object):
                 icon = 'OBJECT_DATA'
-            elif isinstance(obj,bpy.types.Material):
+            elif isinstance(obj, bpy.types.Material):
                 icon = 'MATERIAL'
-            elif isinstance(obj,bpy.types.World):
+            elif isinstance(obj, bpy.types.World):
                 icon = 'WORLD'
             else:
                 icon = 'X'
@@ -111,11 +111,93 @@ class SPIO_OT_clear_object_asset(object_asset, bpy.types.Operator):
     clear = True
 
 
+# code from https://github.com/johnnygizmo/asset_snapshot/blob/main/__init__.py
+
+class SPIO_OT_asset_snap_shot(bpy.types.Operator):
+    """Snapshot Active Object"""
+    bl_label = 'Snapshot Asset'
+    bl_idname = 'spio.asset_snap_shot'
+
+    def snapshot(self, context, ob):
+        import random
+        import os
+
+        scene = context.scene
+
+        # Save some basic settings
+        hold_x = context.scene.render.resolution_x
+        hold_y = context.scene.render.resolution_y
+        hold_filepath = context.scene.render.filepath
+
+        # Find objects that are hidden in viewport and hide them in render
+        tempHidden = []
+        for o in bpy.data.objects:
+            if o.hide_get() == True:
+                o.hide_render = True
+                tempHidden.append(o)
+
+        # Change Settings
+        context.scene.render.resolution_y = scene.spio_snapshot_resolution
+        context.scene.render.resolution_x = scene.spio_snapshot_resolution
+        switchback = False
+        if bpy.ops.view3d.camera_to_view.poll():
+            bpy.ops.view3d.camera_to_view()
+            switchback = True
+
+        # Ensure outputfile is set to png (temporarily, at least)
+        previousFileFormat = scene.render.image_settings.file_format
+        if scene.render.image_settings.file_format != 'PNG':
+            scene.render.image_settings.file_format = 'PNG'
+
+        filename = str(random.randint(0, 100000000000)) + ".png"
+        filepath = str(os.path.abspath(os.path.join(os.sep, 'tmp', filename)))
+        bpy.context.scene.render.filepath = filepath
+
+        # Render File, Mark Asset and Set Image
+        bpy.ops.render.opengl(write_still=True)
+        ob.asset_mark()
+        override = bpy.context.copy()
+        override['id'] = ob
+        bpy.ops.ed.lib_id_load_custom_preview(override, filepath=filepath)
+
+        # Unhide the objects hidden for the render
+        for o in tempHidden:
+            o.hide_render = False
+        # Reset output file format
+        scene.render.image_settings.file_format = previousFileFormat
+
+        # Cleanup
+        os.unlink(filepath)
+        context.scene.render.resolution_y = hold_y
+        context.scene.render.resolution_x = hold_x
+        context.scene.render.filepath = hold_filepath
+        if switchback:
+            bpy.ops.view3d.view_camera()
+
+    def execute(self, context):
+        self.snapshot(context, context.active_object)
+
+        redraw_window()
+
+        return {"FINISHED"}
+
+
 def register():
     bpy.utils.register_class(SPIO_OT_mark_object_asset)
     bpy.utils.register_class(SPIO_OT_clear_object_asset)
+    bpy.utils.register_class(SPIO_OT_asset_snap_shot)
+
+    bpy.types.Scene.spio_snapshot_resolution = IntProperty(
+        name="Snapshot Resolution",
+        description="Resolution to render the preview",
+        min=32,
+        soft_max=512,
+        default=256
+    )
 
 
 def unregister():
     bpy.utils.unregister_class(SPIO_OT_mark_object_asset)
     bpy.utils.unregister_class(SPIO_OT_clear_object_asset)
+    bpy.utils.unregister_class(SPIO_OT_asset_snap_shot)
+    del bpy.types.Scene.spio_snapshot_resolution
