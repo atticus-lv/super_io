@@ -228,7 +228,13 @@ class SPIO_OT_ConfigListAction:
         if self.action == 'ADD':
             new_item = pref.config_list.add()
             new_item.name = f'Config{len(pref.config_list)}'
-            pref.config_list_index = len(pref.config_list) - 1
+            # correct index
+            old_index = pref.config_list_index
+            new_index = len(pref.config_list) - 1
+            pref.config_list_index = new_index
+
+            for i in range(old_index, new_index - 1):
+                bpy.ops.spio.config_list_move_up()
 
         elif self.action == 'REMOVE':
             pref.config_list.remove(self.index)
@@ -252,14 +258,30 @@ class SPIO_OT_ConfigListAction:
                         prop_item = new_item.prop_list.add()
                         setattr(prop_item, prop, convert_value(value))
 
+            old_index = pref.config_list_index
+            new_index = len(pref.config_list) - 1
             pref.config_list_index = len(pref.config_list) - 1
 
-        elif self.action in {'UP', 'DOWN'}:
-            my_list = pref.config_list
-            index = pref.config_list_index
-            neighbor = index + (-1 if self.action == 'UP' else 1)
-            my_list.move(neighbor, index)
-            self.move_index(context)
+            for i in range(old_index, new_index - 1):
+                bpy.ops.spio.config_list_move_up()
+
+        return {'FINISHED'}
+
+
+class SPIO_OT_ConfigListMove:
+    bl_label = "Config Move"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    index: IntProperty()
+    action = None
+
+    def execute(self, context):
+        pref = get_pref()
+        my_list = pref.config_list
+        index = pref.config_list_index
+        neighbor = index + (-1 if self.action == 'UP' else 1)
+        my_list.move(neighbor, index)
+        self.move_index(context)
 
         return {'FINISHED'}
 
@@ -291,14 +313,14 @@ class SPIO_OT_ConfigListCopy(SPIO_OT_ConfigListAction, bpy.types.Operator):
     action = 'COPY'
 
 
-class SPIO_OT_ConfigListMoveUP(SPIO_OT_ConfigListAction, bpy.types.Operator):
+class SPIO_OT_ConfigListMoveUP(SPIO_OT_ConfigListMove, bpy.types.Operator):
     bl_idname = "spio.config_list_move_up"
     bl_label = 'Move Up'
 
     action = 'UP'
 
 
-class SPIO_OT_ConfigListMoveDown(SPIO_OT_ConfigListAction, bpy.types.Operator):
+class SPIO_OT_ConfigListMoveDown(SPIO_OT_ConfigListMove, bpy.types.Operator):
     bl_idname = "spio.config_list_move_down"
     bl_label = 'Move Down'
 
