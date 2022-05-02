@@ -179,7 +179,7 @@ class ConfigItemProperty(PropertyGroup):
 
 class OperatorPropAction:
     bl_label = "Operator Props Operate"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'INTERNAL', 'UNDO'}
 
     config_list_index: IntProperty()
     prop_index: IntProperty()
@@ -217,7 +217,7 @@ from .ops.core import convert_value
 class SPIO_OT_ConfigListAction:
     """Add / Remove / Copy current config"""
     bl_label = "Config Operate"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'INTERNAL', 'UNDO'}
 
     index: IntProperty()
     action = None
