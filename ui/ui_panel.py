@@ -103,6 +103,8 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
 
         box = layout.box()
         box.label(text = 'Mark Helper',icon = 'ASSET_MANAGER')
@@ -115,8 +117,17 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
         
         box = layout.box()
         box.label(text='Snapshot Thumbs', icon='RENDER_STILL')
-        box.box().label(text=context.object.name if context.object else 'No Active Object',icon = 'OBJECT_DATA' if context.object else 'ERROR')
-        box.prop(context.scene, 'spio_snapshot_resolution', slider=True)
+        row = box.box().row()
+        row.alignment = 'LEFT'
+        row.label(text = 'Active Object')
+        row.label(text=context.object.name if context.object else 'No Active Object',icon = 'OBJECT_DATA' if context.object else 'ERROR')
+
+        col = box.column()
+        col.use_property_split = True
+        col.use_property_decorate = False
+        col.prop(context.scene, 'spio_snapshot_resolution', slider=True)
+        col.prop(context.scene, 'spio_snapshot_view', slider=True)
+        col.prop(context.scene, 'spio_snapshot_render_settings', slider=True)
         box.operator('SPIO_OT_asset_snap_shot', icon='RENDER_STILL')
 
         box = layout.box()

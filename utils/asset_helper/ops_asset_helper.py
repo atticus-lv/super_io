@@ -83,7 +83,7 @@ class object_asset(bpy.types.Operator):
         for i in range(0, len(mark_list), n):
             item_lists.append(mark_list[i:i + n])
         for item_list in item_lists:
-            row1 = col.row(align = True)
+            row1 = col.row(align=True)
             for obj in item_list:
                 sub = row1.column(align=True)
                 if isinstance(obj, bpy.types.Object):
@@ -144,7 +144,6 @@ class SPIO_OT_asset_snap_shot(bpy.types.Operator):
         import os
 
         scene = context.scene
-
         # Save some basic settings
         hold_x = context.scene.render.resolution_x
         hold_y = context.scene.render.resolution_y
@@ -158,9 +157,15 @@ class SPIO_OT_asset_snap_shot(bpy.types.Operator):
                 tempHidden.append(o)
 
         # Change Settings
-        context.scene.render.resolution_y = scene.spio_snapshot_resolution
-        context.scene.render.resolution_x = scene.spio_snapshot_resolution
+        context.scene.render.resolution_y = int(scene.spio_snapshot_resolution)
+        context.scene.render.resolution_x = int(scene.spio_snapshot_resolution)
+
         switchback = False
+        if scene.spio_snapshot_view == 'CAMERA':
+            if not scene.camera:
+                bpy.ops.object.camera_add()
+                context.view_layer.objects.active = ob  # switch back to origin active
+
         if bpy.ops.view3d.camera_to_view.poll():
             bpy.ops.view3d.camera_to_view()
             switchback = True
@@ -175,7 +180,11 @@ class SPIO_OT_asset_snap_shot(bpy.types.Operator):
         bpy.context.scene.render.filepath = filepath
 
         # Render File, Mark Asset and Set Image
-        bpy.ops.render.opengl(write_still=True)
+        if scene.spio_snapshot_render_settings == 'RENDER':
+            bpy.ops.render.render(write_still=True)
+        else:
+            bpy.ops.render.opengl(write_still=True)
+
         ob.asset_mark()
         override = bpy.context.copy()
         override['id'] = ob
@@ -276,12 +285,36 @@ def register():
     bpy.utils.register_class(SPIO_OT_asset_snap_shot)
     bpy.utils.register_class(SPIO_OT_batch_generate_thumbs_from_clipboard)
 
-    bpy.types.Scene.spio_snapshot_resolution = IntProperty(
-        name="Snapshot Resolution",
+    bpy.types.Scene.spio_snapshot_view = EnumProperty(
+        items=[
+            ('VIEWPORT', 'Viewport', ''),
+            ('CAMERA', 'Scene Camera', ''),
+        ],
+        name="Camera",
+        description="Where to take the snapshot from",
+        default='VIEWPORT'
+    )
+
+    bpy.types.Scene.spio_snapshot_render_settings = EnumProperty(
+        items=[
+            ('VIEWPORT', 'Viewport Shading', ''),
+            ('RENDER', 'Render', ''),
+        ],
+        name="Type",
+        default='VIEWPORT',
+    )
+
+    bpy.types.Scene.spio_snapshot_resolution = EnumProperty(
+        items=[
+            ('64', '64', ''),
+            ('128', '128', ''),
+            ('256', '256', ''),
+            ('512', '512', ''),
+            ('1024', '1024', ''),
+        ],
+        name="Resolution",
         description="Resolution to render the preview",
-        min=32,
-        soft_max=512,
-        default=256
+        default='256'
     )
 
 
@@ -291,4 +324,6 @@ def unregister():
     bpy.utils.unregister_class(SPIO_OT_asset_snap_shot)
     bpy.utils.unregister_class(SPIO_OT_batch_generate_thumbs_from_clipboard)
 
+    del bpy.types.Scene.spio_snapshot_view
+    del bpy.types.Scene.spio_snapshot_render_settings
     del bpy.types.Scene.spio_snapshot_resolution
