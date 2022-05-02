@@ -83,7 +83,7 @@ class ConfigItemHelper():
         from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
         # get exporter by preferences
         default_exporter = get_exporter(cpp_obj_exporter=get_pref().cpp_obj_exporter,
-                                        extend=get_pref().extend_default_exporter)
+                                        extend=get_pref().extend_export_menu)
         exporter_ops_props = get_exporter_ops_props(cpp_obj_exporter=get_pref().cpp_obj_exporter)
 
         # init
@@ -268,7 +268,7 @@ class PopupExportMenu():
             from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
             # get exporter by preferences
             default_exporter = get_exporter(cpp_obj_exporter=get_pref().cpp_obj_exporter,
-                                            extend=get_pref().extend_default_exporter)
+                                            extend=get_pref().extend_export_menu)
             exporter_ops_props = get_exporter_ops_props(cpp_obj_exporter=get_pref().cpp_obj_exporter)
 
             for ext, bl_idname in default_exporter.items():

@@ -48,12 +48,20 @@ def _update_check() -> None:
         with urllib.request.urlopen(RELEASES_URL, context=ssl_context) as response:
             data = json.load(response)
 
-            for release in data:
-                if not release["draft"]:
-                    update_version = _parse_tag(release["tag_name"])[0]
-                    print(update_version)
-                    if update_version >= ADDON_VERSION:
-                        break
+            newest_version = None
+
+            for i, release in enumerate(data):
+                if release["draft"]: continue
+
+                update_version = _parse_tag(release["tag_name"])[0]
+                if newest_version is None: newest_version = update_version
+                break
+                # if update_version >= ADDON_VERSION and i == 1:
+                #     break
+
+            if update_version is None:
+                state.status = state.ERROR
+                state.error_msg = 'No update available (Network error or using a dev version)'
 
             with urllib.request.urlopen(release["assets_url"], context=ssl_context) as response:
                 data = json.load(response)
@@ -75,7 +83,6 @@ def _update_check() -> None:
                 state.changelog = release["body"].split('\r\n')
                 print(state.changelog)
 
-
         state.status = state.COMPLETED
         # redraw
         for window in bpy.context.window_manager.windows:
@@ -93,27 +100,26 @@ class SPIO_check_update(bpy.types.Operator):
     bl_idname = 'spio.check_update'
     bl_label = 'Check Update'
 
-    def draw(self, context):
-        layout = self.layout
-
-        layout.box().label(text=f'Current Version: {".".join(str(x) for x in ADDON_VERSION)}',icon = 'BLENDER')
+    @staticmethod
+    def draw_update(layout):
+        layout.box().label(text=f'Current Version: {".".join(str(x) for x in ADDON_VERSION)}', icon='BLENDER')
         if state.status == state.CHECKING:
-            layout.box().label(text='Checking...',icon = 'VIEWZOOM')
+            layout.box().label(text='Checking...', icon='VIEWZOOM')
         elif state.status == state.COMPLETED:
             if state.update_available is True:
                 col = layout.column()
 
                 box = col.box().column(align=True)
-                box.label(text=f'Latest Version: {state.update_version}',icon = 'ERROR')
+                box.label(text=f'Latest Version: {state.update_version}', icon='ERROR')
                 for line in state.changelog:
                     if line.startswith('+'):
-                        box.label(text = line.replace('+',''),icon = 'DOT')
+                        box.label(text=line.replace('+', ''), icon='DOT')
                     else:
                         box.label(text=line)
 
                 box = col.box().column(align=False)
-                box.label(text='Download',icon = 'IMPORT')
-                for i,url in enumerate(state.download_url):
+                box.label(text='Download', icon='IMPORT')
+                for i, url in enumerate(state.download_url):
                     text = state.download_name[i]
                     col.operator('wm.url_open', text=text).url = url
 
@@ -123,16 +129,13 @@ class SPIO_check_update(bpy.types.Operator):
             if state.error_msg:
                 layout.label(text=state.error_msg)
 
-    def invoke(self, context, event):
+    def execute(self, context):
         state.update_available = state.update_version = state.download_url = state.changelog = state.error_msg = None
 
         threading.Thread(target=_update_check, args=()).start()
         if state.error_msg is not None:
             return {'CANCELLED'}
 
-        return context.window_manager.invoke_props_dialog(self,width = 500)
-
-    def execute(self, context):
         return {'FINISHED'}
 
 

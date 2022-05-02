@@ -65,7 +65,7 @@ def prepare():
     for addon in addons:
         try:
             enable(addon)
-        except Exception:
+        except ModuleNotFoundError:
             pass
 
 

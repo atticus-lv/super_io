@@ -33,7 +33,9 @@
     "Open Dir After Export": "导出后打开目录",
     "Open the target directory after export": "导出后打开导出文件所在目录",
     "Copy After Export": "导出后复制",
-    "Copy files to clipboard after export models / images": "导出后复制导出文件到剪切板",
+    "Copy files to clipboard after export models / images (Mac Only Support One file)": "导出后复制导出文件到剪切板(Mac只支持导出单个文件)",
+    "Use C++ obj importer": "C++ obj导入器",
+    "Use C++ obj exporter": "C++ obj导出器",
 
     "Add Config": "添加配置",
     "Remove Config": "移除配置",
@@ -55,6 +57,7 @@
     "Generate selected asset' thumbs from clipboard images (match by name)": "从剪贴板图像生成选中项资产的缩略图 (根据名称匹配)",
 
     "Export BLEND": "导出BLEND",
+    "No update available (Network error or using a dev version)": "没有可用的更新 (网络错误或使用开发版本)",
 
     "Force Unicode": "强制使用Unicode",
     "Force to use 'utf-8' to decode filepath \nOnly enable when your system coding 'utf-8'": "强制使用utf-8来解码路径\n当你的系统使用uft-8编码时才需要启用",
@@ -66,7 +69,7 @@
     "Show Import": "显示导入",
     "Show Export": "显示导出",
     "Wrong IO Type / Operator Type": "错误的IO类型/操作符类型",
-    "Extend Default Exporter": "扩展默认导出器",
+    "Extend Export Menu": "扩展导出菜单",
 
     "1. If file name not matching this rule": "1. 如果文件名不匹配规则",
     "   It will search for the next config which match": "    将会搜寻下一符合的配置",

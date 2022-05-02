@@ -515,21 +515,21 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     # Settings
     force_unicode: BoolProperty(name='Force Unicode',
-                                description='Force to use "utf-8" to decode filepath \nOnly enable when your system coding "utf-8"',
+                                description="Force to use 'utf-8' to decode filepath \nOnly enable when your system coding 'utf-8'",
                                 default=False)
-    cpp_obj_importer: BoolProperty(name='Use C++ obj importer',default=True)
+    cpp_obj_importer: BoolProperty(name='Use C++ obj importer', default=True)
     # addon
     asset_helper: BoolProperty(name='Asset Helper', default=False)
     experimental: BoolProperty(name='Experimental', default=False)
 
     # Export
     cpp_obj_exporter: BoolProperty(name='Use C++ obj exporter', default=True)
-    extend_default_exporter: BoolProperty(name='Extend Default Exporter', default=False)
+    extend_export_menu: BoolProperty(name='Extend Export Menu', default=False)
 
     post_open_dir: BoolProperty(name='Open Dir After Export',
                                 description='Open the target directory after export', default=False)
     post_push_to_clipboard: BoolProperty(name='Copy After Export',
-                                         description='Copy files to clipboard after export models / images',
+                                         description='Copy files to clipboard after export models / images (Mac Only Support One file)',
                                          default=True)
 
     # UI
@@ -578,6 +578,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box = layout.box()
         box.operator('spio.check_update', text='Check Update', icon='INFO')
 
+        from .utils.addon_updater.op_check_version import SPIO_check_update
+        SPIO_check_update.draw_update(box)
+
         box = layout.box()
         box.label(text='Addons', icon='EXPERIMENTAL')
         box.prop(self, 'asset_helper')
@@ -606,8 +609,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             row.prop(self, 'force_unicode', text='')
             row.label(text='Force Unicode')
 
-            row = box.row(align = True)
-            row.prop(self,'cpp_obj_importer')
+            row = box.row(align=True)
+            row.prop(self, 'cpp_obj_importer')
 
             box = col.box()
             box.label(text='Export', icon="EXPORT")
@@ -618,7 +621,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             row.prop(self, 'cpp_obj_exporter')
 
             row = box.row(align=True)
-            row.prop(self, 'extend_default_exporter')
+            row.prop(self, 'extend_export_menu')
 
             row = box.row(align=True)
             row.prop(self, 'post_open_dir')
