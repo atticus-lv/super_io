@@ -105,7 +105,7 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
         layout = self.layout
 
         box = layout.box()
-        box.label(text = 'Mark as Asset',icon = 'ASSET_MANAGER')
+        box.label(text = 'Mark Helper',icon = 'ASSET_MANAGER')
         row = box.row()
         row.scale_y = 1.15
         row.operator('spio.mark_object_asset', text='Mark Selected Objects', icon='ADD')

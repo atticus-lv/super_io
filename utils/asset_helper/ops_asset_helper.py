@@ -44,6 +44,8 @@ def update_mark_list(self, context):
 
     redraw_window()
 
+    return mark_list
+
 
 class object_asset(bpy.types.Operator):
     bl_options = {'UNDO_GROUPED'}
@@ -62,29 +64,46 @@ class object_asset(bpy.types.Operator):
         row = layout.row(align=True)
         row.prop(self, 'action', expand=True)
 
+        if self.action == 'OBJECT':
+            layout.label(text='Selected objects', icon='INFO')
+        elif self.action == 'MATERIAL':
+            layout.label(text="Selected materials (Exclude objects)", icon='INFO')
+        elif self.action == 'ALL':
+            layout.label(text='Objects and materials separately', icon='INFO')
+        elif self.action == 'WORLD':
+            layout.label(text='All worlds', icon='INFO')
+
         col = layout.box().column(align=True)
         if len(mark_list) == 0:
             col.label(text='None')
 
-        for obj in mark_list:
-            if isinstance(obj, bpy.types.Object):
-                icon = 'OBJECT_DATA'
-            elif isinstance(obj, bpy.types.Material):
-                icon = 'MATERIAL'
-            elif isinstance(obj, bpy.types.World):
-                icon = 'WORLD'
-            else:
-                icon = 'X'
-            if self.clear:
-                if obj.asset_data is None: continue
-                col.label(text=obj.name, icon=icon)
-            else:
-                col.label(text=obj.name, icon=icon)
+        # split list every 30 items
+        item_lists = []
+        n = 3
+        for i in range(0, len(mark_list), n):
+            item_lists.append(mark_list[i:i + n])
+        for item_list in item_lists:
+            row1 = col.row(align = True)
+            for obj in item_list:
+                sub = row1.column(align=True)
+                if isinstance(obj, bpy.types.Object):
+                    icon = 'OBJECT_DATA'
+                elif isinstance(obj, bpy.types.Material):
+                    icon = 'MATERIAL'
+                elif isinstance(obj, bpy.types.World):
+                    icon = 'WORLD'
+                else:
+                    icon = 'X'
+
+                if self.clear:
+                    if obj.asset_data is None: continue
+                    sub.label(text=obj.name, icon=icon)
+                else:
+                    sub.label(text=obj.name, icon=icon)
 
     def invoke(self, context, event):
-        update_mark_list(self, context)
-
-        return context.window_manager.invoke_props_dialog(self)
+        l = 600
+        return context.window_manager.invoke_props_dialog(self, width=l)
 
     def execute(self, context):
         for obj in mark_list:
@@ -100,14 +119,14 @@ class object_asset(bpy.types.Operator):
 
 
 class SPIO_OT_mark_object_asset(object_asset, bpy.types.Operator):
-    """Mark Selected Objects As Asset"""
-    bl_label = 'Mark Selected Objects As Asset'
+    """Mark Helper"""
+    bl_label = 'Mark as Asset'
     bl_idname = 'spio.mark_object_asset'
     clear = False
 
 
 class SPIO_OT_clear_object_asset(object_asset, bpy.types.Operator):
-    """Clear Selected Asset"""
+    """Clear"""
     bl_label = 'Clear Selected Asset'
     bl_idname = 'spio.clear_object_asset'
     clear = True
