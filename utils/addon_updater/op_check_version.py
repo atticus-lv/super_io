@@ -113,7 +113,11 @@ class SPIO_check_update(bpy.types.Operator):
                 box.label(text=f'Latest Version: {state.update_version}', icon='ERROR')
                 for line in state.changelog:
                     if line.startswith('+'):
-                        box.label(text=line.replace('+', ''), icon='DOT')
+                        box.label(text=line.replace('+', ''), icon='KEYFRAME')
+                    elif line.startswith('    +'):
+                        row = box.row(align = True)
+                        row.separator(factor = 2)
+                        row.label(text=line.replace('    +', ''), icon='DOT')
                     else:
                         box.label(text=line)
 
