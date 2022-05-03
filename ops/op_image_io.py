@@ -36,6 +36,8 @@ Alt Click to mark asset(world and light)"""
                     and context.area.ui_type in {'GeometryNodeTree', "ShaderNodeTree", 'CompositorNodeTree'}
                     and context.space_data.edit_tree is not None
             )
+        elif context.area.type == 'FILE_BROWSER':
+            return context.area.ui_type == 'ASSETS'
 
     def load_image_by_path(self, path):
         src_images = list(bpy.data.images)

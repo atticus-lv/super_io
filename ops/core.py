@@ -240,19 +240,36 @@ class PopupExportMenu():
 
     def default_image_menu(self, return_menu=False):
         context = self.context
-        if context.area.spaces.active.image is not None and context.area.spaces.active.image.has_data is True:
-            def draw_image_editor_menu(cls, context):
+        if context.area.type == 'IMAGE_EDITOR':
+            if context.area.spaces.active.image is not None and context.area.spaces.active.image.has_data is True:
+                def draw_image_editor_menu(cls, context):
+                    layout = cls.layout
+                    layout.operator_context = "INVOKE_DEFAULT"
+
+                    col = layout.column()
+                    col.operator('spio.export_image')
+                    col.operator('spio.export_pixel')
+
+                if return_menu: return draw_image_editor_menu
+
+                context.window_manager.popup_menu(draw_image_editor_menu,
+                                                  title=f'Super Export Image ({context.area.spaces.active.image.name})',
+                                                  icon='IMAGE_DATA')
+
+        elif context.area.type == "FILE_BROWSER" and context.area.ui_type == 'ASSETS':
+
+            def draw_asset_browser_menu(cls, context):
                 layout = cls.layout
                 layout.operator_context = "INVOKE_DEFAULT"
 
                 col = layout.column()
-                col.operator('spio.export_image')
-                col.operator('spio.export_pixel')
+                op = col.operator('spio.render_world_asset_preview')
 
-            if return_menu: return draw_image_editor_menu
+            if return_menu:
+                return draw_asset_browser_menu
 
-            context.window_manager.popup_menu(draw_image_editor_menu,
-                                              title=f'Super Export Image ({context.area.spaces.active.image.name})',
+            context.window_manager.popup_menu(draw_asset_browser_menu,
+                                              title=f'Super Export: ({len(context.selected_asset_files)} assets to render)',
                                               icon='IMAGE_DATA')
 
     def default_blend_menu(self, return_menu=False):
@@ -305,18 +322,6 @@ class PopupImportMenu():
                 op.action = 'PLANE'
                 op.files = join_paths
 
-                col.separator()
-
-                op = col.operator('spio.import_image', text=f'Import as World')
-                op.action = 'WORLD'
-                op.files = join_paths
-
-                op = col.operator('spio.import_image', text=f'Import as Light Gobos')
-                op.action = 'GOBOS'
-                op.files = join_paths
-
-                col.label(text='Alt to mark asset')
-
             if return_menu:
                 return draw_3dview_menu
 
@@ -345,6 +350,31 @@ class PopupImportMenu():
             context.window_manager.popup_menu(draw_node_editor_menu,
                                               title=f'Super Import Image ({len(self.file_list)} files)',
                                               icon='NODE_SEL')
+        elif context.area.type == "FILE_BROWSER" and context.area.ui_type == 'ASSETS':
+
+            def draw_asset_browser_menu(cls, context):
+                layout = cls.layout
+                layout.operator_context = "INVOKE_DEFAULT"
+                # only one blend need to deal with
+                col = layout.column()
+                col.label(text='Alt to mark asset')
+                op = col.operator('spio.import_image', text=f'Import as World')
+                op.action = 'WORLD'
+                op.files = join_paths
+
+                op = col.operator('spio.import_image', text=f'Import as Light Gobos')
+                op.action = 'GOBOS'
+                op.files = join_paths
+
+                col.separator()
+                op = col.operator('spio.set_preview_to_selected_assets')
+
+            if return_menu:
+                return draw_asset_browser_menu
+
+            context.window_manager.popup_menu(draw_asset_browser_menu,
+                                              title=f'Super Import Image ({len(self.file_list)} files)',
+                                              icon='IMAGE_DATA')
 
     def default_blend_menu(self, return_menu=False):
         context = self.context

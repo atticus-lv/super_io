@@ -114,26 +114,29 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
         row = box.row()
         row.scale_y = 1.15
         row.operator('spio.clear_object_asset', text='Clear Selected Asset', icon='X')
-        
-        box = layout.box()
-        box.label(text='Snapshot Thumbs', icon='RENDER_STILL')
-        row = box.box().row()
-        row.alignment = 'LEFT'
-        row.label(text = 'Active Object')
-        row.label(text=context.object.name if context.object else 'No Active Object',icon = 'OBJECT_DATA' if context.object else 'ERROR')
 
-        col = box.column()
+        subbox = layout.box()
+        subbox.label(text = 'Active Asset Preview',icon = 'IMAGE_DATA')
+        row = subbox.box().row()
+        row.alignment = 'LEFT'
+        row.label(text='Active Object')
+        row.label(text=context.object.name if context.object else 'No Active Object',
+                  icon='OBJECT_DATA' if context.object else 'ERROR')
+
+        col = subbox.column()
         col.use_property_split = True
         col.use_property_decorate = False
         col.prop(context.scene, 'spio_snapshot_resolution', slider=True)
         col.prop(context.scene, 'spio_snapshot_view', slider=True)
         col.prop(context.scene, 'spio_snapshot_render_settings', slider=True)
-        box.operator('SPIO_OT_asset_snap_shot', icon='RENDER_STILL')
+        subbox.operator('spio.asset_snap_shot', icon='RENDER_STILL')
 
         box = layout.box()
-        box.label(text = 'Batch Replace Asset Thumbs',icon = 'IMAGE_PLANE')
-        box.operator('spio.set_asset_thumb_from_clipboard_image', icon='IMAGE_PLANE')
+        box.label(text = 'Batch Asset Preview',icon = 'RENDERLAYERS')
         box.operator('spio.resize_images_from_clipboard', icon='FULLSCREEN_EXIT')
+        # box.operator('spio.render_hdri_preview', icon='WORLD')
+        # box.operator('spio.set_asset_thumb_from_clipboard_image', icon='IMPORT')
+
 
 panels = (
     SPIO_PT_PrefPanel_283,

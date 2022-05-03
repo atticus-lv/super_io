@@ -11,11 +11,9 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
     bl_options = {'INTERNAL', 'UNDO'}
 
     resolution: bpy.props.EnumProperty(name='Resolution', items=[
-        ('64', '64', ''),
         ('128', '128', ''),
         ('256', '256', ''),
         ('512', '512', ''),
-        ('1024', '1024', ''),
     ], default='256')
 
     scale: bpy.props.EnumProperty(name='Crop', items=[
@@ -24,12 +22,14 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
         ('1.778', '16:9', ''),
     ], default='1')
 
-    re_generate: bpy.props.BoolProperty(name='Regenerate', description='When there exist thumbs, regenerate it',
+    re_generate: bpy.props.BoolProperty(name='Regenerate', description='When there exist preview, regenerate it',
                                         default=True)
     skip_big_image: bpy.props.BoolProperty(name='Skip big image', description='Heavy image file(>20MB) will be skipped',
                                            default=False)
-    copy_after_resize: bpy.props.BoolProperty(name='Copy after generate (Only Win)',
-                                              description='Copy files to clipboard after generate', default=True)
+    suffix: bpy.props.StringProperty(name='Suffix', default='_resize')
+
+    # copy_after_resize: bpy.props.BoolProperty(name='Copy after generate (Only Win)',
+    #                                           description='Copy files to clipboard after generate', default=True)
 
     filepaths = None
     clipboard = None
@@ -71,10 +71,11 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
             name = os.path.basename(filepath)
             base, stp, ext = name.rpartition('.')
 
-            out_jpg = os.path.join(os.path.dirname(filepath), base + '.' + 'jpg')
+            out_jpg = os.path.join(os.path.dirname(filepath), base + self.suffix + '.' + 'jpg')
 
             if os.path.exists(out_jpg) and not self.re_generate: continue
             if os.path.getsize(filepath) / 1024 / 1024 > 20 and self.skip_big_image: continue
+
             try:
                 cmd = [bpy.app.binary_path]
                 cmd.append("--background")
@@ -90,8 +91,8 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
             except Exception as e:
                 print(f'Resize image "{name}" failed:', e)
 
-        if self.copy_after_resize:
-            self.clipboard.push_to_clipboard(self.filepaths)
+        # if self.copy_after_resize:
+        #     self.clipboard.push_to_clipboard(self.filepaths)
 
         return {'FINISHED'}
 

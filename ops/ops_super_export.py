@@ -39,6 +39,8 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                 popup.default_blend_menu()
             elif context.area.type == "IMAGE_EDITOR":
                 popup.default_image_menu()
+            elif context.area.type == 'FILE_BROWSER' and context.area.ui_type == 'ASSETS':
+                popup.default_image_menu()
 
         return {'FINISHED'}
 
@@ -107,6 +109,8 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                 menu = pop.default_image_menu(return_menu=True)
             elif context.area.type == 'VIEW_3D':
                 menu = pop.default_blend_menu(return_menu=True)
+            elif context.area.type == 'FILE_BROWSER' and context.area.ui_type == 'ASSETS':
+                menu = pop.default_image_menu(return_menu=True)
 
             if menu: menu(self, context)
 
