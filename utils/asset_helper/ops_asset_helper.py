@@ -212,18 +212,28 @@ class SPIO_OT_asset_snap_shot(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class SPIO_OT_batch_generate_thumbs_from_clipboard(bpy.types.Operator):
+class SPIO_OT_set_asset_thumb_from_clipboard_image(bpy.types.Operator):
     """Generate selected asset' thumbs from clipboard images (match by name)"""
-    bl_label = 'Generate Thumbnails from Clipboard Images'
-    bl_idname = 'spio.batch_generate_thumbs_from_clipboard'
+    bl_label = 'Set Asset Thumbs from Clipboard Images'
+    bl_idname = 'spio.set_asset_thumb_from_clipboard_image'
 
     match_obj = []
     clipboard = None
     filepaths = None
 
+    check_selected_objects: BoolProperty(name='Selected objects', default=True)
+    check_worlds: BoolProperty(name='Worlds', default=False)
+    check_materials: BoolProperty(name='Materials', default=False)
+    re_generate: bpy.props.BoolProperty(name='Regenerate',description='When there exist thumbs, regenerate it', default=True)
+
+
     @classmethod
     def poll(cls, context):
-        return len(context.selected_objects) != 0
+        return (
+                len(context.selected_objects) != 0 or
+                len(bpy.data.materials) != 0 or
+                len(bpy.data.worlds) != 0
+        )
 
     def invoke(self, context, event):
         self.match_obj = []
@@ -235,31 +245,53 @@ class SPIO_OT_batch_generate_thumbs_from_clipboard(bpy.types.Operator):
         self.clipboard = Clipboard()
         filepaths = self.clipboard.pull_files_from_clipboard(force_unicode=get_pref().force_unicode)
         if len(filepaths) == 0:
+            self.report({'ERROR'}, 'No file found in clipboard!')
             return {'CANCELLED'}
 
         self.filepaths = filepaths
 
-        for obj in context.selected_objects:
-            if obj.asset_data:
-                self.match_obj.append(obj.name)
-
-        return context.window_manager.invoke_props_dialog(self)
+        return context.window_manager.invoke_props_dialog(self,width = 300)
 
     def draw(self, context):
-        self.layout.label(text="Matched objects:")
+        layout = self.layout
+        row = layout.row(align=True)
+        row.prop(self, 'check_selected_objects')
+        row.prop(self, 'check_worlds')
+        row.prop(self, 'check_materials')
+        layout.prop(self, 're_generate')
 
-        for path in self.filepaths:
-            basename = os.path.basename(path)
-            base, sep, ext = basename.rpartition('.')
-            if base == '' and sep == '':
-                name = ext  # 若无分隔，ext为名字
-            else:
-                name = base  # 若有分隔，base为名字
-
-            if name in self.match_obj:
-                self.layout.label(text=name, icon='OBJECT_DATA')
+        self.layout.label(text="Heavy image file(>20MB) will be skipped",icon = 'INFO')
+        # self.layout.label(text="Matched objects:")
+        #
+        # for path in self.filepaths:
+        #     basename = os.path.basename(path)
+        #     base, sep, ext = basename.rpartition('.')
+        #     if base == '' and sep == '':
+        #         name = ext  # 若无分隔，ext为名字
+        #     else:
+        #         name = base  # 若有分隔，base为名字
+        #
+        #     if name in self.match_obj:
+        #         self.layout.label(text=name, icon='OBJECT_DATA')
 
     def execute(self, context):
+        if self.check_selected_objects:
+            for obj in context.selected_objects:
+                if obj.asset_data:
+                    self.match_obj.append(obj)
+
+        if self.check_worlds:
+            for world in bpy.data.worlds:
+                if world.asset_data:
+                    self.match_obj.append(world)
+
+        if self.check_materials:
+            for material in bpy.data.materials:
+                if material.asset_data:
+                    self.match_obj.append(material)
+
+        match_names = [obj.name for obj in self.match_obj]
+
         for path in self.filepaths:
             basename = os.path.basename(path)
             base, sep, ext = basename.rpartition('.')
@@ -268,8 +300,13 @@ class SPIO_OT_batch_generate_thumbs_from_clipboard(bpy.types.Operator):
             else:
                 name = base  # 若有分隔，base为名字
 
-            if name in self.match_obj:
-                obj = bpy.data.objects[name]
+            if name in match_names:
+                index = match_names.index(name)
+                obj = self.match_obj[index]
+                # regenerate thumb
+                if not self.re_generate and obj.preview is not None:
+                    continue
+                # get asset data
                 override = context.copy()
                 override['id'] = obj
                 bpy.ops.ed.lib_id_load_custom_preview(override, filepath=path)
@@ -283,7 +320,7 @@ def register():
     bpy.utils.register_class(SPIO_OT_mark_object_asset)
     bpy.utils.register_class(SPIO_OT_clear_object_asset)
     bpy.utils.register_class(SPIO_OT_asset_snap_shot)
-    bpy.utils.register_class(SPIO_OT_batch_generate_thumbs_from_clipboard)
+    bpy.utils.register_class(SPIO_OT_set_asset_thumb_from_clipboard_image)
 
     bpy.types.Scene.spio_snapshot_view = EnumProperty(
         items=[
@@ -322,7 +359,7 @@ def unregister():
     bpy.utils.unregister_class(SPIO_OT_mark_object_asset)
     bpy.utils.unregister_class(SPIO_OT_clear_object_asset)
     bpy.utils.unregister_class(SPIO_OT_asset_snap_shot)
-    bpy.utils.unregister_class(SPIO_OT_batch_generate_thumbs_from_clipboard)
+    bpy.utils.unregister_class(SPIO_OT_set_asset_thumb_from_clipboard_image)
 
     del bpy.types.Scene.spio_snapshot_view
     del bpy.types.Scene.spio_snapshot_render_settings
