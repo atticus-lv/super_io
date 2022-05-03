@@ -132,7 +132,8 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
 
         box = layout.box()
         box.label(text = 'Batch Replace Asset Thumbs',icon = 'IMAGE_PLANE')
-        box.operator('spio.batch_generate_thumbs_from_clipboard', icon='IMAGE_PLANE')
+        box.operator('spio.set_asset_thumb_from_clipboard_image', icon='IMAGE_PLANE')
+        box.operator('spio.resize_images_from_clipboard', icon='FULLSCREEN_EXIT')
 
 panels = (
     SPIO_PT_PrefPanel_283,
