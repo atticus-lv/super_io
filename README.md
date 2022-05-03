@@ -47,6 +47,17 @@ Check the document above
 
 > English Log at release panel
 
+### v1.4.2
+
++ blender
+
+  新
+  + 批量设置预览现在提供更多自定义设置
+  + 批量生成预览图（blender受到图片大小限制不能直接生成大文件预览）
+
+  修复
+  + 导入图片为世界时不再追加文件后缀
+
 
 ### v1.4.1
 
