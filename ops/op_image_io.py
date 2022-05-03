@@ -128,7 +128,8 @@ Alt Click to mark asset(world and light)"""
                     setattr(data_to, 'worlds', getattr(data_from, 'worlds'))
 
                 world = data_to.worlds[0]
-                world.name = img.name
+                base, sep, ext = img.name.rpartition('.')
+                world.name = base
 
                 for node in world.node_tree.nodes:
                     if node.name == 'Environment Texture':
