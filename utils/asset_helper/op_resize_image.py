@@ -1,7 +1,7 @@
 import bpy
 import os
 from subprocess import run
-from ..preferences import get_pref
+from ...preferences import get_pref
 
 
 class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
@@ -37,7 +37,7 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
     def invoke(self, context, event):
         self.filepaths = None
 
-        from ..clipboard.clipboard import Clipboard
+        from ...clipboard.clipboard import Clipboard
         self.clipboard = Clipboard()
 
         filepaths = self.clipboard.pull_files_from_clipboard(get_pref().force_unicode)
@@ -65,7 +65,8 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
         box.prop(self, 'copy_after_resize')
 
     def execute(self, context):
-        scripts_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'imexporter', 'script_resize_image.py')
+        scripts_path = os.path.join(os.path.dirname(__file__), 'script_resize_image.py')
+
         for filepath in self.filepaths:
             name = os.path.basename(filepath)
             base, stp, ext = name.rpartition('.')
