@@ -1,6 +1,7 @@
 import argparse
 import bpy
 import sys
+import os
 from math import floor
 
 
@@ -13,10 +14,11 @@ def main(argv):
     context = bpy.context
     scene = context.scene
 
+    # there is some bug with the api now
     with bpy.data.libraries.load(SOURCEPATH, link=False) as (data_from, data_to):
         data_to.materials = [MAT]
 
-    bpy.data.objects['SHADERBALL'].material_slots[0].material = bpy.data.materials[MAT]
+    bpy.data.objects['SHADERBALL'].material_slots[0].material = bpy.data.materials.get(MAT)
 
     # Render
     r = scene.render
