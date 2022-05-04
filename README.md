@@ -46,7 +46,16 @@ Check the document above
 
 > English Log at release panel
 
-### v1.4.2
+### v1.4.3 (WIP)
+
++ blender
+    + 资产助手
+        + 资产助手的功能融合到spio系统中，现在可以在资产管理器内对选中资产操作
+        + 批量匹配图像现可移除后缀 (Ctrl+Shift+V)
+        + 现在可渲染hdr预览,带球形反射，平面三材质物体两个预设 (Ctrl+Shift+C)
+        + 现在可渲染材质预览，两个材质球预设 (Ctrl+Shift+C)
+
+### v1.4.2 (跳过)
 
 + blender
 
@@ -56,14 +65,6 @@ Check the document above
 
   修复
     + 导入图片为世界时不再追加文件后缀
-
-### v1.4.2 (WIP)
-
-+ blender
-    + 资产助手 
-      + 资产助手的功能融合到spio系统中，现在可以在资产管理器内对选中资产操作
-      + 批量匹配图像现可移除后缀 (Ctrl+Shift+V)
-      + 现在可渲染hdr预览,带球形反射，平面三材质物体两个预设 (Ctrl+Shift+C)
 
 ### v1.4.1
 
