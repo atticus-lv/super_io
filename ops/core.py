@@ -322,6 +322,16 @@ class PopupImportMenu():
                 op.action = 'PLANE'
                 op.files = join_paths
 
+                col.separator()
+                col.label(text='Hold Alt to import as asset')
+                op = col.operator('spio.import_image', text=f'Import as World')
+                op.action = 'WORLD'
+                op.files = join_paths
+
+                op = col.operator('spio.import_image', text=f'Import as Light Gobos')
+                op.action = 'GOBOS'
+                op.files = join_paths
+
             if return_menu:
                 return draw_3dview_menu
 
@@ -357,7 +367,7 @@ class PopupImportMenu():
                 layout.operator_context = "INVOKE_DEFAULT"
                 # only one blend need to deal with
                 col = layout.column()
-                col.label(text='Alt to mark asset')
+                col.label(text='Hold Alt to import as asset')
                 op = col.operator('spio.import_image', text=f'Import as World')
                 op.action = 'WORLD'
                 op.files = join_paths
