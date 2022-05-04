@@ -5,13 +5,19 @@ from math import floor
 
 
 def main(argv):
-    WORLD, SOURCEPATH, BLENDEPATH, SIZE, OUTPATH = argv
+    WORLD, SOURCEPATH, BLENDEPATH, OUTPATH, SIZE, SAMPLES, DENOISE = argv
+    # convert
     SIZE = int(SIZE)
+    SAMPLES = int(SAMPLES)
+    DENOISE = True if DENOISE == '1' else False
 
     bpy.ops.wm.open_mainfile(filepath=BLENDEPATH)
 
     context = bpy.context
     scene = context.scene
+
+    scene.cycles.samples = SAMPLES
+    scene.cycles.use_denoising = DENOISE
 
     with bpy.data.libraries.load(SOURCEPATH, link=False) as (data_from, data_to):
         data_to.worlds = [WORLD]

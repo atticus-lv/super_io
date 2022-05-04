@@ -6,13 +6,19 @@ from math import floor
 
 
 def main(argv):
-    MAT, SOURCEPATH, BLENDEPATH, SIZE, OUTPATH = argv
+    MAT, SOURCEPATH, BLENDEPATH, OUTPATH, SIZE, SAMPLES, DENOISE = argv
+    # convert
     SIZE = int(SIZE)
+    SAMPLES = int(SAMPLES)
+    DENOISE = True if DENOISE == '1' else False
 
     bpy.ops.wm.open_mainfile(filepath=BLENDEPATH)
 
     context = bpy.context
     scene = context.scene
+
+    scene.cycles.samples = SAMPLES
+    scene.cycles.use_denoising = DENOISE
 
     # there is some bug with the api now
     with bpy.data.libraries.load(SOURCEPATH, link=False) as (data_from, data_to):
