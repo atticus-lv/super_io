@@ -94,24 +94,26 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
             layout = self.layout
             layout.operator_context = "INVOKE_DEFAULT"
 
-            if len(export_op.dep_classes) > 0:
-                for cls in export_op.dep_classes:
-                    layout.operator(cls.bl_idname)
-
-            layout.separator()
-
-            # default popup
+            # import default popmenu
             from .core import PopupExportMenu
             pop = PopupExportMenu(temp_path=None, context=context)
             menu = None
 
-            if context.area.type == "IMAGE_EDITOR":
-                menu = pop.default_image_menu(return_menu=True)
-            elif context.area.type == 'VIEW_3D':
+            # TODO: Currently only view 3d allow to show custom config, need to add config's area limited later to change back
+            if context.area.type == 'VIEW_3D':
+                if len(export_op.dep_classes) > 0:
+                    for cls in export_op.dep_classes:
+                        layout.operator(cls.bl_idname)
+
+                layout.separator()
                 menu = pop.default_blend_menu(return_menu=True)
+
+            elif context.area.type == "IMAGE_EDITOR":
+                menu = pop.default_image_menu(return_menu=True)
             elif context.area.type == 'FILE_BROWSER' and context.area.ui_type == 'ASSETS':
                 menu = pop.default_image_menu(return_menu=True)
 
+            # draw menu
             if menu: menu(self, context)
 
         context.window_manager.popup_menu(draw_custom_menu, title="Super Export", icon='FILEBROWSER')

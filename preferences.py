@@ -174,6 +174,9 @@ class ConfigItemProperty(PropertyGroup):
                           items=[("INVOKE_DEFAULT", "INVOKE_DEFAULT", ''),
                                  ("EXEC_DEFAULT", "EXEC_DEFAULT", ''), ],
                           default='EXEC_DEFAULT')
+    # context_area: EnumProperty(name="Area",
+    #                            items=[("VIEW_3D", "3D View", ''), ],
+    #                            default='VIEW_3D')
     prop_list: CollectionProperty(type=OperatorProperty)
 
 
@@ -541,7 +544,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                                 default=False)
     cpp_obj_importer: BoolProperty(name='Use C++ obj importer', default=True)
     # addon
-    asset_helper: BoolProperty(name='Asset Helper', default=False)
+    asset_helper: BoolProperty(name='Asset Helper', default=True)
     experimental: BoolProperty(name='Experimental', default=False)
 
     # Export
@@ -814,6 +817,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         else:
             box3.alert = False
         box3.prop(item, 'operator_type')
+        # box3.prop(item, 'context_area')
 
         if item.operator_type == 'CUSTOM':
             box3.prop(item, 'context')
