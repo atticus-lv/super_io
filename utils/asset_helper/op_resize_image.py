@@ -6,7 +6,7 @@ from ...preferences import get_pref
 
 class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
     bl_idname = "spio.resize_images_from_clipboard"
-    bl_label = "Generate preview image from clipboard"
+    bl_label = "Generate crop preview image from clipboard"
     bl_description = "Resize image"
     bl_options = {'INTERNAL', 'UNDO'}
 
@@ -53,8 +53,8 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
         layout = self.layout
         row = layout.split(factor=0.3)
 
-        row.label(text=f'{len(self.filepaths)} files', icon='DUPLICATE')
-        row.label(text='Need a few minutes')
+        row.label(text=f'{len(self.filepaths)}', icon='DUPLICATE')
+        row.label(text='This could take a few minutes')
 
         box = layout.box()
         box.use_property_split = True
