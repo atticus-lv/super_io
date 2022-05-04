@@ -75,8 +75,13 @@
     "Generate selected asset' preview from clipboard images (match by name)": "从剪贴板图像设置资产的预览图 (根据名称匹配)",
     "Save your file first and select the local assets": "首先保存文件并选择本地资产",
     "Render World Asset Preview": "渲染世界资产预览",
+    "Render Material Asset Preview": "渲染材质资产预览",
     "Set Preview to Selected Assets": "为选定的资产设置预览",
     "Hold Alt to import as asset": "按住Alt来导入为资产",
+    "Import as World": "导入为世界",
+    "Import as Light Gobos": "导入为纹理灯光",
+    "Ignore Suffix": "忽略后缀",
+    "Match the image name with suffix removed to the asset name": "匹配资产名字时候忽略图像后缀名字",
 
 
     "Export BLEND": "导出BLEND",

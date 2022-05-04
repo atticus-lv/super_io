@@ -5,7 +5,7 @@ from math import floor
 
 
 def main(argv):
-    FILEPATH, BLENDEPATH, SIZE, OUTPATH = argv
+    MAT, SOURCEPATH, BLENDEPATH, SIZE, OUTPATH = argv
     SIZE = int(SIZE)
 
     bpy.ops.wm.open_mainfile(filepath=BLENDEPATH)
@@ -13,10 +13,10 @@ def main(argv):
     context = bpy.context
     scene = context.scene
 
-    world = scene.world
-    node = world.node_tree.nodes["Environment Texture"]
-    img = bpy.data.images.load(FILEPATH)
-    node.image = img
+    with bpy.data.libraries.load(SOURCEPATH, link=False) as (data_from, data_to):
+        data_to.materials = [MAT]
+
+    bpy.data.objects['SHADERBALL'].material_slots[0].material = bpy.data.materials[MAT]
 
     # Render
     r = scene.render
