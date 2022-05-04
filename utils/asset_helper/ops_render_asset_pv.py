@@ -248,6 +248,9 @@ class SPIO_MT_asset_browser_menu(bpy.types.Menu):
         layout.operator_context = 'INVOKE_DEFAULT'
         layout.operator('wm.super_import', icon_value=import_icon.get_image_icon_id())
         layout.operator('wm.super_export', icon_value=export_icon.get_image_icon_id())
+        # layout.label(text='Mark Helper', icon='ASSET_MANAGER')
+        # layout.operator('spio.mark_object_asset', text='Mark Selected Objects', icon='ADD')
+        # layout.operator('spio.clear_object_asset', text='Clear Selected Asset', icon='X')
 
 
 def asset_browser(self, context):

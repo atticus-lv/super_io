@@ -102,7 +102,7 @@ class object_asset(bpy.types.Operator):
                     sub.label(text=obj.name, icon=icon)
 
     def invoke(self, context, event):
-        l = 600
+        l = 450
         return context.window_manager.invoke_props_dialog(self, width=l)
 
     def execute(self, context):

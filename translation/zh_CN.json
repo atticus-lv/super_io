@@ -48,6 +48,11 @@
     "Copy files to clipboard after generate": "生成后复制到剪切板",
     "Render HDRI Preview": "渲染HDR图像预览",
     "Render HDRI Preview from Clipboard": "从剪切板渲染HDR图像预览",
+    "Clear Selected Assets": "清理选中的资产",
+    "Clear Selected Assets (Set Fake User)": "清理选中的资产(设置伪用户)",
+    "Add Tag to Selected Assets": "为选中的资产添加标签",
+    "Remove Tag from Selected Assets": "从选中的资产中移除标签",
+    "Add Author to Selected Assets": "为选中的资产添加作者",
 
     "Add Config": "添加配置",
     "Remove Config": "移除配置",
