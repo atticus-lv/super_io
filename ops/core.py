@@ -265,6 +265,8 @@ class PopupExportMenu():
                 col = layout.column()
                 op = col.operator('spio.render_world_asset_preview')
 
+                op = col.operator('spio.render_material_asset_preview')
+
             if return_menu:
                 return draw_asset_browser_menu
 
