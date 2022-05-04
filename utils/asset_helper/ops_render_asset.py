@@ -72,7 +72,7 @@ def enum_mat_render_preset(self, context):
 class SPIO_OI_render_world_asset_preview(bpy.types.Operator):
     bl_idname = "spio.render_world_asset_preview"
     bl_label = "Render World Asset Preview"
-    bl_description = "Save your file first and select the local assets"
+    bl_description = "Save file and select local assets"
     bl_options = {'INTERNAL', 'UNDO'}
 
     resolution: bpy.props.EnumProperty(name='Resolution', items=[
@@ -107,8 +107,8 @@ class SPIO_OI_render_world_asset_preview(bpy.types.Operator):
         layout = self.layout
         row = layout.split(factor=0.3)
 
-        row.label(text=f'{len(self.match_worlds)} worlds', icon='WORLD')
-        row.label(text='Need a few minutes')
+        row.label(text=f'{len(self.match_worlds)}', icon='WORLD')
+        row.label(text='This could take a few minutes')
 
         box = layout.box()
         box.use_property_split = True
@@ -156,7 +156,7 @@ class SPIO_OI_render_world_asset_preview(bpy.types.Operator):
 class SPIO_OI_render_material_asset_preview(bpy.types.Operator):
     bl_idname = "spio.render_material_asset_preview"
     bl_label = "Render Material Asset Preview"
-    bl_description = "Save your file first and select the local assets"
+    bl_description = "Save file and select local assets"
     bl_options = {'INTERNAL', 'UNDO'}
 
     resolution: bpy.props.EnumProperty(name='Resolution', items=[
@@ -191,8 +191,8 @@ class SPIO_OI_render_material_asset_preview(bpy.types.Operator):
         layout = self.layout
         row = layout.split(factor=0.3)
 
-        row.label(text=f'{len(self.match_materials)} materials', icon='MATERIAL')
-        row.label(text='Need a few minutes')
+        row.label(text=f'{len(self.match_materials)}', icon='MATERIAL')
+        row.label(text='This could take a few minutes')
 
         box = layout.box()
         box.use_property_split = True
