@@ -19,7 +19,7 @@ from .ops_mark_asset import redraw_window
 #     check_materials: BoolProperty(name='Materials', default=False)
 #     re_generate: bpy.props.BoolProperty(name='Regenerate', description='When there exist preview, regenerate it',
 #                                         default=True)
-#     suffix: StringProperty(name='Remove Suffix',
+#     suffix: StringProperty(name='Ignore Suffix',
 #                            description='Match the image name with suffix removed to the asset name', default='_pv')
 #
 #     @classmethod
@@ -114,7 +114,7 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
     filepaths = None
     re_generate: bpy.props.BoolProperty(name='Overwrite', description='When there exist preview, Overwrite it',
                                         default=True)
-    suffix: StringProperty(name='Remove Suffix',
+    suffix: StringProperty(name='Ignore Suffix',
                            description='Match the image name with suffix removed to the asset name', default='_pv')
 
     @classmethod
@@ -135,7 +135,7 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
 
         self.filepaths = filepaths
 
-        return context.window_manager.invoke_props_dialog(self, width=400)
+        return context.window_manager.invoke_props_dialog(self, width=300)
 
     def execute(self, context):
         current_library_name = context.area.spaces.active.params.asset_library_ref
