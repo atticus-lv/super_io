@@ -464,11 +464,7 @@ class PostProcess():
 
     def open_dir(self, temp_dir):
         if get_pref().post_open_dir:
-            import subprocess
-            if sys.platform == 'darwin':
-                subprocess.check_call(['open', '--', temp_dir])
-            elif sys.platform == 'win32':
-                os.startfile(temp_dir)
+            bpy.ops.wm.path_open(temp_dir)
 
     @staticmethod
     def get_update_files(src_file, temp_dir):
