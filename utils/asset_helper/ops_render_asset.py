@@ -59,10 +59,16 @@ def enum_thumbnails_from_dir(directory, context):
 
 
 def enum_world_render_preset(self, context):
-    dir = os.path.join(os.path.dirname(__file__), "render_scene")
+    dir = os.path.join(os.path.dirname(__file__), "hdr_scene")
     return enum_thumbnails_from_dir(dir, context)
 
 
+def enum_mat_render_preset(self, context):
+    dir = os.path.join(os.path.dirname(__file__), "mat_scene")
+    return enum_thumbnails_from_dir(dir, context)
+
+
+# render world asset preview
 class SPIO_OI_render_world_asset_preview(bpy.types.Operator):
     bl_idname = "spio.render_world_asset_preview"
     bl_label = "Render World Asset Preview"
@@ -117,7 +123,7 @@ class SPIO_OI_render_world_asset_preview(bpy.types.Operator):
     def execute(self, context):
         # WORLD, SOURCEPATH, BLENDEPATH, SIZE, OUTPATH = argv
         scripts_path = os.path.join(os.path.dirname(__file__), 'script_render_world_asset_pv.py')
-        blend_path = os.path.join(os.path.dirname(__file__), 'render_scene', self.scene[:-4] + '.blend')
+        blend_path = os.path.join(os.path.dirname(__file__), 'hdr_scene', self.scene[:-4] + '.blend')
 
         for world in self.match_worlds:
             out_png = os.path.join(
@@ -138,6 +144,93 @@ class SPIO_OI_render_world_asset_preview(bpy.types.Operator):
                 run(cmd)
             except Exception as e:
                 print(f'Render image "{world}" failed:', e)
+
+        bpy.ops.wm.path_open(filepath=os.path.join(os.path.dirname(bpy.data.filepath), 'asset_previews'))
+
+
+        self.report({'INFO'}, f'Finished')
+        return {'FINISHED'}
+
+
+# render material asset preview
+class SPIO_OI_render_material_asset_preview(bpy.types.Operator):
+    bl_idname = "spio.render_material_asset_preview"
+    bl_label = "Render Material Asset Preview"
+    bl_description = "Save your file first and select the local assets"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    resolution: bpy.props.EnumProperty(name='Resolution', items=[
+        ('128', '128', ''),
+        ('256', '256', ''),
+        ('512', '512', ''),
+    ], default='256')
+
+    scene: bpy.props.EnumProperty(name='Scene', items=enum_mat_render_preset)
+
+    overwrite: bpy.props.BoolProperty(name='Overwrite',
+                                      default=True)
+    suffix: bpy.props.StringProperty(name='Suffix', default='_pv')
+
+    filepaths = None
+    clipboard = None
+    match_materials = None
+
+    @classmethod
+    def poll(cls, context):
+        return context.selected_asset_files and bpy.data.filepath != ''
+
+    def invoke(self, context, event):
+        current_library_name = context.area.spaces.active.params.asset_library_ref
+        match_obj = [asset_file.local_id for asset_file in context.selected_asset_files if
+                     current_library_name == "LOCAL"]
+        match_names = [obj.name for obj in match_obj if isinstance(obj, bpy.types.Material)]
+        self.match_materials = match_names
+        return context.window_manager.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.split(factor=0.3)
+
+        row.label(text=f'{len(self.match_materials)} materials', icon='MATERIAL')
+        row.label(text='Need a few minutes')
+
+        box = layout.box()
+        box.use_property_split = True
+        subbox = box.row()
+        subbox.separator(factor=10)
+        subbox.template_icon_view(self, "scene", scale=6, scale_popup=5, show_labels=False)
+        subbox.separator(factor=10)
+        box.prop(self, 'resolution')
+        box.prop(self, 'overwrite')
+        box.prop(self, 'suffix')
+
+    def execute(self, context):
+        # WORLD, SOURCEPATH, BLENDEPATH, SIZE, OUTPATH = argv
+        scripts_path = os.path.join(os.path.dirname(__file__), 'script_render_material_asset_pv.py')
+        blend_path = os.path.join(os.path.dirname(__file__), 'mat_scene', self.scene[:-4] + '.blend')
+
+        for material in self.match_materials:
+            out_png = os.path.join(
+                os.path.join(os.path.dirname(bpy.data.filepath), 'asset_previews',
+                             material + self.suffix + '.' + 'png'))
+            if os.path.exists(out_png) and not self.overwrite: continue
+            try:
+                cmd = [bpy.app.binary_path]
+                cmd.append("--background")
+                cmd.append("--factory-startup")
+                cmd.append("--python")
+                cmd.append(scripts_path)
+                cmd.append('--')
+                cmd.append(material)  # material
+                cmd.append(bpy.data.filepath)  # current file
+                cmd.append(blend_path)  # render scene file
+                cmd.append(self.resolution)
+                cmd.append(out_png)
+                run(cmd)
+            except Exception as e:
+                print(f'Render image "{material}" failed:', e)
+
+        bpy.ops.wm.path_open(filepath=os.path.join(os.path.dirname(bpy.data.filepath), 'asset_previews'))
 
         self.report({'INFO'}, f'Finished')
         return {'FINISHED'}
@@ -171,6 +264,8 @@ def register():
 
     # bpy.utils.register_class(SPIO_OT_render_hdri_preview)
     bpy.utils.register_class(SPIO_OI_render_world_asset_preview)
+    bpy.utils.register_class(SPIO_OI_render_material_asset_preview)
+
     if bpy.app.version > (3, 0, 0):
         bpy.utils.register_class(SPIO_MT_asset_browser_menu)
         bpy.types.ASSETBROWSER_MT_editor_menus.append(asset_browser)
@@ -179,6 +274,8 @@ def register():
 def unregister():
     # bpy.utils.unregister_class(SPIO_OT_render_hdri_preview)
     bpy.utils.unregister_class(SPIO_OI_render_world_asset_preview)
+    bpy.utils.unregister_class(SPIO_OI_render_material_asset_preview)
+
     if bpy.app.version > (3, 0, 0):
         bpy.utils.unregister_class(SPIO_MT_asset_browser_menu)
         bpy.types.ASSETBROWSER_MT_editor_menus.remove(asset_browser)
