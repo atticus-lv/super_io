@@ -38,6 +38,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
 
         for file_path in file_list:
             if os.path.isdir(file_path):
+                self.dir_list.append(file_path)  # add dir list for batch import folder's files
                 continue
             elif not os.path.exists(file_path):
                 self.report({"ERROR"}, f"{file_path} not exist!")
@@ -101,6 +102,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
 
         # no match list
         file_list = self.file_list
+        dir_list = self.dir_list
         # match dict
         match_file_op_dict = dict()
         # match index :exclude from popup importer
@@ -140,6 +142,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
                            # custom pass in
                            'ITEM': ITEM,
                            'file_list': file_list,
+                           'dir_list': dir_list,
                            'match_file_op_dict': match_file_op_dict,
                            },
                           )
@@ -185,7 +188,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
         if len(match_file_op_dict) > 0:
             title = f'Match {self.ext.upper()} import finish (Import {len(match_file_op_dict)} files)'
         else:
-            title = f'Super Import {self.ext.upper()} ({len(remain_list)} files)'
+            title = f'Super Import {self.ext.upper()} ({len(remain_list)} files, {len(self.dir_list)} folder)'
 
         if len(remain_list) > 0:
             # set draw menu
@@ -208,11 +211,15 @@ class SuperImport(IO_Base, bpy.types.Operator):
                     layout.operator('spio.import_model').files = '$$'.join(
                         remain_list)
                 elif ext == 'blend':
-                    pop = PopupImportMenu(file_list=remain_list, context=context)
+                    pop = PopupImportMenu(file_list=remain_list,
+                                          dir_list=dir_list,
+                                          context=context)
                     menu = pop.default_blend_menu(return_menu=True)
                     if menu: menu(self, context)
                 else:
-                    pop = PopupImportMenu(file_list=remain_list, context=context)
+                    pop = PopupImportMenu(file_list=remain_list,
+                                          dir_list=dir_list,
+                                          context=context)
                     menu = pop.default_image_menu(return_menu=True)
                     if menu: menu(self, context)
 
@@ -229,7 +236,9 @@ class WM_OT_super_import(SuperImport):
     def import_blend_default(self, context):
         """Import with default popup"""
         from .core import PopupImportMenu
-        popup = PopupImportMenu(file_list=self.file_list, context=context)
+        popup = PopupImportMenu(file_list=self.file_list,
+                                dir_list=self.dir_list,
+                                context=context)
         popup.default_blend_menu()
 
     def import_default(self, context):
@@ -246,7 +255,7 @@ class WM_OT_super_import(SuperImport):
         else:
             from .core import PopupImportMenu
 
-            popup = PopupImportMenu(self.file_list, context)
+            popup = PopupImportMenu(self.file_list, self.dir_list, context)
             popup.default_image_menu()
 
 

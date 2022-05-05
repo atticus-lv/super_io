@@ -301,6 +301,8 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
 
     action = 'file'
 
+class SPIO_OT_import_pbr_directorys_as_materials(bpy.types.Operator):
+    pass
 
 classes = (
     SPIO_OT_import_image_as_reference,

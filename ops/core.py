@@ -304,18 +304,25 @@ class PopupExportMenu():
 
 
 class PopupImportMenu():
-    def __init__(self, file_list, context):
+    def __init__(self, file_list, dir_list, context):
         self.file_list = file_list
+        self.dir_list = dir_list
         self.context = context
 
     def default_image_menu(self, return_menu=False):
         context = self.context
         join_paths = '$$'.join(self.file_list)
 
+        def draw_statistics(cls, context):
+            layout = cls.layout
+            layout.label(text=f'{len(self.file_list)} Files {len(self.dir_list)} Folders')
+            layout.separator()
+
         if context.area.type == "VIEW_3D":
             def draw_3dview_menu(cls, context):
                 layout = cls.layout
                 layout.operator_context = "INVOKE_DEFAULT"
+                draw_statistics(cls, context)
                 # only one blend need to deal with
                 col = layout.column()
                 op = col.operator('spio.import_image_as_reference')
@@ -339,13 +346,14 @@ class PopupImportMenu():
                 return draw_3dview_menu
 
             context.window_manager.popup_menu(draw_3dview_menu,
-                                              title=f'Super Import Image ({len(self.file_list)} files)',
+                                              title=f'Super Import Image',
                                               icon='IMAGE_DATA')
 
         elif context.area.type == "NODE_EDITOR":
             def draw_node_editor_menu(cls, context):
                 layout = cls.layout
                 layout.operator_context = "INVOKE_DEFAULT"
+                draw_statistics(cls, context)
                 # only one blend need to deal with
                 col = layout.column()
                 op = col.operator('spio.import_image_as_nodes')
@@ -360,13 +368,14 @@ class PopupImportMenu():
                 return draw_node_editor_menu
 
             context.window_manager.popup_menu(draw_node_editor_menu,
-                                              title=f'Super Import Image ({len(self.file_list)} files)',
+                                              title=f'Super Import Image',
                                               icon='NODE_SEL')
         elif context.area.type == "FILE_BROWSER" and context.area.ui_type == 'ASSETS':
 
             def draw_asset_browser_menu(cls, context):
                 layout = cls.layout
                 layout.operator_context = "INVOKE_DEFAULT"
+                draw_statistics(cls, context)
                 # only one blend need to deal with
                 col = layout.column()
                 col.label(text='Hold Alt to import as asset')
@@ -386,7 +395,7 @@ class PopupImportMenu():
                 return draw_asset_browser_menu
 
             context.window_manager.popup_menu(draw_asset_browser_menu,
-                                              title=f'Super Import Image ({len(self.file_list)} files)',
+                                              title=f'Super Import Image',
                                               icon='IMAGE_DATA')
 
     def default_blend_menu(self, return_menu=False):
@@ -395,10 +404,16 @@ class PopupImportMenu():
         path = self.file_list[0]
         join_paths = '$$'.join(self.file_list)
 
+        def draw_statistics(cls, context):
+            layout = cls.layout
+            layout.label(text=f'{len(self.file_list)} Files {len(self.dir_list)} Folders')
+            layout.separator()
+
         def draw_blend_menu(cls, context):
             pref = get_pref()
             layout = cls.layout
             layout.operator_context = "INVOKE_DEFAULT"
+            draw_statistics(cls, context)
             # only one blend need to deal with
             if len(self.file_list) == 1:
                 open = layout.operator('spio.open_blend', icon='FILEBROWSER')
@@ -451,7 +466,7 @@ class PopupImportMenu():
             return draw_blend_menu
         # popup
         context.window_manager.popup_menu(draw_blend_menu,
-                                          title=f'Super Import Blend ({len(self.file_list)} files)',
+                                          title=f'Super Import Blend',
                                           icon='FILE_BLEND')
 
 

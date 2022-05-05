@@ -22,7 +22,8 @@ class IO_Base(bpy.types.Operator):
     # data
     #################
     clipboard = None  # clipboard data
-    file_list = []  # store clipboard urls for importing
+    file_list = []  # store file urls for importing
+    dir_list = []  # store directory urls for importing
     CONFIGS = None  # config list from user preference
 
     # state
@@ -33,6 +34,7 @@ class IO_Base(bpy.types.Operator):
     # Utils
     ###########
     def restore(self):
+        self.dir_list.clear()
         self.file_list.clear()
         self.clipboard = None
         self.ext = None
