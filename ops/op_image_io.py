@@ -5,23 +5,11 @@ import math
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
 
-class SPIO_OT_import_image(bpy.types.Operator):
-    """Import all image as reference/plane/nodes/world/light
-Alt Click to mark asset(world and light)"""
-
-    bl_idname = 'spio.import_image'
-    bl_label = 'Import Image'
+class image_io:
     bl_options = {'UNDO_GROUPED'}
-
     files: StringProperty()  # list of filepath, join with$$
-    action: EnumProperty(items=[
-        ('REF', 'Reference', ''),
-        ('PLANE', 'PLANE', ''),
-        ('NODES', 'NodeTree', ''),
-        ('PBR_SETUP', 'PBR Set Up', ''),
-        ('WORLD', 'World', ''),
-        ('GOBOS', 'Light Gobos', ''),
-    ])
+
+    action = None
 
     @classmethod
     def poll(_cls, context):
@@ -52,127 +40,197 @@ Alt Click to mark asset(world and light)"""
 
         return image
 
-    def invoke(self, context, event):
-        if self.action == 'NODES':
-            location_X, location_Y = context.space_data.cursor_location
 
-        if self.action == 'PBR_SETUP':
-            # from addon_utils import enable
-            # enable('node_wrangler')
+class SPIO_OT_import_image_as_reference(image_io, bpy.types.Operator):
+    bl_idname = "spio.import_image_as_reference"
+    bl_label = "Import as Reference"
 
-            filepaths = self.files.split('$$')
-            dir = os.path.dirname(filepaths[0]) + '\\'
-            files = [{"name": os.path.basename(filepath)} for filepath in
-                     filepaths]
-
-            # print(filepaths[0])
-            # print(dir)
-            # print(files)
-
-            bpy.ops.node.nw_add_textures_for_principled(
-                filepath=filepaths[0],
-                directory=dir,
-                files=files,
-                relative_path=True)
-
-            return {'FINISHED'}
-
+    def execute(self, context):
         for filepath in self.files.split('$$'):
-            ### Plane
-            if self.action == 'PLANE':
-                bpy.ops.import_image.to_plane(files=[{"name": filepath}])
+            bpy.ops.object.load_reference_image(filepath=filepath)
 
-            ### References Empty
-            elif self.action == 'REF':
-                bpy.ops.object.load_reference_image(filepath=filepath)
-
-            ### Nodes
-            elif self.action == 'NODES':
-                image = self.load_image_by_path(filepath)
-
-                bpy.ops.node.select_all(action='DESELECT')
-                nt = context.space_data.edit_tree
-
-                if context.area.ui_type == 'ShaderNodeTree':
-                    if context.space_data.shader_type == 'WORLD':
-                        node_type = 'ShaderNodeTexEnvironment'
-                    else:
-                        node_type = 'ShaderNodeTexImage'
-                elif context.area.ui_type == 'GeometryNodeTree':
-                    node_type = 'GeometryNodeImageTexture'
-                elif context.area.ui_type == 'CompositorNodeTree':
-                    node_type = 'CompositorNodeImage'
-
-                tex_node = nt.nodes.new(node_type)
-                tex_node.location = location_X, location_Y
-
-                location_Y -= 50
-                location_X += 25
-
-                tex_node.select = True
-                nt.nodes.active = tex_node
-
-                if node_type in {'ShaderNodeTexImage', 'ShaderNodeTexEnvironment', 'CompositorNodeImage'}:
-                    tex_node.image = image
-                elif node_type == 'GeometryNodeImageTexture':
-                    tex_node.inputs['Image'].default_value = image
+        return {'FINISHED'}
 
 
-            # Worlds
-            elif self.action == 'WORLD':
-                # get preset node group
-                cur_dir = os.path.dirname(__file__)
-                node_group_file = os.path.join(cur_dir, 'templates', "World.blend")
+class SPIO_OT_import_image_as_plane(image_io, bpy.types.Operator):
+    bl_idname = "spio.import_image_as_plane"
+    bl_label = "Import as Plane"
 
-                img = self.load_image_by_path(filepath)
+    def execute(self, context):
+        filepaths = self.files.split('$$')
+        dir = os.path.dirname(filepaths[0]) + '\\'
+        files = [{"name": os.path.basename(filepath)} for filepath in
+                 filepaths]
 
-                with bpy.data.libraries.load(node_group_file, link=False) as (data_from, data_to):
-                    setattr(data_to, 'worlds', getattr(data_from, 'worlds'))
+        bpy.ops.import_image.to_plane(files=files, directory=dir,offset= True)
 
-                world = data_to.worlds[0]
-                base, sep, ext = img.name.rpartition('.')
-                world.name = base
+        return {'FINISHED'}
 
-                for node in world.node_tree.nodes:
-                    if node.name == 'Environment Texture':
-                        node.image = img
 
-                if event.alt:
-                    world.asset_mark()
+class SPIO_OT_import_image_as_nodes(image_io, bpy.types.Operator):
+    bl_idname = "spio.import_image_as_nodes"
+    bl_label = "Import as Nodes"
 
-            # Light Gobos
-            elif self.action == 'GOBOS':
-                img = self.load_image_by_path(filepath)
+    def execute(self, context):
+        location_X, location_Y = context.space_data.cursor_location
+        for filepath in self.files.split('$$'):
+            image = self.load_image_by_path(filepath)
 
-                bpy.ops.object.light_add(type='AREA')
-                light = context.object
-                light.name = ".".join(os.path.basename(filepath).split('.')[:-1])  # get file name without extension
+            bpy.ops.node.select_all(action='DESELECT')
+            nt = context.space_data.edit_tree
 
-                d = light.data
-                d.shadow_soft_size = 1  # set a small shadow soft size to get clear shapes
-                d.use_nodes = True
-                d.spread = math.radians(2)  # 2 degrees spread angle
-                nt = d.node_tree
+            if context.area.ui_type == 'ShaderNodeTree':
+                if context.space_data.shader_type == 'WORLD':
+                    node_type = 'ShaderNodeTexEnvironment'
+                else:
+                    node_type = 'ShaderNodeTexImage'
+            elif context.area.ui_type == 'GeometryNodeTree':
+                node_type = 'GeometryNodeImageTexture'
+            elif context.area.ui_type == 'CompositorNodeTree':
+                node_type = 'CompositorNodeImage'
 
-                # create nodes
-                n_emi = nt.nodes['Emission']
+            tex_node = nt.nodes.new(node_type)
+            tex_node.location = location_X, location_Y
 
-                n_img = nt.nodes.new('ShaderNodeTexImage')
-                n_img.location = -200, 300
-                n_img.image = img
+            location_Y -= 50
+            location_X += 25
 
-                n_geo = nt.nodes.new('ShaderNodeNewGeometry')
-                n_geo.location = -400, 300
+            tex_node.select = True
+            nt.nodes.active = tex_node
 
-                # create links
-                nt.links.new(n_geo.outputs[5], n_img.inputs[0])
-                nt.links.new(n_img.outputs[0], n_emi.inputs[1])
+            if node_type in {'ShaderNodeTexImage', 'ShaderNodeTexEnvironment', 'CompositorNodeImage'}:
+                tex_node.image = image
+            elif node_type == 'GeometryNodeImageTexture':
+                tex_node.inputs['Image'].default_value = image
 
-                if event.alt:
-                    light.asset_mark()
-                    override = context.copy()
-                    override['id'] = light
-                    bpy.ops.ed.lib_id_load_custom_preview(override, filepath=filepath)
+        return {'FINISHED'}
+
+
+class SPIO_OT_import_image_PBR_setup(image_io, bpy.types.Operator):
+    bl_idname = "spio.import_image_pbr_setup"
+    bl_label = "Import and Setup PBR (Principled)"
+
+    def execute(self, context):
+        # from addon_utils import enable
+        # enable('node_wrangler')
+
+        filepaths = self.files.split('$$')
+        dir = os.path.dirname(filepaths[0]) + '\\'
+        files = [{"name": os.path.basename(filepath)} for filepath in
+                 filepaths]
+
+        # print(filepaths[0])
+        # print(dir)
+        # print(files)
+
+        bpy.ops.node.nw_add_textures_for_principled(
+            filepath=filepaths[0],
+            directory=dir,
+            files=files,
+            relative_path=True)
+
+        return {'FINISHED'}
+
+
+class SPIO_OT_import_image_as_world(image_io, bpy.types.Operator):
+    bl_idname = "spio.import_image_as_world"
+    bl_label = "Import as World"
+
+    def invoke(self, context, event):
+        for filepath in self.files.split('$$'):
+            # get preset node group
+            cur_dir = os.path.dirname(__file__)
+            node_group_file = os.path.join(cur_dir, 'templates', "World.blend")
+
+            img = self.load_image_by_path(filepath)
+
+            with bpy.data.libraries.load(node_group_file, link=False) as (data_from, data_to):
+                setattr(data_to, 'worlds', getattr(data_from, 'worlds'))
+
+            world = data_to.worlds[0]
+            base, sep, ext = img.name.rpartition('.')
+            world.name = base
+
+            for node in world.node_tree.nodes:
+                if node.name == 'Environment Texture':
+                    node.image = img
+
+            if event.alt:
+                world.asset_mark()
+
+        return {'FINISHED'}
+
+
+class SPIO_OT_import_image_as_light_gobos(image_io, bpy.types.Operator):
+    bl_idname = "spio.import_image_as_light_gobos"
+    bl_label = "Import as Light Gobos"
+
+    def invoke(self, context, event):
+        for filepath in self.files.split('$$'):
+            img = self.load_image_by_path(filepath)
+
+            bpy.ops.object.light_add(type='AREA')
+            light = context.object
+            light.name = ".".join(os.path.basename(filepath).split('.')[:-1])  # get file name without extension
+
+            d = light.data
+            d.shadow_soft_size = 1  # set a small shadow soft size to get clear shapes
+            d.use_nodes = True
+            d.spread = math.radians(2)  # 2 degrees spread angle
+            nt = d.node_tree
+
+            # create nodes
+            n_emi = nt.nodes['Emission']
+
+            n_img = nt.nodes.new('ShaderNodeTexImage')
+            n_img.location = -200, 300
+            n_img.image = img
+
+            n_geo = nt.nodes.new('ShaderNodeNewGeometry')
+            n_geo.location = -400, 300
+
+            # create links
+            nt.links.new(n_geo.outputs[5], n_img.inputs[0])
+            nt.links.new(n_img.outputs[0], n_emi.inputs[1])
+
+            if event.alt:
+                light.asset_mark()
+                override = context.copy()
+                override['id'] = light
+                bpy.ops.ed.lib_id_load_custom_preview(override, filepath=filepath)
+
+        return {'FINISHED'}
+
+
+class SPIO_OT_import_image_as_parallax_material(image_io, bpy.types.Operator):
+    bl_idname = "spio.import_image_as_parallax_material"
+    bl_label = "Import as Parallax Material"
+
+    def invoke(self, context, event):
+        for filepath in self.files.split('$$'):
+            cur_dir = os.path.dirname(__file__)
+            node_group_file = os.path.join(cur_dir, 'templates', "ParallaxMapping.blend")
+
+            img = self.load_image_by_path(filepath)
+
+            with bpy.data.libraries.load(node_group_file, link=False) as (data_from, data_to):
+                data_to.materials = ['ParallaxMapping']
+
+            mat = bpy.data.materials['ParallaxMapping']
+            base, sep, ext = img.name.rpartition('.')
+            mat.name = base
+
+            for node in mat.node_tree.nodes:
+                if node.name == '__视差图__':
+                    image_group = node.node_tree
+                    for sub_node in image_group.nodes:
+                        if sub_node.name == 'Image Texture':
+                            sub_node.image = img
+                            break
+                    break
+
+            if event.alt:
+                mat.asset_mark()
 
         return {'FINISHED'}
 
@@ -244,13 +302,26 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
     action = 'file'
 
 
+classes = (
+    SPIO_OT_import_image_as_reference,
+    SPIO_OT_import_image_as_parallax_material,
+    SPIO_OT_import_image_as_nodes,
+    SPIO_OT_import_image_PBR_setup,
+    SPIO_OT_import_image_as_world,
+    SPIO_OT_import_image_as_plane,
+    SPIO_OT_import_image_as_light_gobos,
+
+    SPIO_OT_export_pixel,
+    SPIO_OT_export_image,
+
+)
+
+
 def register():
-    bpy.utils.register_class(SPIO_OT_import_image)
-    bpy.utils.register_class(SPIO_OT_export_pixel)
-    bpy.utils.register_class(SPIO_OT_export_image)
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_OT_import_image)
-    bpy.utils.unregister_class(SPIO_OT_export_pixel)
-    bpy.utils.unregister_class(SPIO_OT_export_image)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

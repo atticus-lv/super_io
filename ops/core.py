@@ -263,11 +263,11 @@ class PopupExportMenu():
                 layout.operator_context = "INVOKE_DEFAULT"
 
                 col = layout.column()
-                col.label(text = 'Save file and select local assets')
+                col.label(text='Save file and select local assets')
 
-                op = col.operator('spio.render_world_asset_preview',icon = 'WORLD')
+                op = col.operator('spio.render_world_asset_preview', icon='WORLD')
 
-                op = col.operator('spio.render_material_asset_preview',icon = 'MATERIAL')
+                op = col.operator('spio.render_material_asset_preview', icon='MATERIAL')
 
             if return_menu:
                 return draw_asset_browser_menu
@@ -318,26 +318,21 @@ class PopupImportMenu():
                 layout.operator_context = "INVOKE_DEFAULT"
                 # only one blend need to deal with
                 col = layout.column()
-                op = col.operator('spio.import_image', text=f'Import as reference')
-                op.action = 'REF'
+                op = col.operator('spio.import_image_as_reference')
                 op.files = join_paths
 
-                op = col.operator('spio.import_image', text=f'Import as Plane')
-                op.action = 'PLANE'
+                op = col.operator('spio.import_image_as_plane')
                 op.files = join_paths
 
                 col.separator()
                 col.label(text='Hold Alt to import as asset')
-                op = col.operator('spio.import_image', text=f'Import as World')
-                op.action = 'WORLD'
+                op = col.operator('spio.import_image_as_world')
                 op.files = join_paths
 
-                op = col.operator('spio.import_image', text=f'Import as Light Gobos')
-                op.action = 'GOBOS'
+                op = col.operator('spio.import_image_as_light_gobos')
                 op.files = join_paths
 
-                op = col.operator('spio.import_image', text=f'Import as Parallax Material')
-                op.action = 'PARALLAX'
+                op = col.operator('spio.import_image_as_parallax_material')
                 op.files = join_paths
 
             if return_menu:
@@ -353,14 +348,13 @@ class PopupImportMenu():
                 layout.operator_context = "INVOKE_DEFAULT"
                 # only one blend need to deal with
                 col = layout.column()
-                op = col.operator('spio.import_image', text=f'Import as Nodes')
-                op.action = 'NODES'
+                op = col.operator('spio.import_image_as_nodes')
                 op.files = join_paths
 
-                col = layout.column()
-                op = col.operator('spio.import_image', text=f'Add Principled Setup')
-                op.action = 'PBR_SETUP'
-                op.files = join_paths
+                if context.area.ui_type == 'ShaderNodeTree':
+                    col = layout.column()
+                    op = col.operator('spio.import_image_pbr_setup')
+                    op.files = join_paths
 
             if return_menu:
                 return draw_node_editor_menu
@@ -376,16 +370,13 @@ class PopupImportMenu():
                 # only one blend need to deal with
                 col = layout.column()
                 col.label(text='Hold Alt to import as asset')
-                op = col.operator('spio.import_image', text=f'Import as World')
-                op.action = 'WORLD'
+                op = col.operator('spio.import_image_as_world')
                 op.files = join_paths
 
-                op = col.operator('spio.import_image', text=f'Import as Light Gobos')
-                op.action = 'GOBOS'
+                op = col.operator('spio.import_image_as_light_gobos')
                 op.files = join_paths
 
-                op = col.operator('spio.import_image', text=f'Import as Parallax Material')
-                op.action = 'PARALLAX'
+                op = col.operator('spio.import_image_as_parallax_material')
                 op.files = join_paths
 
                 col.separator()
