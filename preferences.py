@@ -601,6 +601,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     # addon
     asset_helper: BoolProperty(name='Asset Helper', default=True)
     # asset helper batch import pbr tags
+    show_principled_lists: BoolProperty(name='Show Principled naming tags', default=False)
     principled_tags: bpy.props.PointerProperty(type=NWPrincipledPreferences)
 
     experimental: BoolProperty(name='Experimental', default=False)
@@ -694,6 +695,29 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
             row = box.row(align=True)
             row.prop(self, 'cpp_obj_importer')
+
+            box = box.box()
+            subcol = box.column(align=True)
+            subcol.use_property_split = False
+            subcol.prop(self, 'show_principled_lists',
+                        icon='TRIA_RIGHT' if not self.show_principled_lists else 'TRIA_DOWN', emboss=False)
+            subcol.separator()
+            if self.show_principled_lists:
+                tags = self.principled_tags
+
+                subcol.prop(tags, "base_color")
+                subcol.prop(tags, "sss_color")
+                subcol.prop(tags, "metallic")
+                subcol.prop(tags, "specular")
+                subcol.prop(tags, "rough")
+                subcol.prop(tags, "gloss")
+                subcol.prop(tags, "normal")
+                subcol.prop(tags, "bump")
+                subcol.prop(tags, "displacement")
+                subcol.prop(tags, "transmission")
+                subcol.prop(tags, "emission")
+                subcol.prop(tags, "alpha")
+                subcol.prop(tags, "ambient_occlusion")
 
             box = col.box()
             box.label(text='Export', icon="EXPORT")

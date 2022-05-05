@@ -91,6 +91,7 @@
     "Import as Light Gobos": "导入为纹理灯光",
     "Import as Parallax Material": "导入为视差材质",
     "Import PBR Folders as Materials": "导入PBR文件夹为材质",
+    "Show Principled naming tags": "显示设置PBR导入识别标签",
     "Ignore Suffix": "忽略后缀",
     "Add Suffix": "补全后缀",
     "Match the image name with suffix removed/add to the asset name": "匹配资产名字时候忽略/补全图像后缀名字",

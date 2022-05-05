@@ -106,6 +106,26 @@ class SPIO_OT_import_image_as_nodes(image_io, bpy.types.Operator):
         return {'FINISHED'}
 
 
+def get_active_tree(context):
+    tree = context.space_data.node_tree
+    path = []
+    # Get nodes from currently edited tree.
+    # If user is editing a group, space_data.node_tree is still the base level (outside group).
+    # context.active_node is in the group though, so if space_data.node_tree.nodes.active is not
+    # the same as context.active_node, the user is in a group.
+    # Check recursively until we find the real active node_tree:
+    if tree.nodes.active:
+        while tree.nodes.active != context.active_node:
+            tree = tree.nodes.active.node_tree
+            path.append(tree)
+    return tree, path
+
+
+def get_nodes_links(context):
+    tree, path = get_active_tree(context)
+    return tree.nodes, tree.links
+
+
 class SPIO_OT_import_image_PBR_setup(image_io, bpy.types.Operator):
     bl_idname = "spio.import_image_pbr_setup"
     bl_label = "Import and Setup PBR (Principled)"
@@ -116,18 +136,17 @@ class SPIO_OT_import_image_PBR_setup(image_io, bpy.types.Operator):
 
         filepaths = self.files.split('$$')
         dir = os.path.dirname(filepaths[0]) + '\\'
-        files = [{"name": os.path.basename(filepath)} for filepath in
-                 filepaths]
+        files = '$$'.join([os.path.basename(filepath) for filepath in filepaths])
 
         # print(filepaths[0])
         # print(dir)
         # print(files)
 
-        bpy.ops.node.nw_add_textures_for_principled(
-            filepath=filepaths[0],
+        bpy.ops.spio.create_principled_set_up_material(
+            # filepath=filepaths[0],
             directory=dir,
             files=files,
-            relative_path=True)
+            use_context_space=True)
 
         return {'FINISHED'}
 
@@ -314,8 +333,7 @@ class SPIO_OT_import_pbr_folders_as_materials(bpy.types.Operator):
 
         for i, dir in enumerate(dirs):
             # add and set slot
-            print(dir)
-            bpy.ops.spio.create_principled_set_up_material(directory=dir+'/')
+            bpy.ops.spio.create_principled_set_up_material(directory=dir + '/', use_context_space=False)
 
         return {'FINISHED'}
 
@@ -327,6 +345,8 @@ from os import path
 from ..preferences import get_pref
 
 
+# base on node wrangler
+
 class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
     bl_idname = "spio.create_principled_set_up_material"
     bl_label = "Principled Texture Setup"
@@ -336,6 +356,16 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
     directory: StringProperty(
         name='Directory',
     )
+
+    files: StringProperty()
+
+    relative_path: BoolProperty(
+        name='Relative Path',
+        description='Set the file path relative to the blend file, when possible',
+        default=True
+    )
+
+    use_context_space: BoolProperty(default=False)
 
     def create_material(self, name):
         mat = bpy.data.materials.new(name=name)
@@ -348,16 +378,23 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
 
     def execute(self, context):
         # create material
-        mat = self.create_material(name=os.path.basename(self.directory[:-1]))
-        nodes, links = self.get_mat_nodes_links(mat)
+        if self.use_context_space != '':
+            nodes, links = get_nodes_links(context)
+            mat = None
+        else:
+            mat = self.create_material(name=os.path.basename(self.directory[:-1]))
+            nodes, links = self.get_mat_nodes_links(mat)
 
-        # set active node
-        for node in nodes:
-            if node.bl_idname == 'ShaderNodeBsdfPrincipled':
-                nodes.active = node
-                break
+            # set active node
+            for node in nodes:
+                if node.bl_idname == 'ShaderNodeBsdfPrincipled':
+                    nodes.active = node
+                    break
 
         active_node = nodes.active
+        if not active_node or active_node.bl_idname != 'ShaderNodeBsdfPrincipled':
+            self.report({'ERROR'}, 'No Principled BSDF node is active')
+            return {'CANCELLED'}
 
         # Helper_functions
         def split_into__components(fname):
@@ -401,15 +438,24 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
 
         # Look through texture_types and set value as filename of first matched file
         def match_files_to_socket_names(directory):
+
+            def is_matches(fname):
+                filenamecomponents = split_into__components(fname)
+                matches = set(sname[1]).intersection(set(filenamecomponents))
+                # TODO: ignore basename (if texture is named "fancy_metal_nor", it will be detected as metallic map, not normal map)
+                if matches:
+                    sname[2] = fname
+                    return True
+
             for sname in socketnames:
-                for file in os.listdir(directory):
-                    fname = file
-                    filenamecomponents = split_into__components(fname)
-                    matches = set(sname[1]).intersection(set(filenamecomponents))
-                    # TODO: ignore basename (if texture is named "fancy_metal_nor", it will be detected as metallic map, not normal map)
-                    if matches:
-                        sname[2] = fname
-                        break
+                if self.files != '':
+                    for fname in self.files.split('$$'):
+                        if is_matches(fname):
+                            break
+                else:
+                    for file in os.listdir(directory):
+                        if is_matches(file):
+                            break
 
         match_files_to_socket_names(self.directory)
         # Remove socketnames without found files
@@ -422,12 +468,12 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
 
         # Don't override path earlier as os.path is used to check the absolute path
         import_path = self.directory
-        # if self.relative_path:
-        #     if bpy.data.filepath:
-        #         try:
-        #             import_path = bpy.path.relpath(self.directory)
-        #         except ValueError:
-        #             pass
+        if self.relative_path:
+            if bpy.data.filepath:
+                try:
+                    import_path = bpy.path.relpath(self.directory)
+                except ValueError:
+                    pass
 
         # Add found images
         print('\nMatched Textures:')
@@ -593,8 +639,10 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
         active_node.select = False
         nodes.update()
         links.update()
-        mat.node_tree.update_tag()
-
+        if mat:
+            mat.node_tree.update_tag()
+        else:
+            nodes.id_data.update_tag()
         return {'FINISHED'}
 
 
