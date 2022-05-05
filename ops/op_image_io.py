@@ -357,14 +357,15 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
         name='Directory',
     )
 
-    files: StringProperty()
-
     relative_path: BoolProperty(
         name='Relative Path',
         description='Set the file path relative to the blend file, when possible',
         default=True
     )
 
+    # file name combine with $$ to split files
+    files: StringProperty()
+    # to check is single mode or batch mode(multiple dirs)
     use_context_space: BoolProperty(default=False)
 
     def create_material(self, name):
@@ -380,7 +381,6 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
         # create material
         if self.use_context_space != '':
             nodes, links = get_nodes_links(context)
-            mat = None
         else:
             mat = self.create_material(name=os.path.basename(self.directory[:-1]))
             nodes, links = self.get_mat_nodes_links(mat)
@@ -436,25 +436,24 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
             ['Ambient Occlusion', tags.ambient_occlusion.split(' '), None],
         ]
 
+        def is_matches(fname, sname):
+            filenamecomponents = split_into__components(fname)
+            matches = set(sname[1]).intersection(set(filenamecomponents))
+            # TODO: ignore basename (if texture is named "fancy_metal_nor", it will be detected as metallic map, not normal map)
+            if matches:
+                sname[2] = fname
+                return True
+
         # Look through texture_types and set value as filename of first matched file
         def match_files_to_socket_names(directory):
-
-            def is_matches(fname):
-                filenamecomponents = split_into__components(fname)
-                matches = set(sname[1]).intersection(set(filenamecomponents))
-                # TODO: ignore basename (if texture is named "fancy_metal_nor", it will be detected as metallic map, not normal map)
-                if matches:
-                    sname[2] = fname
-                    return True
-
             for sname in socketnames:
                 if self.files != '':
                     for fname in self.files.split('$$'):
-                        if is_matches(fname):
+                        if is_matches(fname, sname):
                             break
                 else:
                     for file in os.listdir(directory):
-                        if is_matches(file):
+                        if is_matches(file, sname):
                             break
 
         match_files_to_socket_names(self.directory)
@@ -639,10 +638,7 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
         active_node.select = False
         nodes.update()
         links.update()
-        if mat:
-            mat.node_tree.update_tag()
-        else:
-            nodes.id_data.update_tag()
+        nodes.id_data.update_tag()
         return {'FINISHED'}
 
 

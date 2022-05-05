@@ -46,14 +46,25 @@ Check the document above
 
 > English Log at release panel
 
-### v1.4.3 (WIP)
+### v1.4.4
+
++ blender
+    + 导入
+        + 修复3.1使用新obj导入器的错误
+        + 基于node wrangler的新的pbr设置,可用于导入多个图像文件(设置当前)或导入多个文件夹(设置多个材质)
+        + pbr设置具有默认值,可在偏好设置的io中设置
+    + 资产助手
+        + 批量设置预览的匹配先可设置增添后缀
+        + 面板默认关闭
+
+### v1.4.3 
 
 + blender
     + 资产助手
         + 资产助手的功能融合到spio系统中，现在可以在资产管理器内对选中资产操作
-        + 批量匹配图像现可移除后缀 (Ctrl+Shift+V)
+        + 批量设置预览现可移除后缀 (Ctrl+Shift+V)
         + 现在可渲染hdr预览,带球形反射，平面三材质物体两个预设 (Ctrl+Shift+C)
-        + 现在可渲染材质预览，两个材质球预设 (Ctrl+Shift+C)
+        + 现在可渲染材质预览，三材质球预设 (Ctrl+Shift+C)
 
 ### v1.4.2 (跳过)
 

@@ -686,6 +686,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         col.use_property_split = True
 
         def draw_io():
+            #### Import ####
             box = col.box()
             box.label(text='Import', icon="IMPORT")
             row = box.row(align=True)
@@ -696,6 +697,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             row = box.row(align=True)
             row.prop(self, 'cpp_obj_importer')
 
+            #### PBR Tags ####
             box = box.box()
             subcol = box.column(align=True)
             subcol.use_property_split = False
@@ -718,6 +720,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                 subcol.prop(tags, "emission")
                 subcol.prop(tags, "alpha")
                 subcol.prop(tags, "ambient_occlusion")
+
+            #### Export ####
 
             box = col.box()
             box.label(text='Export', icon="EXPORT")
