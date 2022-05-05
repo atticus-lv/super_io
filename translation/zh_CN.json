@@ -85,8 +85,10 @@
     "Hold Alt to import as asset": "按住Alt来导入为资产",
     "Import as World": "导入为世界",
     "Import as Light Gobos": "导入为纹理灯光",
+    "Import as Parallax Material": "导入为视差材质",
     "Ignore Suffix": "忽略后缀",
-    "Match the image name with suffix removed to the asset name": "匹配资产名字时候忽略图像后缀名字",
+    "Add Suffix": "补全后缀",
+    "Match the image name with suffix removed/add to the asset name": "匹配资产名字时候忽略/补全图像后缀名字",
 
 
     "Export BLEND": "导出BLEND",

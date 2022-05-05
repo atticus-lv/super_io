@@ -336,6 +336,10 @@ class PopupImportMenu():
                 op.action = 'GOBOS'
                 op.files = join_paths
 
+                op = col.operator('spio.import_image', text=f'Import as Parallax Material')
+                op.action = 'PARALLAX'
+                op.files = join_paths
+
             if return_menu:
                 return draw_3dview_menu
 
@@ -378,6 +382,10 @@ class PopupImportMenu():
 
                 op = col.operator('spio.import_image', text=f'Import as Light Gobos')
                 op.action = 'GOBOS'
+                op.files = join_paths
+
+                op = col.operator('spio.import_image', text=f'Import as Parallax Material')
+                op.action = 'PARALLAX'
                 op.files = join_paths
 
                 col.separator()

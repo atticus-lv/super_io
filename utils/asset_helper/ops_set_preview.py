@@ -14,8 +14,13 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
     clipboard = None
     filepaths = None
 
-    suffix: StringProperty(name='Ignore Suffix',
-                           description='Match the image name with suffix removed to the asset name', default='_pv')
+    suffix_type: EnumProperty(name='Type',
+                              items=[
+                                  ('IGNORE', 'Ignore Suffix', ''),
+                                  ('ADD', 'Add Suffix', ''), ], default='IGNORE',description='Match the image name with suffix removed/add to the asset name')
+
+    suffix: StringProperty(name='Suffix',
+                           description='', default='_pv')
 
     @classmethod
     def poll(cls, context):
@@ -57,8 +62,11 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
             if self.suffix == '':
                 name = base
             else:
-                name = base[:-len(self.suffix)]
-                print(name)
+                if self.suffix_type == 'IGNORE':
+                    name = base[:-len(self.suffix)]
+                else:
+                    name = base + self.suffix
+
             if name in match_names:
                 index = match_names.index(name)
                 obj = match_obj[index]
