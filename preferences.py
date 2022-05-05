@@ -542,13 +542,13 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     force_unicode: BoolProperty(name='Force Unicode',
                                 description="Force to use 'utf-8' to decode filepath \nOnly enable when your system coding 'utf-8'",
                                 default=False)
-    cpp_obj_importer: BoolProperty(name='Use C++ obj importer', default=True)
+    cpp_obj_importer: BoolProperty(name='Use C++ obj importer', default=False)
     # addon
     asset_helper: BoolProperty(name='Asset Helper', default=True)
     experimental: BoolProperty(name='Experimental', default=False)
 
     # Export
-    cpp_obj_exporter: BoolProperty(name='Use C++ obj exporter', default=True)
+    cpp_obj_exporter: BoolProperty(name='Use C++ obj exporter', default=False)
     extend_export_menu: BoolProperty(name='Extend Export Menu', default=False)
 
     post_open_dir: BoolProperty(name='Open Dir After Export',

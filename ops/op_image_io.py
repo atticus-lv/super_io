@@ -65,9 +65,9 @@ Alt Click to mark asset(world and light)"""
             files = [{"name": os.path.basename(filepath)} for filepath in
                      filepaths]
 
-            print(filepaths[0])
-            print(dir)
-            print(files)
+            # print(filepaths[0])
+            # print(dir)
+            # print(files)
 
             bpy.ops.node.nw_add_textures_for_principled(
                 filepath=filepaths[0],

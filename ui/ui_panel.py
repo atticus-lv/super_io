@@ -96,6 +96,7 @@ class SPIO_PT_InstallAddon(SidebarSetup, bpy.types.Panel):
 
 class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
     bl_label = 'Asset Helper'
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(self, context):
