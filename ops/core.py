@@ -312,6 +312,7 @@ class PopupImportMenu():
     def default_image_menu(self, return_menu=False):
         context = self.context
         join_paths = '$$'.join(self.file_list)
+        join_dirs = '$$'.join(self.dir_list)
 
         def draw_statistics(cls, context):
             layout = cls.layout
@@ -341,6 +342,10 @@ class PopupImportMenu():
 
                 op = col.operator('spio.import_image_as_parallax_material')
                 op.files = join_paths
+
+                if join_dirs != '':
+                    op = col.operator('spio.import_pbr_folders_as_materials')
+                    op.dirs = join_dirs
 
             if return_menu:
                 return draw_3dview_menu

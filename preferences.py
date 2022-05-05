@@ -499,6 +499,61 @@ class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
         layout.operator('wm.save_userpref', icon='PREFERENCES')
 
 
+class NWPrincipledPreferences(bpy.types.PropertyGroup):
+    base_color: StringProperty(
+        name='Base Color',
+        default='diffuse diff albedo base col color basecolor',
+        description='Naming Components for Base Color maps')
+    sss_color: StringProperty(
+        name='Subsurface Color',
+        default='sss subsurface',
+        description='Naming Components for Subsurface Color maps')
+    metallic: StringProperty(
+        name='Metallic',
+        default='metallic metalness metal mtl',
+        description='Naming Components for metallness maps')
+    specular: StringProperty(
+        name='Specular',
+        default='specularity specular spec spc',
+        description='Naming Components for Specular maps')
+    normal: StringProperty(
+        name='Normal',
+        default='normal nor nrm nrml norm',
+        description='Naming Components for Normal maps')
+    bump: StringProperty(
+        name='Bump',
+        default='bump bmp',
+        description='Naming Components for bump maps')
+    rough: StringProperty(
+        name='Roughness',
+        default='roughness rough rgh',
+        description='Naming Components for roughness maps')
+    gloss: StringProperty(
+        name='Gloss',
+        default='gloss glossy glossiness',
+        description='Naming Components for glossy maps')
+    displacement: StringProperty(
+        name='Displacement',
+        default='displacement displace disp dsp height heightmap',
+        description='Naming Components for displacement maps')
+    transmission: StringProperty(
+        name='Transmission',
+        default='transmission transparency',
+        description='Naming Components for transmission maps')
+    emission: StringProperty(
+        name='Emission',
+        default='emission emissive emit',
+        description='Naming Components for emission maps')
+    alpha: StringProperty(
+        name='Alpha',
+        default='alpha opacity',
+        description='Naming Components for alpha maps')
+    ambient_occlusion: StringProperty(
+        name='Ambient Occlusion',
+        default='ao ambient occlusion',
+        description='Naming Components for AO maps')
+
+
 def change_panel_category():
     from .ui import ui_panel
 
@@ -545,6 +600,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     cpp_obj_importer: BoolProperty(name='Use C++ obj importer', default=False)
     # addon
     asset_helper: BoolProperty(name='Asset Helper', default=True)
+    # asset helper batch import pbr tags
+    principled_tags: bpy.props.PointerProperty(type=NWPrincipledPreferences)
+
     experimental: BoolProperty(name='Experimental', default=False)
 
     # Export
@@ -891,6 +949,7 @@ classes = [
 
     ConfigListFilterProperty, PREF_UL_ConfigList,
     SPIO_MT_ConfigIOMenu,
+    NWPrincipledPreferences,
     SPIO_Preference
 ]
 

@@ -62,7 +62,7 @@ class SPIO_OT_import_image_as_plane(image_io, bpy.types.Operator):
         files = [{"name": os.path.basename(filepath)} for filepath in
                  filepaths]
 
-        bpy.ops.import_image.to_plane(files=files, directory=dir,offset= True)
+        bpy.ops.import_image.to_plane(files=files, directory=dir, offset=True)
 
         return {'FINISHED'}
 
@@ -301,8 +301,302 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
 
     action = 'file'
 
-class SPIO_OT_import_pbr_directorys_as_materials(bpy.types.Operator):
-    pass
+
+class SPIO_OT_import_pbr_folders_as_materials(bpy.types.Operator):
+    bl_idname = "spio.import_pbr_folders_as_materials"
+    bl_label = "Import PBR Folders as Materials"
+    bl_options = {'UNDO_GROUPED'}
+
+    dirs: StringProperty(name='Join Dirs')
+
+    def invoke(self, context, event):
+        dirs = self.dirs.split('$$')
+
+        for i, dir in enumerate(dirs):
+            # add and set slot
+            print(dir)
+            bpy.ops.spio.create_principled_set_up_material(directory=dir+'/')
+
+        return {'FINISHED'}
+
+
+import re
+from pathlib import Path
+from mathutils import Vector
+from os import path
+from ..preferences import get_pref
+
+
+class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
+    bl_idname = "spio.create_principled_set_up_material"
+    bl_label = "Principled Texture Setup"
+    bl_description = "Add Texture Node Setup for Principled BSDF"
+    bl_options = {'UNDO'}
+
+    directory: StringProperty(
+        name='Directory',
+    )
+
+    def create_material(self, name):
+        mat = bpy.data.materials.new(name=name)
+        mat.use_nodes = True
+        return mat
+
+    def get_mat_nodes_links(self, material):
+        tree = material.node_tree
+        return tree.nodes, tree.links
+
+    def execute(self, context):
+        # create material
+        mat = self.create_material(name=os.path.basename(self.directory[:-1]))
+        nodes, links = self.get_mat_nodes_links(mat)
+
+        # set active node
+        for node in nodes:
+            if node.bl_idname == 'ShaderNodeBsdfPrincipled':
+                nodes.active = node
+                break
+
+        active_node = nodes.active
+
+        # Helper_functions
+        def split_into__components(fname):
+            # Split filename into components
+            # 'WallTexture_diff_2k.002.jpg' -> ['Wall', 'Texture', 'diff', 'k']
+            # Remove extension
+            fname = path.splitext(fname)[0]
+            # Remove digits
+            fname = ''.join(i for i in fname if not i.isdigit())
+            # Separate CamelCase by space
+            fname = re.sub(r"([a-z])([A-Z])", r"\g<1> \g<2>", fname)
+            # Replace common separators with SPACE
+            separators = ['_', '.', '-', '__', '--', '#']
+            for sep in separators:
+                fname = fname.replace(sep, ' ')
+
+            components = fname.split(' ')
+            components = [c.lower() for c in components]
+            return components
+
+        # Filter textures names for texturetypes in filenames
+        # [Socket Name, [abbreviations and keyword list], Filename placeholder]
+        tags = get_pref().principled_tags
+        normal_abbr = tags.normal.split(' ')
+        bump_abbr = tags.bump.split(' ')
+        gloss_abbr = tags.gloss.split(' ')
+        rough_abbr = tags.rough.split(' ')
+        socketnames = [
+            ['Displacement', tags.displacement.split(' '), None],
+            ['Base Color', tags.base_color.split(' '), None],
+            ['Subsurface Color', tags.sss_color.split(' '), None],
+            ['Metallic', tags.metallic.split(' '), None],
+            ['Specular', tags.specular.split(' '), None],
+            ['Roughness', rough_abbr + gloss_abbr, None],
+            ['Normal', normal_abbr + bump_abbr, None],
+            ['Transmission', tags.transmission.split(' '), None],
+            ['Emission', tags.emission.split(' '), None],
+            ['Alpha', tags.alpha.split(' '), None],
+            ['Ambient Occlusion', tags.ambient_occlusion.split(' '), None],
+        ]
+
+        # Look through texture_types and set value as filename of first matched file
+        def match_files_to_socket_names(directory):
+            for sname in socketnames:
+                for file in os.listdir(directory):
+                    fname = file
+                    filenamecomponents = split_into__components(fname)
+                    matches = set(sname[1]).intersection(set(filenamecomponents))
+                    # TODO: ignore basename (if texture is named "fancy_metal_nor", it will be detected as metallic map, not normal map)
+                    if matches:
+                        sname[2] = fname
+                        break
+
+        match_files_to_socket_names(self.directory)
+        # Remove socketnames without found files
+        socketnames = [s for s in socketnames if s[2]
+                       and path.exists(self.directory + s[2])]
+        if not socketnames:
+            self.report({'INFO'}, 'No matching images found')
+            print('No matching images found')
+            return {'CANCELLED'}
+
+        # Don't override path earlier as os.path is used to check the absolute path
+        import_path = self.directory
+        # if self.relative_path:
+        #     if bpy.data.filepath:
+        #         try:
+        #             import_path = bpy.path.relpath(self.directory)
+        #         except ValueError:
+        #             pass
+
+        # Add found images
+        print('\nMatched Textures:')
+        texture_nodes = []
+        disp_texture = None
+        ao_texture = None
+        normal_node = None
+        roughness_node = None
+        for i, sname in enumerate(socketnames):
+            print(i, sname[0], sname[2])
+
+            # DISPLACEMENT NODES
+            if sname[0] == 'Displacement':
+                disp_texture = nodes.new(type='ShaderNodeTexImage')
+                img = bpy.data.images.load(path.join(import_path, sname[2]))
+                disp_texture.image = img
+                disp_texture.label = 'Displacement'
+                if disp_texture.image:
+                    disp_texture.image.colorspace_settings.is_data = True
+
+                # Add displacement offset nodes
+                disp_node = nodes.new(type='ShaderNodeDisplacement')
+                # Align the Displacement node under the active Principled BSDF node
+                disp_node.location = active_node.location + Vector((100, -700))
+                link = links.new(disp_node.inputs[0], disp_texture.outputs[0])
+
+                # TODO Turn on true displacement in the material
+                # Too complicated for now
+
+                # Find output node
+                output_node = [n for n in nodes if n.bl_idname == 'ShaderNodeOutputMaterial']
+                if output_node:
+                    if not output_node[0].inputs[2].is_linked:
+                        link = links.new(output_node[0].inputs[2], disp_node.outputs[0])
+
+                continue
+
+            # AMBIENT OCCLUSION TEXTURE
+            if sname[0] == 'Ambient Occlusion':
+                ao_texture = nodes.new(type='ShaderNodeTexImage')
+                img = bpy.data.images.load(path.join(import_path, sname[2]))
+                ao_texture.image = img
+                ao_texture.label = sname[0]
+                if ao_texture.image:
+                    ao_texture.image.colorspace_settings.is_data = True
+
+                continue
+
+            if not active_node.inputs[sname[0]].is_linked:
+                # No texture node connected -> add texture node with new image
+                texture_node = nodes.new(type='ShaderNodeTexImage')
+                img = bpy.data.images.load(path.join(import_path, sname[2]))
+                texture_node.image = img
+
+                # NORMAL NODES
+                if sname[0] == 'Normal':
+                    # Test if new texture node is normal or bump map
+                    fname_components = split_into__components(sname[2])
+                    match_normal = set(normal_abbr).intersection(set(fname_components))
+                    match_bump = set(bump_abbr).intersection(set(fname_components))
+                    if match_normal:
+                        # If Normal add normal node in between
+                        normal_node = nodes.new(type='ShaderNodeNormalMap')
+                        link = links.new(normal_node.inputs[1], texture_node.outputs[0])
+                    elif match_bump:
+                        # If Bump add bump node in between
+                        normal_node = nodes.new(type='ShaderNodeBump')
+                        link = links.new(normal_node.inputs[2], texture_node.outputs[0])
+
+                    link = links.new(active_node.inputs[sname[0]], normal_node.outputs[0])
+                    normal_node_texture = texture_node
+
+                elif sname[0] == 'Roughness':
+                    # Test if glossy or roughness map
+                    fname_components = split_into__components(sname[2])
+                    match_rough = set(rough_abbr).intersection(set(fname_components))
+                    match_gloss = set(gloss_abbr).intersection(set(fname_components))
+
+                    if match_rough:
+                        # If Roughness nothing to to
+                        link = links.new(active_node.inputs[sname[0]], texture_node.outputs[0])
+
+                    elif match_gloss:
+                        # If Gloss Map add invert node
+                        invert_node = nodes.new(type='ShaderNodeInvert')
+                        link = links.new(invert_node.inputs[1], texture_node.outputs[0])
+
+                        link = links.new(active_node.inputs[sname[0]], invert_node.outputs[0])
+                        roughness_node = texture_node
+
+                else:
+                    # This is a simple connection Texture --> Input slot
+                    link = links.new(active_node.inputs[sname[0]], texture_node.outputs[0])
+
+                # Use non-color for all but 'Base Color' Textures
+                if not sname[0] in ['Base Color', 'Emission'] and texture_node.image:
+                    texture_node.image.colorspace_settings.is_data = True
+
+            else:
+                # If already texture connected. add to node list for alignment
+                texture_node = active_node.inputs[sname[0]].links[0].from_node
+
+            # This are all connected texture nodes
+            texture_nodes.append(texture_node)
+            texture_node.label = sname[0]
+
+        if disp_texture:
+            texture_nodes.append(disp_texture)
+
+        if ao_texture:
+            # We want the ambient occlusion texture to be the top most texture node
+            texture_nodes.insert(0, ao_texture)
+
+        # Alignment
+        for i, texture_node in enumerate(texture_nodes):
+            offset = Vector((-550, (i * -280) + 200))
+            texture_node.location = active_node.location + offset
+
+        if normal_node:
+            # Extra alignment if normal node was added
+            normal_node.location = normal_node_texture.location + Vector((300, 0))
+
+        if roughness_node:
+            # Alignment of invert node if glossy map
+            invert_node.location = roughness_node.location + Vector((300, 0))
+
+        # Add texture input + mapping
+        mapping = nodes.new(type='ShaderNodeMapping')
+        mapping.location = active_node.location + Vector((-1050, 0))
+        if len(texture_nodes) > 1:
+            # If more than one texture add reroute node in between
+            reroute = nodes.new(type='NodeReroute')
+            texture_nodes.append(reroute)
+            tex_coords = Vector(
+                (texture_nodes[0].location.x, sum(n.location.y for n in texture_nodes) / len(texture_nodes)))
+            reroute.location = tex_coords + Vector((-50, -120))
+            for texture_node in texture_nodes:
+                link = links.new(texture_node.inputs[0], reroute.outputs[0])
+            link = links.new(reroute.inputs[0], mapping.outputs[0])
+        else:
+            link = links.new(texture_nodes[0].inputs[0], mapping.outputs[0])
+
+        # Connect texture_coordiantes to mapping node
+        texture_input = nodes.new(type='ShaderNodeTexCoord')
+        texture_input.location = mapping.location + Vector((-200, 0))
+        link = links.new(mapping.inputs[0], texture_input.outputs[2])
+
+        # Create frame around tex coords and mapping
+        frame = nodes.new(type='NodeFrame')
+        frame.label = 'Mapping'
+        mapping.parent = frame
+        texture_input.parent = frame
+        frame.update()
+
+        # Create frame around texture nodes
+        frame = nodes.new(type='NodeFrame')
+        frame.label = 'Textures'
+        for tnode in texture_nodes:
+            tnode.parent = frame
+        frame.update()
+
+        # Just to be sure
+        active_node.select = False
+        nodes.update()
+        links.update()
+        mat.node_tree.update_tag()
+
+        return {'FINISHED'}
+
 
 classes = (
     SPIO_OT_import_image_as_reference,
@@ -312,6 +606,8 @@ classes = (
     SPIO_OT_import_image_as_world,
     SPIO_OT_import_image_as_plane,
     SPIO_OT_import_image_as_light_gobos,
+    SPIO_OT_import_pbr_folders_as_materials,
+    SPIO_OT_create_principled_set_up_material,
 
     SPIO_OT_export_pixel,
     SPIO_OT_export_image,
