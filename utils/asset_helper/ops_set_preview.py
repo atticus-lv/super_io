@@ -14,10 +14,16 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
     clipboard = None
     filepaths = None
 
+    match_type: EnumProperty(name='Match Type',
+                             items=[
+                                 ('NAME', 'Name', ''),
+                                 ('NONE', 'None', ''), ])
+
     suffix_type: EnumProperty(name='Type',
                               items=[
                                   ('IGNORE', 'Ignore Suffix', ''),
-                                  ('ADD', 'Add Suffix', ''), ], default='IGNORE',description='Match the image name with suffix removed/add to the asset name')
+                                  ('ADD', 'Add Suffix', ''), ], default='IGNORE',
+                              description='Match the image name with suffix removed/add to the asset name')
 
     suffix: StringProperty(name='Suffix',
                            description='', default='_pv')
@@ -25,6 +31,16 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         return context.selected_asset_files
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.prop(self, 'match_type',expand = True)
+        if self.match_type == 'NAME':
+            layout.prop(self, 'suffix_type')
+            layout.prop(self, 'suffix')
+        else:
+            layout.label(text='Selected assets will be set to the same preview',icon = 'ERROR')
 
     def invoke(self, context, event):
         self.clipboard = None
@@ -40,7 +56,7 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
 
         self.filepaths = filepaths
 
-        return context.window_manager.invoke_props_dialog(self, width=300)
+        return context.window_manager.invoke_props_dialog(self, width=400)
 
     def execute(self, context):
         current_library_name = context.area.spaces.active.params.asset_library_ref
@@ -55,25 +71,31 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
         # print(f"{asset_fullpath} is selected in the asset browser.")
         # print(f"It is located in a user library named '{current_library_name}'")
 
-        for path in self.filepaths:
-            basename = os.path.basename(path)
-            base, sep, ext = basename.rpartition('.')
-
-            if self.suffix == '':
-                name = base
-            else:
-                if self.suffix_type == 'IGNORE':
-                    name = base[:-len(self.suffix)]
-                else:
-                    name = base + self.suffix
-
-            if name in match_names:
-                index = match_names.index(name)
-                obj = match_obj[index]
-                # get asset data
+        if self.match_type == 'NONE':
+            for obj in match_obj:
                 override = context.copy()
                 override['id'] = obj
-                bpy.ops.ed.lib_id_load_custom_preview(override, filepath=path)
+                bpy.ops.ed.lib_id_load_custom_preview(override, filepath=self.filepaths[0])
+        else:
+            for path in self.filepaths:
+                basename = os.path.basename(path)
+                base, sep, ext = basename.rpartition('.')
+
+                if self.suffix == '':
+                    name = base
+                else:
+                    if self.suffix_type == 'IGNORE':
+                        name = base[:-len(self.suffix)]
+                    else:
+                        name = base + self.suffix
+
+                if name in match_names:
+                    index = match_names.index(name)
+                    obj = match_obj[index]
+                    # get asset data
+                    override = context.copy()
+                    override['id'] = obj
+                    bpy.ops.ed.lib_id_load_custom_preview(override, filepath=path)
 
         redraw_window()
 

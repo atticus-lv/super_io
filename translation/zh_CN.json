@@ -78,7 +78,7 @@
     "Set from Clipboard Images": "从剪贴板图像设置",
     "Snapshot Active Object": "为激活项物体截图",
     "Generate selected asset' preview from clipboard images (match by name)": "从剪贴板图像设置资产的预览图 (根据名称匹配)",
-    "Save file and select local assets": "保存文件并选择本地资产",
+    "Select local assets and save file": "选择本地资产并保存文件",
     "Render World Asset Preview": "渲染世界资产预览",
     "Render Material Asset Preview": "渲染材质资产预览",
     "Set Preview to Selected Assets": "为选定的资产设置预览",
@@ -95,6 +95,8 @@
     "Ignore Suffix": "忽略后缀",
     "Add Suffix": "补全后缀",
     "Match the image name with suffix removed/add to the asset name": "匹配资产名字时候忽略/补全图像后缀名字",
+    "Selected assets will be set to the same preview": "选中的资产都将设置为相同的预览",
+    "Match Type": "匹配类型",
 
 
     "Export BLEND": "导出BLEND",
