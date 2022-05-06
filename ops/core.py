@@ -316,36 +316,38 @@ class PopupImportMenu():
 
         def draw_statistics(cls, context):
             layout = cls.layout
-            layout.label(text=f'{len(self.file_list)} Files {len(self.dir_list)} Folders')
             layout.separator()
+            layout.label(text=f'{len(self.file_list)} Files {len(self.dir_list)} Folders')
 
         if context.area.type == "VIEW_3D":
             def draw_3dview_menu(cls, context):
                 layout = cls.layout
                 layout.operator_context = "INVOKE_DEFAULT"
-                draw_statistics(cls, context)
                 # only one blend need to deal with
                 col = layout.column()
-                op = col.operator('spio.import_image_as_reference')
-                op.files = join_paths
+                if join_paths != '':
+                    op = col.operator('spio.import_image_as_reference')
+                    op.files = join_paths
 
-                op = col.operator('spio.import_image_as_plane')
-                op.files = join_paths
+                    op = col.operator('spio.import_image_as_plane')
+                    op.files = join_paths
 
-                col.separator()
-                col.label(text='Hold Alt to import as asset')
-                op = col.operator('spio.import_image_as_world')
-                op.files = join_paths
+                    col.separator()
+                    # col.label(text='Hold Alt to import as asset')
+                    op = col.operator('spio.import_image_as_world')
+                    op.files = join_paths
 
-                op = col.operator('spio.import_image_as_light_gobos')
-                op.files = join_paths
+                    op = col.operator('spio.import_image_as_light_gobos')
+                    op.files = join_paths
 
-                op = col.operator('spio.import_image_as_parallax_material')
-                op.files = join_paths
+                    op = col.operator('spio.import_image_as_parallax_material')
+                    op.files = join_paths
 
                 if join_dirs != '':
                     op = col.operator('spio.import_pbr_folders_as_materials')
                     op.dirs = join_dirs
+
+                draw_statistics(cls, context)
 
             if return_menu:
                 return draw_3dview_menu
@@ -361,10 +363,11 @@ class PopupImportMenu():
                 draw_statistics(cls, context)
                 # only one blend need to deal with
                 col = layout.column()
-                op = col.operator('spio.import_image_as_nodes')
-                op.files = join_paths
+                if join_paths != '':
+                    op = col.operator('spio.import_image_as_nodes')
+                    op.files = join_paths
 
-                if context.area.ui_type == 'ShaderNodeTree':
+                if context.area.ui_type == 'ShaderNodeTree' and join_dirs != '':
                     col = layout.column()
                     op = col.operator('spio.import_image_pbr_setup')
                     op.files = join_paths
@@ -383,7 +386,7 @@ class PopupImportMenu():
                 draw_statistics(cls, context)
                 # only one blend need to deal with
                 col = layout.column()
-                col.label(text='Hold Alt to import as asset')
+                # col.label(text='Hold Alt to import as asset')
                 op = col.operator('spio.import_image_as_world')
                 op.files = join_paths
 
@@ -411,14 +414,13 @@ class PopupImportMenu():
 
         def draw_statistics(cls, context):
             layout = cls.layout
-            layout.label(text=f'{len(self.file_list)} Files {len(self.dir_list)} Folders')
             layout.separator()
+            layout.label(text=f'{len(self.file_list)} Files {len(self.dir_list)} Folders')
 
         def draw_blend_menu(cls, context):
             pref = get_pref()
             layout = cls.layout
             layout.operator_context = "INVOKE_DEFAULT"
-            draw_statistics(cls, context)
             # only one blend need to deal with
             if len(self.file_list) == 1:
                 open = layout.operator('spio.open_blend', icon='FILEBROWSER')
@@ -465,6 +467,8 @@ class PopupImportMenu():
                     op.files = join_paths
                     op.sub_path = subpath
                     op.data_type = lib
+
+            draw_statistics(cls, context)
 
         # return for combine drawing
         if return_menu:

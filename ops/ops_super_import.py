@@ -188,7 +188,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
         if len(match_file_op_dict) > 0:
             title = f'Match {self.ext.upper()} import finish (Import {len(match_file_op_dict)} files)'
         else:
-            title = f'Super Import {self.ext.upper()} ({len(remain_list)} files, {len(self.dir_list)} folder)'
+            title = f'Super Import {self.ext.upper()}'
 
         if len(remain_list) > 0:
             # set draw menu

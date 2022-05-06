@@ -152,6 +152,7 @@ class SPIO_OT_import_image_PBR_setup(image_io, bpy.types.Operator):
 
 
 class SPIO_OT_import_image_as_world(image_io, bpy.types.Operator):
+    '''Hold Alt to import as asset'''
     bl_idname = "spio.import_image_as_world"
     bl_label = "Import as World"
 
@@ -181,6 +182,7 @@ class SPIO_OT_import_image_as_world(image_io, bpy.types.Operator):
 
 
 class SPIO_OT_import_image_as_light_gobos(image_io, bpy.types.Operator):
+    '''Hold Alt to import as asset'''
     bl_idname = "spio.import_image_as_light_gobos"
     bl_label = "Import as Light Gobos"
 
@@ -222,6 +224,7 @@ class SPIO_OT_import_image_as_light_gobos(image_io, bpy.types.Operator):
 
 
 class SPIO_OT_import_image_as_parallax_material(image_io, bpy.types.Operator):
+    '''Hold Alt to import as asset'''
     bl_idname = "spio.import_image_as_parallax_material"
     bl_label = "Import as Parallax Material"
 

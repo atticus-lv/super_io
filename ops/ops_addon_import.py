@@ -6,7 +6,6 @@ from bpy.props import StringProperty, BoolProperty, EnumProperty
 
 
 class SPIO_OT_import_addon(bpy.types.Operator):
-    """Import all image as reference (Empty object)"""
     bl_idname = 'spio.import_addon'
     bl_label = 'Import Addon'
 
