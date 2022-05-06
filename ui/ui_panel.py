@@ -26,8 +26,11 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
         pref = get_pref()
 
         row = layout
-        row = row.row(align=True)
+        row = row.row(align = True)
         row.prop(pref, 'ui', expand=True, emboss=False)
+        row.separator()
+        row.menu('SPIO_MT_ConfigIOMenu', text='', icon='FILE_TICK')
+        row.separator(factor = 2)
 
     def draw(self, context):
         layout = self.layout
@@ -147,7 +150,6 @@ panels = (
     SPIO_PT_InstallAddon,
     SPIO_PT_AssetHelper,
 )
-
 
 
 def register():

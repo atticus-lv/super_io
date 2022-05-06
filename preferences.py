@@ -628,11 +628,14 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     def draw(self, context):
         layout = self.layout
 
-        col = layout.row(align=True)
-        col.scale_y = 1.2
-        col.prop(self, 'ui', expand=True)
+        row = layout.row(align=True)
+        row.scale_y = 1.2
+        row.prop(self, 'ui', expand=True)
 
-        col.separator(factor=2)
+        row.separator(factor=1)
+        row.menu(SPIO_MT_ConfigIOMenu.bl_idname, text='', icon='FILE_TICK')
+
+        row.separator(factor=1)
 
         col = layout.column()
         if self.ui == 'SETTINGS':
