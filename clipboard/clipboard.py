@@ -8,6 +8,53 @@ import ctypes.wintypes as w
 
 from locale import getdefaultlocale
 
+import time
+import bpy
+
+TEMP_DIR = ''
+IMAGE_CREATE_TIME_COST = 1  # seconds
+
+
+def get_dir():
+    global TEMP_DIR
+    if TEMP_DIR == '':
+        TEMP_DIR = os.path.join(os.path.expanduser('~'), 'spio_temp')
+        if not "color_helper_temp" in os.listdir(os.path.expanduser('~')):
+            os.makedirs(TEMP_DIR)
+
+    return TEMP_DIR
+
+
+class CheckStringFile():
+    # notice that the extra file only allow one type (one file from string / one image bytes / one file drop list)
+    def __init__(self):
+        self.s = bpy.context.window_manager.clipboard
+
+    def is_svg(self):
+        if self.s.endswith("</svg>"):
+            dir = get_dir()
+            filepath = os.path.join(dir, 'temp.svg')
+            with open(filepath, 'w') as f:
+                f.write(self.s)
+
+            return filepath
+
+    def is_file(self):
+        if os.path.isfile(self.s):
+            return self.s
+
+    def is_dir(self):
+        if os.path.isdir(self.s):
+            return self.s + '/' if not self.s.endswith('/') else self.s
+
+    def is_something(self):
+        if self.is_svg():
+            return self.is_svg()
+        if self.is_file():
+            return self.is_file()
+        if self.is_dir():
+            return self.is_dir()
+
 
 class Clipboard():
     def __init__(self, file_urls=None):
@@ -31,6 +78,40 @@ class Clipboard():
             clipboard = MacClipboard()
             file_list = clipboard.pull()
 
+        # user is copying files
+        if len(file_list) != 0:
+            return file_list
+
+        # user is copying strings
+        if bpy.context.window_manager.clipboard != '':
+            res = CheckStringFile().is_something()
+            if res:
+                file_list.append(res)
+
+            return file_list
+
+        # user is copying image bytes
+        image_path = self.pull_image_from_clipboard()  # create image from clipboard
+
+        # check file exist (if image is not exist, return [])
+        if not os.path.isfile(image_path):
+            return file_list
+
+        # check image create time(pull pixel from clipboard time) is smaller than IMAGE_CREATE_TIME_COST
+        if time.time() - os.path.getmtime(image_path) < IMAGE_CREATE_TIME_COST:
+            file_list.append(image_path)
+            # reload image before it import (if already reload)
+            if os.path.basename(image_path) in bpy.data.images:
+                bpy.data.images[os.path.basename(image_path)].reload()
+            else:
+                for img in bpy.data.images:
+                    if not img.library and not img.packed_file and img.source not in {'VIEWER',
+                                                                                      'GENERATED'}:
+                        path = os.path.abspath(img.filepath)
+                        if path == image_path:
+                            img.reload()
+                            break
+
         return file_list
 
     def push_to_clipboard(self, paths):
@@ -48,6 +129,14 @@ class Clipboard():
             clipboard = MacClipboard()
 
         clipboard.push_pixel_to_clipboard(path)
+
+    def pull_image_from_clipboard(self):
+        if sys.platform == 'win32':
+            clipboard = PowerShellClipboard()
+        elif sys.platform == 'darwin':
+            clipboard = MacClipboard()
+
+        return clipboard.pull_image_from_clipboard()
 
 
 class MacClipboard():
@@ -86,6 +175,22 @@ class MacClipboard():
         for command in commands:
             args += ["-e", command]
         return args
+
+    def pull_image_from_clipboard(self, save_name='spio_cache_image.png'):
+        filepath = os.path.join(get_dir(), save_name)
+
+        commands = [
+            "set pastedImage to "
+            f'(open for access POSIX file "{filepath}" with write permission)',
+            "try",
+            "    write (the clipboard as «class PNGf») to pastedImage",
+            "end try",
+            "close access pastedImage",
+        ]
+        popen = subprocess.Popen(self.get_osascript_args(commands))
+        stdout, stderr = popen.communicate()
+
+        return filepath
 
 
 class PowerShellClipboard:
@@ -158,6 +263,19 @@ class PowerShellClipboard:
         self.file_urls[:] = [file for file in self.file_urls if file != '']
 
         return self.file_urls
+
+    def pull_image_from_clipboard(self, save_name='spio_cache_image.png'):
+        filepath = os.path.join(get_dir(), save_name)
+        if sys.platform == 'win32':
+            image_script = (
+                "$image = Get-Clipboard -Format Image; "
+                f"if ($image) {{ $image.Save('{filepath}'); Write-Output 0 }}"
+            )
+
+            popen, stdout, stderr = self.execute_powershell(image_script)
+
+            # print(filepath, stdout, stderr)
+        return filepath
 
     def execute_powershell(self, script):
         parms = {
