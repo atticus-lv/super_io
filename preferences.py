@@ -674,9 +674,11 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.prop(self, 'experimental')
 
         box = layout.box()
-        box.label(text='Third-party Plugin', icon='SCRIPT')
+        box.label(text='Third-party', icon='SCRIPT')
         box.operator('spio.copy_c4d_plugin', icon='EVENT_C')
         box.operator('spio.copy_houdini_script', icon='EVENT_H')
+        box.label(text='Support Paste Vector Patterns copied from Illustrator', icon='EVENT_A')
+        box.label(text='Support Paste Selection copied from Photoshop', icon='EVENT_P')
 
     def draw_settings(self, context, layout):
         s = layout.row(align=False)

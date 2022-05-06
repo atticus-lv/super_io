@@ -14,7 +14,7 @@
     "Addons":"插件",
     "Asset Helper":"资产助手",
     "Change Log":"更新日志",
-    "Third-party Plugin":"第三方插件",
+    "Third-party":"互导",
     "Get Cinema 4d Plugin":"获取c4d插件",
     "Cinema 4d Plugin has been copied to clipboard!":"c4d插件文件夹已经复制到剪贴板！",
     "Get Houdini Script":"获取houdini脚本",
@@ -111,6 +111,8 @@
     "Show Export": "显示导出",
     "Wrong IO Type / Operator Type": "错误的IO类型/操作符类型",
     "Extend Export Menu": "扩展导出菜单",
+    "Support Paste Vector Patterns copied from Illustrator": "支持导入Illustrator复制的矢量图形",
+    "Support Paste Selection copied from Photoshop": "支持导入Photoshop复制的选区",
 
     "1. If file name not matching this rule": "1. 如果文件名不匹配规则",
     "   It will search for the next config which match": "    将会搜寻下一符合的配置",
