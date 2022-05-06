@@ -367,10 +367,10 @@ class PopupImportMenu():
                     op = col.operator('spio.import_image_as_nodes')
                     op.files = join_paths
 
-                if context.area.ui_type == 'ShaderNodeTree' and join_dirs != '':
-                    col = layout.column()
-                    op = col.operator('spio.import_image_pbr_setup')
-                    op.files = join_paths
+                    if context.area.ui_type == 'ShaderNodeTree':
+                        col = layout.column()
+                        op = col.operator('spio.import_image_pbr_setup')
+                        op.files = join_paths
 
             if return_menu:
                 return draw_node_editor_menu
