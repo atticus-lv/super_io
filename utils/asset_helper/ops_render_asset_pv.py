@@ -150,15 +150,18 @@ class render_asset_preview:
         if hasattr(self, 'displacement'):
             box.prop(self, 'displacement')
 
+        box = layout.box()
         col = box.column(align=True)
+        col.use_property_split = True
         col.prop(self, 'resolution')
         col.prop(self, 'samples')
         col.prop(self, 'denoise')
 
         box = layout.box()
-        box.use_property_split = True
-        box.prop(self, 'overwrite')
-        box.prop(self, 'suffix')
+        col = box.column(align=True)
+        col.use_property_split = True
+        col.prop(self, 'overwrite')
+        col.prop(self, 'suffix')
 
         layout.label(text='This could take a few minutes', icon='INFO')
 
