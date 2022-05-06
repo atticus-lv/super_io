@@ -263,11 +263,16 @@ class PopupExportMenu():
                 layout.operator_context = "INVOKE_DEFAULT"
 
                 col = layout.column()
-                col.label(text='Save file and select local assets')
+                # row = col.row()
+                # row.alert = True
 
                 op = col.operator('spio.render_world_asset_preview', icon='WORLD')
 
                 op = col.operator('spio.render_material_asset_preview', icon='MATERIAL')
+
+                col.separator()
+                col.label(text='Select local assets and save file',icon = 'ERROR')
+
 
             if return_menu:
                 return draw_asset_browser_menu

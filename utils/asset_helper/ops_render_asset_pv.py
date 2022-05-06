@@ -84,7 +84,7 @@ def enum_mat_render_preset(self, context):
 
 
 class render_asset_preview:
-    bl_description = "Save file and select local assets"
+    bl_description = "Select local assets and save file"
     bl_options = {'INTERNAL', 'UNDO'}
 
     render_type = 'WORLD'  # WORLD, MAT
@@ -124,7 +124,7 @@ class render_asset_preview:
         self.match_obj = [obj.name for obj in match_obj if isinstance(obj, getattr(bpy.types, d[self.render_type]))]
 
         if len(match_obj) == 0:
-            self.report({'ERROR'}, 'Save file and select local assets')
+            self.report({'ERROR'}, 'Select local assets and save file')
             return {'CANCELLED'}
 
         return context.window_manager.invoke_props_dialog(self, width=250)
@@ -142,10 +142,14 @@ class render_asset_preview:
         box = layout.box()
         box.use_property_split = True
         subbox = box.row()
-        subbox.alignment= 'RIGHT'
+        subbox.alignment = 'RIGHT'
         subbox.label(text='Style')
         subbox.template_icon_view(self, "scene", scale=6.5, scale_popup=4, show_labels=False)
         subbox.separator(factor=2)
+
+        if hasattr(self, 'displacement'):
+            box.prop(self, 'displacement')
+
         col = box.column(align=True)
         col.prop(self, 'resolution')
         col.prop(self, 'samples')
@@ -156,7 +160,7 @@ class render_asset_preview:
         box.prop(self, 'overwrite')
         box.prop(self, 'suffix')
 
-        layout.label(text='This could take a few minutes',icon = 'INFO')
+        layout.label(text='This could take a few minutes', icon='INFO')
 
 
 # render world asset preview
@@ -209,6 +213,7 @@ class SPIO_OI_render_material_asset_preview(render_asset_preview, bpy.types.Oper
 
     render_type = 'MATERIAL'
     scene: bpy.props.EnumProperty(name='Scene', items=enum_mat_render_preset)
+    displacement: bpy.props.BoolProperty(name='Displacement', default=False)
 
     def draw(self, context):
         layout = self.layout
@@ -233,6 +238,7 @@ class SPIO_OI_render_material_asset_preview(render_asset_preview, bpy.types.Oper
                     'SIZE': self.resolution,
                     'SAMPLES': '64',
                     'DENOISE': '1',
+                    'DISPLACE': '1' if self.displacement else '0',
                 }
                 run_cmd(scripts_path, *args.values())
 

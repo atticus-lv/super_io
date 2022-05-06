@@ -6,11 +6,12 @@ from math import floor
 
 
 def main(argv):
-    MAT, SOURCEPATH, BLENDEPATH, OUTPATH, SIZE, SAMPLES, DENOISE = argv
+    MAT, SOURCEPATH, BLENDEPATH, OUTPATH, SIZE, SAMPLES, DENOISE, DISPLACE = argv
     # convert
     SIZE = int(SIZE)
     SAMPLES = int(SAMPLES)
     DENOISE = True if DENOISE == '1' else False
+    DISPLACE = True if DISPLACE == '1' else False
 
     bpy.ops.wm.open_mainfile(filepath=BLENDEPATH)
 
@@ -36,6 +37,16 @@ def main(argv):
     r.resolution_y = SIZE
     r.resolution_percentage = 100
     r.filepath = OUTPATH
+
+    if DISPLACE:
+        scene.cycles.feature_set = 'EXPERIMENTAL'
+        scene.cycles.dicing_rate = 2
+        scene.cycles.preview_dicing_rate = 2
+        mod = bpy.data.objects['SHADERBALL'].modifiers.new('Subdivision', 'SUBSURF')
+        mod.levels = 1
+        mod.render_levels = 1
+        bpy.context.object.modifiers["Subdivision"].subdivision_type = 'CATMULL_CLARK'
+        bpy.data.objects['SHADERBALL'].cycles.use_adaptive_subdivision = True
 
     bpy.ops.render.render(write_still=True)
 
