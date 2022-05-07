@@ -58,6 +58,7 @@
     "No output socket selected": "没有选中输出插口",
     "No output node found": "没有找到输出节点",
     "No UV map selected": "没有选中UV贴图",
+    "Export Node as Texture": "导出节点为贴图",
 
     "Add Config": "添加配置",
     "Remove Config": "移除配置",

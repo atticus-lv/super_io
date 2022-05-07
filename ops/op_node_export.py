@@ -28,6 +28,13 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
     """Select a node and export it as a texture\nSelect active object first"""
     bl_idname = "spio.export_shader_node_as_texture"
     bl_label = "Export Node as Texture"
+    bl_options = {'INTERNAL'}
+
+    socket: bpy.props.EnumProperty(name="Output",
+                                   items=enum_active_node_sockets,
+                                   options={'SKIP_SAVE'}, )
+    uv_map: bpy.props.EnumProperty(name="UV Map",
+                                   items=enum_uv, )
 
     device: bpy.props.EnumProperty(name='Device',
                                    items=[
@@ -45,12 +52,8 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                        ], default='2048')
 
     custom_resolution: bpy.props.IntProperty(name='Resolution', default=2048, min=2, max=8192)
-    socket: bpy.props.EnumProperty(name="Output",
-                                   items=enum_active_node_sockets,
-                                   options={'SKIP_SAVE'}, )
-    uv_map: bpy.props.EnumProperty(name="UV Map",
-                                   items=enum_uv, )
 
+    samples: bpy.props.IntProperty(name='Samples', default=1, min=1, soft_max=64)
     margin: bpy.props.IntProperty(default=16, name="Margin", step=4)
 
     @classmethod
@@ -64,13 +67,24 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         layout = self.layout
         layout.use_property_split = True
 
+        row = layout.row(align=True)
+        row.use_property_split = False
+        row.alignment = 'LEFT'
+        row.label(text=context.material.name, icon='MATERIAL')
+        row.label(icon='RIGHTARROW')
+        row.label(text=context.active_node.name, icon='NODE')
+        row.label(icon='RIGHTARROW')
+        row.label(text=self.socket, icon='NODE_SEL')
+        layout.separator(factor=0.5)
+
         box = layout.box()
-        box.label(text=context.active_node.name, icon='NODE')
         box.prop(self, "socket")
         box.prop(self, "uv_map")
 
         box = layout.box()
         box.prop(self, "device")
+        box.prop(self, "samples")
+        box.separator(factor=0.5)
         box.prop(self, "resolution")
         if self.resolution == 'CUSTOM':
             box.prop(self, "custom_resolution")
@@ -138,6 +152,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         bake_img_node = self.bake(context, active_node,
                                   resolution=resolution,
                                   device=self.device,
+                                  samples=self.samples,
                                   bake_type=bake_type)
 
         # restore
@@ -156,7 +171,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
 
         return {'FINISHED'}
 
-    def bake(self, context, active_node, resolution='2048', device='GPU', bake_type="EMIT"):
+    def bake(self, context, active_node, resolution='2048', device='GPU', samples=1, bake_type="EMIT"):
         nodes, links = get_nodes_links(context)
 
         image_name = context.material.name + "_" + active_node.name + "_" + resolution
@@ -194,7 +209,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             context.scene.render.bake.use_pass_indirect = True
 
         context.scene.render.engine = 'CYCLES'
-        context.scene.cycles.samples = 1
+        context.scene.cycles.samples = samples
         context.scene.cycles.device = device
 
         bpy.ops.object.bake(type='EMIT')
