@@ -53,6 +53,11 @@
     "Add Tag to Selected Assets": "为选中的资产添加标签",
     "Remove Tag from Selected Assets": "从选中的资产中移除标签",
     "Add Author to Selected Assets": "为选中的资产添加作者",
+    "Select a node and export it as a texture\\nSelect active object first": "选择一个节点并导出为贴图\\n请先选择一个活动的对象",
+
+    "No output socket selected": "没有选中输出插口",
+    "No output node found": "没有找到输出节点",
+    "No UV map selected": "没有选中UV贴图",
 
     "Add Config": "添加配置",
     "Remove Config": "移除配置",
@@ -81,6 +86,7 @@
     "Select local assets and save file": "选择本地资产并保存文件",
     "Select local assets!": "请选择本地资产!",
     "File have been change, save it first!": "文件已经被更改，请先保存文件!",
+    "Save your file first!": "请先保存文件!",
     "Render World Asset Preview": "渲染世界资产预览",
     "Render Material Asset Preview": "渲染材质资产预览",
     "Set Preview to Selected Assets": "为选定的资产设置预览",

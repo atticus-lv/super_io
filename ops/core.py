@@ -272,13 +272,23 @@ class PopupExportMenu():
 
                 op = col.operator('spio.render_material_asset_preview', icon='MATERIAL')
 
-
             if return_menu:
                 return draw_asset_browser_menu
 
             context.window_manager.popup_menu(draw_asset_browser_menu,
                                               title=f'Super Export: ({len(context.selected_asset_files)} assets to render)',
                                               icon='IMAGE_DATA')
+        elif context.area.type == 'NODE_EDITOR':
+            def draw_shader_menu(cls, context):
+                layout = cls.layout
+                layout.operator_context = "INVOKE_DEFAULT"
+
+                # if context.area.ui_type == 'ShaderNodeTree':
+                col = layout.column()
+                col.operator('spio.export_shader_node_as_texture')
+
+            if return_menu: return draw_shader_menu
+            context.window_manager.popup_menu(draw_shader_menu, tile=f'Super Export Node', icon='NODE')
 
     def default_blend_menu(self, return_menu=False):
         context = self.context

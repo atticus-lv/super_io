@@ -112,6 +112,9 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
                 menu = pop.default_image_menu(return_menu=True)
             elif context.area.type == 'FILE_BROWSER' and context.area.ui_type == 'ASSETS':
                 menu = pop.default_image_menu(return_menu=True)
+            elif context.area.type == 'NODE_EDITOR':
+                if context.area.ui_type == 'ShaderNodeTree':
+                    menu = pop.default_image_menu(return_menu=True)
 
             # draw menu
             if menu: menu(self, context)
