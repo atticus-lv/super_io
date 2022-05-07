@@ -100,6 +100,7 @@
 
 
     "Export BLEND": "导出BLEND",
+    "Import IES": "导入IES",
     "No update available (Network error or using a dev version)": "没有可用的更新 (网络错误或使用开发版本)",
 
     "Force Unicode": "强制使用Unicode",
@@ -146,17 +147,17 @@
     "Import world from a single file and set it as context world": "从单个文件导入世界并设置为当前世界",
     "Install Addon (.py/.zip)": "导入插件 (.py/.zip)",
 
-    "Append Materials": "追加材质",
-    "Append Collections": "追加集合",
-    "Append Node Groups": "追加节点组",
-    "Append Objects": "追加物体",
-    "Append Worlds": "追加世界环境",
+    "Append All Materials": "追加全部材质",
+    "Append All Collections": "追加全部集合",
+    "Append All Node Groups": "追加全部节点组",
+    "Append All Objects": "追加全部物体",
+    "Append All Worlds": "追加全部世界环境",
 
-    "Link Materials": "关联材质",
-    "Link Collections": "关联集合",
-    "Link Node Groups": "关联节点组",
-    "Link Objects": "关联物体",
-    "Link Worlds": "关联世界环境",
+    "Link All Materials": "关联全部材质",
+    "Link All Collections": "关联全部集合",
+    "Link All Node Groups": "关联全部节点组",
+    "Link All Objects": "关联全部物体",
+    "Link All Worlds": "关联全部世界环境",
 
     "This is a plugin suitable for c4d R23+": "这是一个适用于c4d R23以上的插件",
     "After clicking confirm, the plugin folder will be copied to the clipboard for pasting": "点击确认后插件文件夹将复制到剪切板以供黏贴",
