@@ -124,7 +124,12 @@ class render_asset_preview:
         self.match_obj = [obj.name for obj in match_obj if isinstance(obj, getattr(bpy.types, d[self.render_type]))]
 
         if len(match_obj) == 0:
-            self.report({'ERROR'}, 'Select local assets and save file')
+            self.report({'ERROR'}, 'Select local assets!')
+            return {'CANCELLED'}
+
+        elif bpy.data.is_dirty:
+            self.report({'ERROR'},'File have been change, save it first!')
+
             return {'CANCELLED'}
 
         return context.window_manager.invoke_props_dialog(self, width=250)

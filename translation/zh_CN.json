@@ -79,6 +79,8 @@
     "Snapshot Active Object": "为激活项物体截图",
     "Generate selected asset' preview from clipboard images (match by name)": "从剪贴板图像设置资产的预览图 (根据名称匹配)",
     "Select local assets and save file": "选择本地资产并保存文件",
+    "Select local assets!": "请选择本地资产!",
+    "File have been change, save it first!": "文件已经被更改，请先保存文件!",
     "Render World Asset Preview": "渲染世界资产预览",
     "Render Material Asset Preview": "渲染材质资产预览",
     "Set Preview to Selected Assets": "为选定的资产设置预览",
@@ -100,7 +102,7 @@
 
 
     "Export BLEND": "导出BLEND",
-    "Import IES": "导入IES",
+    "Import IES (.ies)": "导入IES",
     "No update available (Network error or using a dev version)": "没有可用的更新 (网络错误或使用开发版本)",
 
     "Force Unicode": "强制使用Unicode",

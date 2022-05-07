@@ -266,12 +266,11 @@ class PopupExportMenu():
                 # row = col.row()
                 # row.alert = True
 
+                col.alert = True if bpy.data.is_dirty else False
+
                 op = col.operator('spio.render_world_asset_preview', icon='WORLD')
 
                 op = col.operator('spio.render_material_asset_preview', icon='MATERIAL')
-
-                col.separator()
-                col.label(text='Select local assets and save file',icon = 'ERROR')
 
 
             if return_menu:
