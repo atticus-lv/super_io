@@ -257,7 +257,7 @@ class SPIO_OT_import_image_as_parallax_material(image_io, bpy.types.Operator):
         return {'FINISHED'}
 
 
-from ..clipboard.clipboard import Clipboard as Clipboard
+from ..clipboard.clipboard import Clipboard as Clipboard, get_dir
 
 
 class ImageCopyDefault:
@@ -289,7 +289,7 @@ class ImageCopyDefault:
 
     def execute(self, context):
         active_image = context.area.spaces.active.image
-        image_path = os.path.join(bpy.app.tempdir, f'{active_image.name}.png')
+        image_path = os.path.join(get_dir(), active_image.name + '.png')
 
         self.set_format()
 

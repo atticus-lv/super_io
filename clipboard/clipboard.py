@@ -176,8 +176,9 @@ class MacClipboard():
             args += ["-e", command]
         return args
 
-    def pull_image_from_clipboard(self, save_name='spio_cache_image.png'):
-        filepath = os.path.join(get_dir(), save_name)
+    def pull_image_from_clipboard(self, save_name='spio_from_clipboard.png'):
+        ts = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
+        filepath = os.path.join(get_dir(), ts + '.' + save_name)
 
         commands = [
             "set pastedImage to "
@@ -264,8 +265,10 @@ class PowerShellClipboard:
 
         return self.file_urls
 
-    def pull_image_from_clipboard(self, save_name='spio_cache_image.png'):
-        filepath = os.path.join(get_dir(), save_name)
+    def pull_image_from_clipboard(self, save_name='spio_from_clipboard.png'):
+        ts = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
+        filepath = os.path.join(get_dir(), ts + '.' + save_name)
+
         if sys.platform == 'win32':
             image_script = (
                 "$image = Get-Clipboard -Format Image; "
