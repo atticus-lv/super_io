@@ -283,9 +283,14 @@ class PopupExportMenu():
                 layout = cls.layout
                 layout.operator_context = "INVOKE_DEFAULT"
 
-                # if context.area.ui_type == 'ShaderNodeTree':
                 col = layout.column()
-                col.operator('spio.export_shader_node_as_texture')
+
+                if context.area.ui_type == 'ShaderNodeTree':
+                    col.operator('spio.export_shader_node_as_texture')
+                elif context.area.ui_type == 'GeometryNodeTree':
+                    col.operator('spio.mark_active_tree_as_asset')
+
+                col.operator('spio.mark_node_group_as_asset')
 
             if return_menu: return draw_shader_menu
             context.window_manager.popup_menu(draw_shader_menu, tile=f'Super Export Node', icon='NODE')

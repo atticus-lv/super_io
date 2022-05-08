@@ -132,11 +132,59 @@ class SPIO_OT_clear_object_asset(object_asset, bpy.types.Operator):
     clear = True
 
 
+class SPIO_OT_mark_node_group_as_asset(bpy.types.Operator):
+    bl_label = 'Mark Node Group as Asset'
+    bl_idname = 'spio.mark_node_group_as_asset'
+    bl_options = {'UNDO_GROUPED'}
+
+    @classmethod
+    def poll(self, context):
+        return (context.space_data.type == 'NODE_EDITOR' and
+                context.space_data.edit_tree and
+                context.active_node)
+
+    def execute(self, context):
+        node = context.active_node
+        if node.type == 'GROUP':
+            node.node_tree.asset_mark()
+        else:
+            self.report({'ERROR'}, 'Not a group node')
+            return {'CANCELLED'}
+
+        redraw_window()
+
+        return {'FINISHED'}
+
+
+class SPIO_OT_mark_active_tree_as_asset(bpy.types.Operator):
+    bl_label = 'Mark Active Tree as Asset'
+    bl_idname = 'spio.mark_active_tree_as_asset'
+    bl_options = {'UNDO_GROUPED'}
+
+    @classmethod
+    def poll(self, context):
+        return (context.space_data.type == 'NODE_EDITOR' and
+                context.space_data.edit_tree and
+                context.area.ui_type == 'GeometryNodeTree')
+
+    def execute(self, context):
+        tree = context.space_data.edit_tree
+        tree.asset_mark()
+
+        redraw_window()
+
+        return {'FINISHED'}
+
+
 def register():
     bpy.utils.register_class(SPIO_OT_mark_object_asset)
     bpy.utils.register_class(SPIO_OT_clear_object_asset)
+    bpy.utils.register_class(SPIO_OT_mark_node_group_as_asset)
+    bpy.utils.register_class(SPIO_OT_mark_active_tree_as_asset)
 
 
 def unregister():
     bpy.utils.unregister_class(SPIO_OT_mark_object_asset)
     bpy.utils.unregister_class(SPIO_OT_clear_object_asset)
+    bpy.utils.unregister_class(SPIO_OT_mark_node_group_as_asset)
+    bpy.utils.unregister_class(SPIO_OT_mark_active_tree_as_asset)

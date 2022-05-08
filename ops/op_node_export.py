@@ -96,7 +96,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         if bpy.data.filepath == '':
             self.report({'ERROR'}, "Save your file first!")
             return {'CANCELLED'}
-        return context.window_manager.invoke_props_dialog(self)
+        return context.window_manager.invoke_props_dialog(self,width = 350)
 
     def execute(self, context):
         tree, path = get_active_tree(context)
