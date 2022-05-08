@@ -231,7 +231,7 @@ class SPIO_OT_import_image_as_parallax_material(image_io, bpy.types.Operator):
     def invoke(self, context, event):
         for filepath in self.files.split('$$'):
             cur_dir = os.path.dirname(__file__)
-            node_group_file = os.path.join(cur_dir, 'templates', "ParallaxMapping.blend")
+            node_group_file = os.path.join(cur_dir, 'templates', "ParallaxMapping_2022_5_9.blend")
 
             img = self.load_image_by_path(filepath)
 
@@ -243,10 +243,10 @@ class SPIO_OT_import_image_as_parallax_material(image_io, bpy.types.Operator):
             mat.name = base
 
             for node in mat.node_tree.nodes:
-                if node.name == '__视差图__':
+                if node.name == '__IMAGE__':
                     image_group = node.node_tree
                     for sub_node in image_group.nodes:
-                        if sub_node.name == 'Image Texture':
+                        if sub_node.name == '__REPLACE__':
                             sub_node.image = img
                             break
                     break
