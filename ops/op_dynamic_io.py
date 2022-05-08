@@ -40,6 +40,14 @@ class IO_Base(bpy.types.Operator):
         self.ext = None
         self.use_custom_config = False
 
+    def register_dep_classes(self):
+        for cls in self.dep_classes:
+            bpy.utils.register_class(cls)
+
+    def unregister_dep_classes(self):
+        for cls in self.dep_classes:
+            bpy.utils.unregister_class(cls)
+
     def report_time(self, start_time):
         if get_pref().report_time: self.report({"INFO"},
                                                f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')

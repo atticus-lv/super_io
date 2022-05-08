@@ -96,8 +96,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
     # Import Method (Popup)
     def import_custom_dynamic(self, context):
         # unregister_class
-        for cls in self.dep_classes:
-            bpy.utils.unregister_class(cls)
+        self.unregister_dep_classes()
         self.dep_classes.clear()
 
         # no match list
@@ -152,8 +151,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
             self.dep_classes.append(op_cls)
 
         # register
-        for cls in self.dep_classes:
-            bpy.utils.register_class(cls)
+        self.register_dep_classes()
 
         ############################
         # execute
