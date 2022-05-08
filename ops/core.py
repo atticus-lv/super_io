@@ -63,6 +63,8 @@ from ..imexporter.default_addon import importer_addon
 
 
 class ConfigItemHelper():
+    '''This class accept the item from config helper, and access the specific item settings'''
+
     def __init__(self, item):
         self.item = item
 
@@ -81,9 +83,6 @@ class ConfigItemHelper():
             self.__setattr__('prop_list', ops_config)
 
     def is_config_item_poll(self, context_area_type):
-        if not self.item.use_config:
-            return False
-
         if get_pref().experimental:
             return self.item.context_area == bpy.context.area.type
 
@@ -167,9 +166,10 @@ class ConfigItemHelper():
         return match_files
 
 
-# export config to json file
-# import json file as config
 class ConfigHelper():
+    '''This class is to check config in the whole preferences
+    and also to export config to json file/import json file as config'''
+
     def __init__(self, check_use=False, filter=None, io_type="IMPORT"):
         pref_config = get_pref().config_list
 
@@ -179,20 +179,6 @@ class ConfigHelper():
         for config_list_index, item in enumerate(pref_config):
             # config dict
             config = dict()
-            # get define property
-            for key in item.__annotations__.keys():
-                value = getattr(item, key)
-                if key != 'prop_list':
-                    config[key] = value
-                # prop list
-                ops_config = dict()
-                if len(item.prop_list) != 0:
-                    for prop_index, prop_item in enumerate(item.prop_list):
-                        prop, value = prop_item.name, prop_item.value
-                        # skip if the prop is not filled
-                        if prop == '' or value == '': continue
-                        ops_config[prop] = convert_value(value)
-                config['prop_list'] = ops_config
 
             if io_type == 'IMPORT' and self.is_import_config(config, check_use, filter):
                 # check config dict
@@ -210,17 +196,14 @@ class ConfigHelper():
         self.config_list = config_list
         self.index_list = index_list
 
-    def get_prop_list_from_index(self, index):
-        if index > len(self.config_list) - 1: return None
-
-        config_item = self.config_list[index]
-        return config_item.get('prop_list')
-
     def is_config_qualified(self, config, check_use):
-        return not (config.get('name') == '' and
-                    config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '' and
-                    config.get('extension') == '' and
-                    check_use and config.get('use_config') is False)
+        if check_use and not config.get('use_config'): return False
+
+        if config.get('name') == '' or config.get('extension') == '': return False
+
+        if config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '': return False
+
+        return True
 
     def is_import_config(self, config, check_use, filter, io_type="IMPORT"):
         return (
