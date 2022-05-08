@@ -53,6 +53,8 @@
     "Add Tag to Selected Assets": "为选中的资产添加标签",
     "Remove Tag from Selected Assets": "从选中的资产中移除标签",
     "Add Author to Selected Assets": "为选中的资产添加作者",
+    "Mark Node Group as Asset": "将节点组标记为资产",
+    "Mark Edit Tree as Asset": "将当前编辑的节点树标记为资产",
     "Select a node and export it as a texture\\nSelect active object first": "选择一个节点并导出为贴图\\n请先选择一个活动的对象",
 
     "No output socket selected": "没有选中输出插口",

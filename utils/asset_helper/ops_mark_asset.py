@@ -141,24 +141,21 @@ class SPIO_OT_mark_node_group_as_asset(bpy.types.Operator):
     def poll(self, context):
         return (context.space_data.type == 'NODE_EDITOR' and
                 context.space_data.edit_tree and
-                context.active_node)
+                context.active_node and
+                context.active_node.type == 'GROUP')
 
     def execute(self, context):
         node = context.active_node
-        if node.type == 'GROUP':
-            node.node_tree.asset_mark()
-        else:
-            self.report({'ERROR'}, 'Not a group node')
-            return {'CANCELLED'}
-
+        node.node_tree.asset_mark()
+        self.report({'INFO'}, f'Marked {node.node_tree.name} as asset')
         redraw_window()
 
         return {'FINISHED'}
 
 
-class SPIO_OT_mark_active_tree_as_asset(bpy.types.Operator):
-    bl_label = 'Mark Active Tree as Asset'
-    bl_idname = 'spio.mark_active_tree_as_asset'
+class SPIO_OT_mark_edit_tree_as_asset(bpy.types.Operator):
+    bl_label = 'Mark Edit Tree as Asset'
+    bl_idname = 'spio.mark_edit_tree_as_asset'
     bl_options = {'UNDO_GROUPED'}
 
     @classmethod
@@ -171,6 +168,7 @@ class SPIO_OT_mark_active_tree_as_asset(bpy.types.Operator):
         tree = context.space_data.edit_tree
         tree.asset_mark()
 
+        self.report({'INFO'}, f'Marked {tree.name} as asset')
         redraw_window()
 
         return {'FINISHED'}
@@ -180,11 +178,11 @@ def register():
     bpy.utils.register_class(SPIO_OT_mark_object_asset)
     bpy.utils.register_class(SPIO_OT_clear_object_asset)
     bpy.utils.register_class(SPIO_OT_mark_node_group_as_asset)
-    bpy.utils.register_class(SPIO_OT_mark_active_tree_as_asset)
+    bpy.utils.register_class(SPIO_OT_mark_edit_tree_as_asset)
 
 
 def unregister():
     bpy.utils.unregister_class(SPIO_OT_mark_object_asset)
     bpy.utils.unregister_class(SPIO_OT_clear_object_asset)
     bpy.utils.unregister_class(SPIO_OT_mark_node_group_as_asset)
-    bpy.utils.unregister_class(SPIO_OT_mark_active_tree_as_asset)
+    bpy.utils.unregister_class(SPIO_OT_mark_edit_tree_as_asset)

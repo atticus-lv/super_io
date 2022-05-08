@@ -287,7 +287,7 @@ class PopupExportMenu():
             if context.area.ui_type == 'ShaderNodeTree':
                 col.operator('spio.export_shader_node_as_texture')
             elif context.area.ui_type == 'GeometryNodeTree':
-                col.operator('spio.mark_active_tree_as_asset')
+                col.operator('spio.mark_edit_tree_as_asset')
 
             col.operator('spio.mark_node_group_as_asset')
 
