@@ -112,6 +112,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
             # set config for register
             config_item = get_pref().config_list[index]
             ITEM = ConfigItemHelper(config_item)
+            if not ITEM.is_config_item_poll(context.area.type): continue
 
             match_files = ITEM.get_match_files(file_list)
 
@@ -132,6 +133,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
             # only for register
             config_item = get_pref().config_list[index]
             ITEM = ConfigItemHelper(config_item)
+            if not ITEM.is_config_item_poll(context.area.type): continue
 
             op_cls = type("DynOp",
                           (bpy.types.Operator,),

@@ -65,6 +65,7 @@ from ..imexporter.default_addon import importer_addon
 class ConfigItemHelper():
     def __init__(self, item):
         self.item = item
+
         for key in item.__annotations__.keys():
             value = getattr(item, key)
             if key != 'prop_list':
@@ -78,6 +79,12 @@ class ConfigItemHelper():
                     if prop == '' or value == '': continue
                     ops_config[prop] = convert_value(value)
             self.__setattr__('prop_list', ops_config)
+
+    def is_config_item_poll(self, context_area_type):
+        if get_pref().experimental:
+            return self.item.context_area == bpy.context.area.type
+
+        return True
 
     def get_operator_and_args(self):
         from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
@@ -157,6 +164,8 @@ class ConfigItemHelper():
         return match_files
 
 
+# export config to json file
+# import json file as config
 class ConfigHelper():
     def __init__(self, check_use=False, filter=None, io_type="IMPORT"):
         pref_config = get_pref().config_list
@@ -256,44 +265,48 @@ class PopupExportMenu():
                                                   title=f'Super Export Image ({context.area.spaces.active.image.name})',
                                                   icon='IMAGE_DATA')
 
-        elif context.area.type == "FILE_BROWSER" and context.area.ui_type == 'ASSETS':
+    def default_assets_menu(self, return_menu=False):
+        context = self.context
 
-            def draw_asset_browser_menu(cls, context):
-                layout = cls.layout
-                layout.operator_context = "INVOKE_DEFAULT"
+        def draw_asset_browser_menu(cls, context):
+            layout = cls.layout
+            layout.operator_context = "INVOKE_DEFAULT"
 
-                col = layout.column()
-                # row = col.row()
-                # row.alert = True
+            col = layout.column()
+            # row = col.row()
+            # row.alert = True
 
-                col.alert = True if bpy.data.is_dirty else False
+            col.alert = True if bpy.data.is_dirty else False
 
-                op = col.operator('spio.render_world_asset_preview', icon='WORLD')
+            op = col.operator('spio.render_world_asset_preview', icon='WORLD')
 
-                op = col.operator('spio.render_material_asset_preview', icon='MATERIAL')
+            op = col.operator('spio.render_material_asset_preview', icon='MATERIAL')
 
-            if return_menu:
-                return draw_asset_browser_menu
+        if return_menu:
+            return draw_asset_browser_menu
 
-            context.window_manager.popup_menu(draw_asset_browser_menu,
-                                              title=f'Super Export: ({len(context.selected_asset_files)} assets to render)',
-                                              icon='IMAGE_DATA')
-        elif context.area.type == 'NODE_EDITOR':
-            def draw_shader_menu(cls, context):
-                layout = cls.layout
-                layout.operator_context = "INVOKE_DEFAULT"
+        context.window_manager.popup_menu(draw_asset_browser_menu,
+                                          title=f'Super Export: ({len(context.selected_asset_files)} assets to render)',
+                                          icon='IMAGE_DATA')
 
-                col = layout.column()
+    def default_node_editor_menu(self, return_menu=False):
+        context = self.context
 
-                if context.area.ui_type == 'ShaderNodeTree':
-                    col.operator('spio.export_shader_node_as_texture')
-                elif context.area.ui_type == 'GeometryNodeTree':
-                    col.operator('spio.mark_active_tree_as_asset')
+        def draw_menu(cls, context):
+            layout = cls.layout
+            layout.operator_context = "INVOKE_DEFAULT"
 
-                col.operator('spio.mark_node_group_as_asset')
+            col = layout.column()
 
-            if return_menu: return draw_shader_menu
-            context.window_manager.popup_menu(draw_shader_menu, tile=f'Super Export Node', icon='NODE')
+            if context.area.ui_type == 'ShaderNodeTree':
+                col.operator('spio.export_shader_node_as_texture')
+            elif context.area.ui_type == 'GeometryNodeTree':
+                col.operator('spio.mark_active_tree_as_asset')
+
+            col.operator('spio.mark_node_group_as_asset')
+
+        if return_menu: return draw_menu
+        context.window_manager.popup_menu(draw_menu, tile=f'Super Export Node', icon='NODE')
 
     def default_blend_menu(self, return_menu=False):
         context = self.context

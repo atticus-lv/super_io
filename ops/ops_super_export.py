@@ -58,6 +58,7 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
             # pass in
             config_item = get_pref().config_list[index]
             ITEM = ConfigItemHelper(config_item)
+            if not ITEM.is_config_item_poll(context.area.type): continue
 
             op_cls = type("DynOp",
                           (bpy.types.Operator,),
@@ -111,9 +112,9 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
             elif context.area.type == "IMAGE_EDITOR":
                 menu = pop.default_image_menu(return_menu=True)
             elif context.area.type == 'FILE_BROWSER' and context.area.ui_type == 'ASSETS':
-                menu = pop.default_image_menu(return_menu=True)
+                menu = pop.default_assets_menu(return_menu=True)
             elif context.area.type == 'NODE_EDITOR':
-                menu = pop.default_image_menu(return_menu=True)
+                menu = pop.default_node_editor_menu(return_menu=True)
 
             # draw menu
             if menu: menu(self, context)

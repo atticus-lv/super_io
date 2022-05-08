@@ -176,9 +176,13 @@ class ConfigItemProperty(PropertyGroup):
                           items=[("INVOKE_DEFAULT", "INVOKE_DEFAULT", ''),
                                  ("EXEC_DEFAULT", "EXEC_DEFAULT", ''), ],
                           default='EXEC_DEFAULT')
-    # context_area: EnumProperty(name="Area",
-    #                            items=[("VIEW_3D", "3D View", ''), ],
-    #                            default='VIEW_3D')
+    context_area: EnumProperty(name="Area",
+                               items=[
+                                   ("VIEW_3D", "3D View", ''),
+                                   ("IMAGE_EDITOR", "Image Editor", ''),
+                                   ("NODE_EDITOR", "Node Editor", ''),
+                               ],
+                               default='VIEW_3D')
     prop_list: CollectionProperty(type=OperatorProperty)
 
 
@@ -910,7 +914,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         else:
             box3.alert = False
         box3.prop(item, 'operator_type')
-        # box3.prop(item, 'context_area')
+
+        # context area
+        if get_pref().experimental:
+            box3.prop(item, 'context_area')
 
         if item.operator_type == 'CUSTOM':
             box3.prop(item, 'context')
