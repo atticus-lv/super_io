@@ -1,13 +1,13 @@
 import bpy
 import os
 from subprocess import run
-from ...preferences import get_pref
+from ..preferences import get_pref
 
 
-class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
-    bl_idname = "spio.resize_images_from_clipboard"
-    bl_label = "Generate crop preview image from clipboard"
-    bl_description = "Resize image"
+class SPIO_OT_batch_image_operate(bpy.types.Operator):
+    bl_idname = "spio.batch_image_operate"
+    bl_label = "Batch Image Operate"
+    bl_description = "Convert / Crop / Resize Image from Clipboard"
     bl_options = {'INTERNAL', 'UNDO'}
 
     resolution: bpy.props.EnumProperty(name='Resolution', items=[
@@ -37,7 +37,7 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
     def invoke(self, context, event):
         self.filepaths = None
 
-        from ...clipboard.clipboard import Clipboard
+        from ..clipboard.clipboard import Clipboard
         self.clipboard = Clipboard()
 
         filepaths = self.clipboard.pull_files_from_clipboard(get_pref().force_unicode)
@@ -65,7 +65,10 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
         box.prop(self, 'copy_after_resize')
 
     def execute(self, context):
-        scripts_path = os.path.join(os.path.dirname(__file__), 'script_resize_image.py')
+        scripts_path = os.path.join(os.path.dirname(__file__),
+                                    os.path.pardir,
+                                    'imexporter',
+                                    'script_resize_image.py')
 
         for filepath in self.filepaths:
             name = os.path.basename(filepath)
@@ -94,12 +97,14 @@ class SPIO_OT_resize_images_from_clipboard(bpy.types.Operator):
         # if self.copy_after_resize:
         #     self.clipboard.push_to_clipboard(self.filepaths)
 
+        bpy.ops.wm.path_open(self.filepaths[0])
+
         return {'FINISHED'}
 
 
 def register():
-    bpy.utils.register_class(SPIO_OT_resize_images_from_clipboard)
+    bpy.utils.register_class(SPIO_OT_batch_image_operate)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_OT_resize_images_from_clipboard)
+    bpy.utils.unregister_class(SPIO_OT_batch_image_operate)

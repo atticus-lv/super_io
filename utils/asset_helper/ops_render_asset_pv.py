@@ -128,7 +128,7 @@ class render_asset_preview:
             return {'CANCELLED'}
 
         elif bpy.data.is_dirty:
-            self.report({'ERROR'},'File have been change, save it first!')
+            self.report({'ERROR'}, 'File have been change, save it first!')
 
             return {'CANCELLED'}
 
@@ -271,9 +271,10 @@ class SPIO_MT_asset_browser_menu(bpy.types.Menu):
         layout.operator_context = 'INVOKE_DEFAULT'
         layout.operator('wm.super_import', icon_value=import_icon.get_image_icon_id())
         layout.operator('wm.super_export', icon_value=export_icon.get_image_icon_id())
-        # layout.label(text='Mark Helper', icon='ASSET_MANAGER')
-        # layout.operator('spio.mark_object_asset', text='Mark Selected Objects', icon='ADD')
-        # layout.operator('spio.clear_object_asset', text='Clear Selected Asset', icon='X')
+
+        layout.separator()
+        layout.operator('spio.mark_helper', icon='ASSET_MANAGER')
+
 
 
 def asset_browser(self, context):

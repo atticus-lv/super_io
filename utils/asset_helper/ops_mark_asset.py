@@ -1,7 +1,8 @@
 import os.path
 
 import bpy
-from bpy.props import BoolProperty, StringProperty, EnumProperty, IntProperty
+from bpy.props import BoolProperty, StringProperty, EnumProperty, IntProperty, CollectionProperty
+from bpy.types import PropertyGroup
 
 mark_list = []
 
@@ -15,6 +16,7 @@ def redraw_window():
 def update_mark_list(self, context):
     global mark_list
     mark_list.clear()
+    self.match_obj_list.clear()
 
     def mark_obj():
         for obj in context.selected_objects:
@@ -42,15 +44,33 @@ def update_mark_list(self, context):
     elif self.action == 'WORLD':
         mark_world()
 
+    for obj in mark_list:
+        item = self.match_obj_list.add()
+        item.name = obj.name
+
+        if isinstance(obj, bpy.types.Object):
+            item.icon = 'OBJECT_DATA'
+        elif isinstance(obj, bpy.types.Material):
+            item.icon = 'MATERIAL'
+        elif isinstance(obj, bpy.types.World):
+            item.icon = 'WORLD'
+
     redraw_window()
 
-    return mark_list
+
+class ObjectProps(bpy.types.PropertyGroup):
+    name: StringProperty(name="Name", default="")
+    mark: BoolProperty(name="Mark", default=True)
+    icon: StringProperty(name="Icon", default="OBJECT_DATA")
 
 
-class object_asset(bpy.types.Operator):
+class SPIO_OT_mark_helper(bpy.types.Operator):
+    """Mark Helper"""
+    bl_label = 'Mark Helper'
+    bl_idname = 'spio.mark_helper'
     bl_options = {'UNDO_GROUPED'}
 
-    clear = False
+    clear: BoolProperty(name="Clear Asset", default=False)
 
     action: EnumProperty(name='Type', items=[
         ('OBJECT', 'Object', '', 'OBJECT_DATA', 0),
@@ -59,10 +79,13 @@ class object_asset(bpy.types.Operator):
         ('WORLD', 'World', '', 'WORLD', 4),
     ], update=update_mark_list)
 
+    match_obj_list: CollectionProperty(type=ObjectProps)
+
     def draw(self, context):
         layout = self.layout
-        row = layout.row(align=True)
-        row.prop(self, 'action', expand=True)
+        layout.use_property_split = True
+        layout.prop(self, 'action')
+        layout.prop(self, 'clear', toggle=False)
 
         if self.action == 'OBJECT':
             layout.label(text='Selected objects', icon='INFO')
@@ -71,42 +94,33 @@ class object_asset(bpy.types.Operator):
         elif self.action == 'ALL':
             layout.label(text='Objects and materials separately', icon='INFO')
         elif self.action == 'WORLD':
-            layout.label(text='All worlds', icon='INFO')
+            layout.label(text='Selected worlds', icon='INFO')
 
         col = layout.box().column(align=True)
+        col.alert = self.clear
+
         if len(mark_list) == 0:
             col.label(text='None')
 
-        # split list every 30 items
-        item_lists = []
-        n = 3
-        for i in range(0, len(mark_list), n):
-            item_lists.append(mark_list[i:i + n])
-        for item_list in item_lists:
-            row1 = col.row(align=True)
-            for obj in item_list:
-                sub = row1.column(align=True)
-                if isinstance(obj, bpy.types.Object):
-                    icon = 'OBJECT_DATA'
-                elif isinstance(obj, bpy.types.Material):
-                    icon = 'MATERIAL'
-                elif isinstance(obj, bpy.types.World):
-                    icon = 'WORLD'
-                else:
-                    icon = 'X'
-
-                if self.clear:
-                    if obj.asset_data is None: continue
-                    sub.label(text=obj.name, icon=icon)
-                else:
-                    sub.label(text=obj.name, icon=icon)
+        for item in self.match_obj_list:
+            row = col.row(align=True)
+            row.label(text=item.name, icon=item.icon)
+            row.prop(item, 'mark', text='')
 
     def invoke(self, context, event):
-        l = 450
-        return context.window_manager.invoke_props_dialog(self, width=l)
+        update_mark_list(self, context)
+        return context.window_manager.invoke_props_dialog(self, width=300)
 
     def execute(self, context):
-        for obj in mark_list:
+        for item in self.match_obj_list:
+            if not item.mark: continue
+            if item.icon == 'OBJECT_DATA':
+                obj = bpy.data.objects[item.name]
+            elif item.icon == 'MATERIAL':
+                obj = bpy.data.materials[item.name]
+            elif item.icon == 'WORLD':
+                obj = bpy.data.worlds[item.name]
+
             if not self.clear:
                 obj.asset_mark()
                 obj.asset_generate_preview()
@@ -116,20 +130,6 @@ class object_asset(bpy.types.Operator):
         redraw_window()
 
         return {"FINISHED"}
-
-
-class SPIO_OT_mark_object_asset(object_asset, bpy.types.Operator):
-    """Mark Helper"""
-    bl_label = 'Mark as Asset'
-    bl_idname = 'spio.mark_object_asset'
-    clear = False
-
-
-class SPIO_OT_clear_object_asset(object_asset, bpy.types.Operator):
-    """Clear"""
-    bl_label = 'Clear Selected Asset'
-    bl_idname = 'spio.clear_object_asset'
-    clear = True
 
 
 class SPIO_OT_mark_node_group_as_asset(bpy.types.Operator):
@@ -175,14 +175,14 @@ class SPIO_OT_mark_edit_tree_as_asset(bpy.types.Operator):
 
 
 def register():
-    bpy.utils.register_class(SPIO_OT_mark_object_asset)
-    bpy.utils.register_class(SPIO_OT_clear_object_asset)
+    bpy.utils.register_class(ObjectProps)
+    bpy.utils.register_class(SPIO_OT_mark_helper)
     bpy.utils.register_class(SPIO_OT_mark_node_group_as_asset)
     bpy.utils.register_class(SPIO_OT_mark_edit_tree_as_asset)
 
 
 def unregister():
-    bpy.utils.unregister_class(SPIO_OT_mark_object_asset)
-    bpy.utils.unregister_class(SPIO_OT_clear_object_asset)
+    bpy.utils.unregister_class(ObjectProps)
+    bpy.utils.unregister_class(SPIO_OT_mark_helper)
     bpy.utils.unregister_class(SPIO_OT_mark_node_group_as_asset)
     bpy.utils.unregister_class(SPIO_OT_mark_edit_tree_as_asset)

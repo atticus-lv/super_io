@@ -110,15 +110,6 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        box = layout.box()
-        box.label(text='Mark Helper', icon='ASSET_MANAGER')
-        row = box.row()
-        row.scale_y = 1.15
-        row.operator('spio.mark_object_asset', text='Mark Selected Objects', icon='ADD')
-        row = box.row()
-        row.scale_y = 1.15
-        row.operator('spio.clear_object_asset', text='Clear Selected Asset', icon='X')
-
         subbox = layout.box()
         subbox.label(text='Active Asset Preview', icon='IMAGE_DATA')
         row = subbox.box().row()
@@ -135,9 +126,7 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
         col.prop(context.scene, 'spio_snapshot_render_settings', slider=True)
         subbox.operator('spio.asset_snap_shot', icon='RENDER_STILL')
 
-        box = layout.box()
-        box.label(text='Batch Asset Preview', icon='RENDERLAYERS')
-        box.operator('spio.resize_images_from_clipboard', icon='FULLSCREEN_EXIT')
+
 
         # box.operator('spio.render_hdri_preview', icon='WORLD')
         # box.operator('spio.set_asset_thumb_from_clipboard_image', icon='IMPORT')
