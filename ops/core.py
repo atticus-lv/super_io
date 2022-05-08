@@ -81,6 +81,9 @@ class ConfigItemHelper():
             self.__setattr__('prop_list', ops_config)
 
     def is_config_item_poll(self, context_area_type):
+        if not self.item.use_config:
+            return False
+
         if get_pref().experimental:
             return self.item.context_area == bpy.context.area.type
 
