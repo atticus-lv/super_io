@@ -325,6 +325,7 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
 
 
 class SPIO_OT_import_pbr_folders_as_materials(bpy.types.Operator):
+    """Hold Alt to import as asset"""
     bl_idname = "spio.import_pbr_folders_as_materials"
     bl_label = "Import PBR Folders as Materials"
     bl_options = {'UNDO_GROUPED'}
@@ -336,7 +337,8 @@ class SPIO_OT_import_pbr_folders_as_materials(bpy.types.Operator):
 
         for i, dir in enumerate(dirs):
             # add and set slot
-            bpy.ops.spio.create_principled_set_up_material(directory=dir + '/', use_context_space=False)
+            bpy.ops.spio.create_principled_set_up_material(directory=dir + '/', use_context_space=False,
+                                                           mark_asset=event.alt)
 
         return {'FINISHED'}
 
@@ -370,6 +372,7 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
     files: StringProperty()
     # to check is single mode or batch mode(multiple dirs)
     use_context_space: BoolProperty(default=False)
+    mark_asset: BoolProperty(default=False)
 
     def create_material(self, name):
         mat = bpy.data.materials.new(name=name)
@@ -382,10 +385,12 @@ class SPIO_OT_create_principled_set_up_material(bpy.types.Operator):
 
     def execute(self, context):
         # create material
-        if self.use_context_space != '':
+        if self.use_context_space:
             nodes, links = get_nodes_links(context)
         else:
             mat = self.create_material(name=os.path.basename(self.directory[:-1]))
+            if self.mark_asset:
+                mat.asset_mark()  # mark as asset
             nodes, links = self.get_mat_nodes_links(mat)
 
             # set active node
