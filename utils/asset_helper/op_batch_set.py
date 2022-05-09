@@ -92,7 +92,7 @@ class SPIO_OT_remove_tag_from_selected_assets(selected_assets, bpy.types.Operato
 
 def draw_context_menu_prepend(self, context):
     from ...preferences import get_pref
-    if get_pref().asset_helper and bpy.app.version >= (3, 1, 0):
+    if get_pref().asset_helper and bpy.app.version >= (3, 0, 0):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'
 
@@ -118,7 +118,7 @@ def register():
     bpy.utils.register_class(SPIO_OT_add_tag_to_selected_assets)
     bpy.utils.register_class(SPIO_OT_remove_tag_from_selected_assets)
     bpy.utils.register_class(SPIO_OT_add_author_to_selected_assets)
-    if bpy.app.version >= (3, 1, 0):
+    if bpy.app.version >= (3, 0, 0):
         bpy.types.ASSETBROWSER_MT_context_menu.prepend(draw_context_menu_prepend)
 
 
@@ -127,5 +127,5 @@ def unregister():
     bpy.utils.unregister_class(SPIO_OT_add_tag_to_selected_assets)
     bpy.utils.unregister_class(SPIO_OT_remove_tag_from_selected_assets)
     bpy.utils.unregister_class(SPIO_OT_add_author_to_selected_assets)
-    if bpy.app.version >= (3, 1, 0):
+    if bpy.app.version >= (3, 0, 0):
         bpy.types.ASSETBROWSER_MT_context_menu.remove(draw_context_menu_prepend)
