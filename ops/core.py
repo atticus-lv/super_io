@@ -179,6 +179,20 @@ class ConfigHelper():
         for config_list_index, item in enumerate(pref_config):
             # config dict
             config = dict()
+            # TODO need to clean up later
+            for key in item.__annotations__.keys():
+                value = getattr(item, key)
+                if key != 'prop_list':
+                    config[key] = value
+                # prop list
+                ops_config = dict()
+                if len(item.prop_list) != 0:
+                    for prop_index, prop_item in enumerate(item.prop_list):
+                        prop, value = prop_item.name, prop_item.value
+                        # skip if the prop is not filled
+                        if prop == '' or value == '': continue
+                        ops_config[prop] = convert_value(value)
+                config['prop_list'] = ops_config
 
             if io_type == 'IMPORT' and self.is_import_config(config, check_use, filter):
                 # check config dict
