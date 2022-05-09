@@ -12,7 +12,7 @@ exporter_extend = {
     'usdc': 'wm.usd_export',
     'gltf': 'export_scene.gltf',
     'ply': 'export_mesh.ply',
-    'svg': 'export_curve.svg',
+    'svg': 'wm.gpencil_export_svg',
 }
 
 exporter_ops_props = {
@@ -43,6 +43,9 @@ exporter_ops_props = {
     },
     'blend': {
     },
+    'svg': {
+
+    }
 
 }
 
