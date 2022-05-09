@@ -273,6 +273,8 @@ class SPIO_MT_asset_browser_menu(bpy.types.Menu):
         layout.operator('wm.super_export', icon_value=export_icon.get_image_icon_id())
 
         layout.separator()
+        layout.operator('spio.batch_image_operate', icon='RENDERLAYERS')
+        layout.separator()
         layout.operator('spio.mark_helper', icon='ASSET_MANAGER')
 
 

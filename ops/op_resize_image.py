@@ -28,6 +28,15 @@ class SPIO_OT_batch_image_operate(bpy.types.Operator):
                                            default=False)
     suffix: bpy.props.StringProperty(name='Suffix', default='_resize')
 
+    color_space: bpy.props.EnumProperty(name='Color Space',
+                                        items=[
+                                            ('Standard', 'Standard', ''),
+                                            ('Filmic', 'Filmic', ''),
+                                            ('Filmic Log', 'Filmic Log', ''),
+                                            ('Raw', 'Raw', ''),
+                                            ('False Color', 'False Color', ''),
+                                        ])
+
     # copy_after_resize: bpy.props.BoolProperty(name='Copy after generate (Only Win)',
     #                                           description='Copy files to clipboard after generate', default=True)
 
@@ -51,18 +60,19 @@ class SPIO_OT_batch_image_operate(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        row = layout.split(factor=0.3)
 
-        row.label(text=f'{len(self.filepaths)}', icon='DUPLICATE')
-        row.label(text='This could take a few minutes')
+        layout.label(text=f'{len(self.filepaths)}', icon='DUPLICATE')
 
-        box = layout.box()
+        box = layout.column(align = True).box()
         box.use_property_split = True
         box.prop(self, 'resolution')
+        box.prop(self, 'color_space')
         box.prop(self, 'scale')
         box.prop(self, 're_generate')
         box.prop(self, 'skip_big_image')
-        box.prop(self, 'copy_after_resize')
+        box.prop(self, 'suffix')
+        # box.prop(self, 'copy_after_resize')
+        layout.label(text='This could take a few minutes', icon='INFO')
 
     def execute(self, context):
         scripts_path = os.path.join(os.path.dirname(__file__),
@@ -87,9 +97,10 @@ class SPIO_OT_batch_image_operate(bpy.types.Operator):
                 cmd.append(scripts_path)
                 cmd.append('--')
                 cmd.append(filepath)
+                cmd.append(out_jpg)
                 cmd.append(self.resolution)
                 cmd.append(self.scale)
-                cmd.append(out_jpg)
+                cmd.append(self.color_space)
                 run(cmd)
             except Exception as e:
                 print(f'Resize image "{name}" failed:', e)
@@ -97,7 +108,7 @@ class SPIO_OT_batch_image_operate(bpy.types.Operator):
         # if self.copy_after_resize:
         #     self.clipboard.push_to_clipboard(self.filepaths)
 
-        bpy.ops.wm.path_open(self.filepaths[0])
+        bpy.ops.wm.path_open(filepath=os.path.dirname(self.filepaths[0]))
 
         return {'FINISHED'}
 

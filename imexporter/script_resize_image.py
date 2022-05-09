@@ -5,7 +5,7 @@ from math import floor
 
 
 def main(argv):
-    FILEPATH, SIZE_X, SCALE, OUTPATH = argv
+    FILEPATH,OUTPATH, SIZE_X, SCALE, COLORSPACE = argv
     SIZE_X = int(SIZE_X)
     SCALE = float(SCALE)
 
@@ -50,6 +50,7 @@ def main(argv):
     r.resolution_y = int(SIZE_X / SCALE)
     r.resolution_percentage = 100
     r.filepath = OUTPATH
+    scene.view_settings.view_transform = COLORSPACE
 
     bpy.ops.render.render(write_still=True)
 
