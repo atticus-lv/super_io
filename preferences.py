@@ -128,6 +128,7 @@ class ConfigItemProperty(PropertyGroup):
             ('EXPORT_FBX', 'FBX (.fbx)', '', 'EXPORT', 192),
             ('EXPORT_GLTF', 'glTF 2.0 (.gltf)', '', 'EXPORT', 191),
             ('EXPORT_OBJ', 'Wavefront (.obj)', '', 'EXPORT', 190),
+            # ('EXPORT_SVG', 'Grease Pencil (.svg)', '', 'EXPORT', 189),
             None,
             ('EXPORT_BLEND', 'Blend (.blend)', '', 'BLENDER', 200),
 

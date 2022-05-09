@@ -10,6 +10,7 @@ import bpy
 class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
     bl_idname = "spio.set_preview_to_selected_assets"
     bl_label = "Set Preview to Selected Assets"
+    bl_options = {"UNDO_GROUPED"}
 
     clipboard = None
     filepaths = None
