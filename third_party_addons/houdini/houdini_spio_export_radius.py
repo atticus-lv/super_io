@@ -1,7 +1,21 @@
+# v0.1
+# Initial Win
+
 import os
 import hou
+import subprocess
 
 TEMP_DIR = ''
+
+icon_config = {
+    "abc": 'SOP_alembic',
+    "vdb": 'SOP_OpenVDB',
+    "obj": 'SOP_file',
+    "stl": 'SOP_file',
+}
+
+# TODO rop node for animation later
+# rop_export = ['fbx', 'abc']
 
 
 def get_dir():
@@ -22,13 +36,25 @@ def save_file(ext):
         filepath = os.path.join(get_dir(), name + '.' + ext)
         node.geometry().saveToFile(filepath)
         file_list.append(filepath)
-
+    # push to clipboard
     clipboard = PowerShellClipboard()
     clipboard.push_to_clipboard(paths=file_list)
 
 
-import subprocess
+def generate_menu():
+    menu_type = 'script_action'
+    menu = dict()
 
+    for i, (ext, icon) in enumerate(icon_config.items()):
+        d = {
+            'type': menu_type,
+            'label': f'Export {ext.upper()}',
+            'icon': icon,
+            'script': lambda ext=ext, **kwargs: save_file(ext),
+        }
+        menu[f'{i * 2}'] = d  # assign location
+
+    return menu
 
 class PowerShellClipboard():
     def __init__(self, file_urls=None):
@@ -87,27 +113,5 @@ class PowerShellClipboard():
         self.push(script)
 
 
-menu = {
-    "n": {
-        "type": "script_action",
-        "label": "Export ABC",
-        "script": lambda ext='vdb', **kwargs: save_file(ext),
-    },
-    "s": {
-        "type": "script_action",
-        "label": "Export OBJ",
-        "script": lambda ext='obj', **kwargs: save_file(ext),
-    },
-    "e": {
-        "type": "script_action",
-        "label": "Export STL",
-        "script": lambda ext='stl', **kwargs: save_file(ext)
-    },
-    "w": {
-        "type": "script_action",
-        "label": "Export VDB",
-        "script": lambda ext='vdb', **kwargs: save_file(ext),
-    }
-}
-
-radialmenu.setRadialMenu(menu)
+if __name__ == '__main__':
+    radialmenu.setRadialMenu(generate_menu())
