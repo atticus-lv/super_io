@@ -20,6 +20,7 @@ importer = {
 
     'svg': 'import_curve.svg',
     'dxf': 'import_scene.dxf',
+    'vdb': 'object.volume_import'
 }
 
 
