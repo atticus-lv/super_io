@@ -19,7 +19,7 @@ def get_dir():
     global TEMP_DIR
     if TEMP_DIR == '':
         TEMP_DIR = os.path.join(os.path.expanduser('~'), 'spio_temp')
-        if not "color_helper_temp" in os.listdir(os.path.expanduser('~')):
+        if not "spio_temp" in os.listdir(os.path.expanduser('~')):
             os.makedirs(TEMP_DIR)
 
     return TEMP_DIR
