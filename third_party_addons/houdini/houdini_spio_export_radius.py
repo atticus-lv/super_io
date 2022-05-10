@@ -1,32 +1,7 @@
-# log
-# v1.0
-# initial win
-# v2.0
-# add export format menu
-
-from __future__ import annotations
-
-import sys
-
-import hou
 import os
-import numpy as np
+import hou
 
-# Custom Temp Path
 TEMP_DIR = ''
-
-export_labels = [
-    'Wavefront (.obj)',
-    'Alembic (.abc)',
-    'OpenVDB (.vdb)',
-    'Stl (.stl)',
-    'AutoCAD DXF(.dxf)',
-    'Stanford (.ply)',
-]
-
-export_formats = [
-    'obj', 'abc', 'vdb', 'stl', 'dxf', 'ply'
-]
 
 
 def get_dir():
@@ -35,32 +10,12 @@ def get_dir():
         TEMP_DIR = os.path.join(os.path.expanduser('~'), 'spio_temp')
         if not "spio_temp" in os.listdir(os.path.expanduser('~')):
             os.makedirs(TEMP_DIR)
+
     return TEMP_DIR
 
 
-def get_export_config():
-    index = hou.ui.selectFromList(export_labels,
-                                  default_choices=(), exclusive=True, message="Select a format to export",
-                                  title='Super Export',
-                                  column_header=None,
-                                  num_visible_rows=10, clear_on_cancel=False, width=250, height=300)
-    return index[0] if len(index) != 0 else None
-
-
-def main():
-    if sys.platform != "win32":
-        return print("Not Support this platform!")
-
-    # create or set nodes
-    if len(hou.selectedNodes()) == 0:
-        return
-
+def save_file(ext):
     file_list = list()
-
-    res = get_export_config()
-    if res is None: return
-
-    ext = export_formats[res]
 
     for node in hou.selectedNodes():
         name = node.path().split('/')[-1]
@@ -70,10 +25,6 @@ def main():
 
     clipboard = PowerShellClipboard()
     clipboard.push_to_clipboard(paths=file_list)
-
-
-def set_node_path(node, path):
-    node.parm('file').set(path)
 
 
 import subprocess
@@ -136,4 +87,27 @@ class PowerShellClipboard():
         self.push(script)
 
 
-main()
+menu = {
+    "n": {
+        "type": "script_action",
+        "label": "Export ABC",
+        "script": lambda ext='vdb', **kwargs: save_file(ext),
+    },
+    "s": {
+        "type": "script_action",
+        "label": "Export OBJ",
+        "script": lambda ext='obj', **kwargs: save_file(ext),
+    },
+    "e": {
+        "type": "script_action",
+        "label": "Export STL",
+        "script": lambda ext='stl', **kwargs: save_file(ext)
+    },
+    "w": {
+        "type": "script_action",
+        "label": "Export VDB",
+        "script": lambda ext='vdb', **kwargs: save_file(ext),
+    }
+}
+
+radialmenu.setRadialMenu(menu)
