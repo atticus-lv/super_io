@@ -72,9 +72,9 @@ class SPIO_OT_export_config(bpy.types.Operator, ExportHelper):
     def execute(self, context):
         from .core import ConfigHelper
 
-        CONFIG = ConfigHelper(check_use=self.export_all)
+        CONFIG = ConfigHelper(check_use=self.export_all,io_type="ALL")
         config, index_list = CONFIG.config_list, CONFIG.index_list
-
+        print(config)
         with open(self.filepath, "w", encoding='utf-8') as f:
             json.dump(config, f, indent=4, ensure_ascii=False)
             self.report({"INFO"}, f'Save config to "{self.filepath}"')
