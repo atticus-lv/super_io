@@ -1,6 +1,8 @@
 # log
 # v1.0
 # initial win
+# v2.0
+# add export format menu
 
 from __future__ import annotations
 
@@ -13,6 +15,10 @@ import numpy as np
 # Custom Temp Path
 TEMP_DIR = ''
 
+export_formats = [
+    'obj', 'abc', 'vdb', 'stl', 'dxf', 'ply'
+]
+
 
 def get_dir():
     global TEMP_DIR
@@ -20,8 +26,15 @@ def get_dir():
         TEMP_DIR = os.path.join(os.path.expanduser('~'), 'spio_temp')
         if not "spio_temp" in os.listdir(os.path.expanduser('~')):
             os.makedirs(TEMP_DIR)
-
     return TEMP_DIR
+
+
+def get_export_config():
+    index = hou.ui.selectFromList(export_formats,
+                                  default_choices=(), exclusive=False, message=None, title=None,
+                                  column_header="Select an export format",
+                                  num_visible_rows=10, clear_on_cancel=False, width=200, height=300)
+    return index[0] if len(index) != 0 else None
 
 
 def main():
@@ -34,9 +47,14 @@ def main():
 
     file_list = list()
 
+    res = get_export_config()
+    if res is None: return
+
+    ext = export_formats[res]
+
     for node in hou.selectedNodes():
         name = node.path().split('/')[-1]
-        filepath = os.path.join(get_dir(), name + '.obj')
+        filepath = os.path.join(get_dir(), name + '.' + ext)
         node.geometry().saveToFile(filepath)
         file_list.append(filepath)
 
