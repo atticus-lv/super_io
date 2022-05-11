@@ -15,32 +15,121 @@
 </p>
 
 # Intro
+![f_world](res/img/f_world.gif)
 
-SPIO is a blender addon that allow you to copy and paste to import or export.
+**SPIO is a blender addon that allow you to copy and paste to import or export.**
 
-Currently we can not drag and drop to import model in blender, but with this addon, you can easily copy your model/Image
-in your File Explorer, then paste in blender with just one click/shortcut,
-
-which has improved the efficiency of importing and exporting blender files / Models / pictures
+Currently we can not drag and drop to import model in blender, but with this addon, you can easily copy your model/Image in your File Explorer, then paste in blender with **just one click/shortcut**,which has improved the efficiency of importing and exporting blender files / Models / pictures
 
 With third-party Scripts, you are allowed to copy/paste among blender, Cinema 4d and Houdini
 
-> Support windows / Mac platforms(Not Fully Support)
->
-> (Third Party Scripts Support Cinema4d R23+ and Houdini H18+ on windows)
->
-> + C4D plugin support / Houdini Shelf support in v1.3.7 and above
+> Support windows / Mac platforms(Not Fully Support, only win with c4d/houdini addon)
 >
 
 # Contributing
 
-SPIO needs help from you!
+Translation, documentation, different platform support.
 
-Translation, different platform support, and new features which come from great idea.
+And new features which come from great idea!
 
 # Feature
 
-Check the document above
+> Check the [document](https://atticus-lv.gitee.io/super_io/#/) above for more information 
+
+![f_config](./res/img/f_preset.png)
+
+### Import
+
+> Supports multi-format import (recommended only when importing textures)
+
+#### Import by default
+
++ PS selection screenshots directly copied and imported
+
++ AI vector graphics directly copied and imported
+
++ copy file/dir path to import files
+
++ All model formats supported by blender (batch)
+
++ blender file (batch)
+
+#### Import presets
+
++ Import pbr image and set bsdf material (develop basic on node wrangle)
+
++ Batch import folder containing pbr images as materials
+
++ Import image as plane
+
++ Import images as reference empty objects
+
++ Import images as texture lights (assets)
+
++ Import images as worlds (assets)
+
++ Import images as parallax maps materials (assets)
+
++ Import images as nodes (shaders, geometry nodes, compositing)
+
+#### Export
+
++ Export shader nodes as images (and generate new nodes)
+
++ Export rendered image to clipboard clipboard file
+
++ Export the selected model to a format supported by blender (single batch)
+
++ Export the selected model to blend format
+
+#### Advanced import and export
+
+![f_config](./res/img/f_config.png)
+
++ Custom import and export configuration
+
++ Imports: Custom rules identify imports (file type, operator type, prefix suffix, etc.)
+
++ Export: custom export folder (file type, operator type)
+
+### Asset Helper
+
+#### NodeGroup
+
++ Mark group nodes as assets
+
++ Mark the current edit node tree as an asset (geometry node)
+
+#### Selected: Mark Helper
+
++ Actionable list (to exclude unwanted ones)
+
+#### Asset Manager
+
+![f_mat](./res/img/f_mat.png)
+
++ Batch render world previews
++ Batch render material previews
++ Batch replace asset thumbnail
++ Batch tag authors
++ Batch clean assets (or clean and set fake-users)
++ Batch add asset tags
++ Activate object viewport screenshot and set preview
+
+### Third Party Addon
+
+> c4d plugin (R23+), houdini shelf tool / pie menu
+
+![f_addon](res/img/f_addon.png)
+
+
+
+# Thanks
+
+> Thanks to these projects, I can not think of what I would do without them:
+
++ [ImagePaste](https://github.com/Yeetus3141/ImagePaste)
++ [t3dn-bip](https://3dninjas.github.io/3dn-bip/)
 
 # Log
 
