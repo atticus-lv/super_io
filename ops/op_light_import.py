@@ -56,7 +56,7 @@ class SPIO_OT_import_ies(bpy.types.Operator):
             # create links
             nt.links.new(n_tc.outputs[1], n_map.inputs[0])
             nt.links.new(n_map.outputs[0], n_ies.inputs[0])
-            nt.links.new(n_ies.outputs[0], n_emi.inputs[1])
+            nt.links.new(n_ies.outputs[0], n_emi.inputs[0])
 
         return {'FINISHED'}
 
