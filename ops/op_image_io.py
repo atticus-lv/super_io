@@ -212,7 +212,7 @@ class SPIO_OT_import_image_as_light_gobos(image_io, bpy.types.Operator):
 
             # create links
             nt.links.new(n_geo.outputs[5], n_img.inputs[0])
-            nt.links.new(n_img.outputs[0], n_emi.inputs[1])
+            nt.links.new(n_img.outputs[0], n_emi.inputs[0])
 
             if event.alt:
                 light.asset_mark()
