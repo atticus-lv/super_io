@@ -1,6 +1,7 @@
 import bpy
 import os
 from bpy.props import EnumProperty
+from ..ui.icon_utils import RSN_Preview
 
 
 class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
@@ -12,11 +13,7 @@ class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
             os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Cinema 4d'))
         full_path = os.path.abspath(file)
 
-        from .core import PostProcess
-        post = PostProcess()
-        post.copy_to_clipboard([full_path], op=None)
-
-        self.report({'INFO'}, 'C4d Plugin has been copied to clipboard!')
+        bpy.ops.wm.path_open(filepath=full_path)
 
         return {'FINISHED'}
 
@@ -26,9 +23,12 @@ class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout.box()
         layout.label(text='This is a plugin suitable for c4d R23+')
-        layout.label(text='After clicking confirm, the plugin folder will be copied to the clipboard for pasting')
-        layout.label(text='Paste it under c4d plugins folder')
+        layout.label(text="Copy the plugin folder under c4d's /plugins/")
         layout.label(text='You can find it in extension menu')
+        layout.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = os.path.join(
+            os.path.dirname(__file__),
+            '..', 'third_party_addons',
+            'tutorial')
 
 
 class SPIO_OT_copy_houdini_script(bpy.types.Operator):
@@ -38,17 +38,20 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
     bl_label = 'Get Houdini Script'
 
     file: EnumProperty(name='Script', items=[
-        ('houdini_spio_import.py', 'Import', ''),
-        ('houdini_spio_export.py', 'Export', ''),
+        ('houdini_spio_import.py', 'Import (Shelf Tool)', ''),
+        ('houdini_spio_export.py', 'Export (Shelf Tool)', ''),
+        ('houdini_spio_export_radius.py', 'Export (Radial Menu)', ''),
     ])
 
     def execute(self, context):
-        file = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Houdini'))
+        with open(os.path.join(os.path.dirname(__file__), '..', 'third_party_addons', 'houdini', self.file), 'r') as f:
+            text = f.read()
+            if self.file in bpy.data.texts: bpy.data.texts.remove(bpy.data.texts[self.file])
 
-        from .core import PostProcess
-        post = PostProcess()
-        post.copy_to_clipboard([file], op=None)
+            t = bpy.data.texts.new(name=self.file)
+            t.write(text)
+
+        bpy.ops.spio.pop_editor(editor_text=self.file)
 
         self.report({'INFO'}, 'Houdini tool shelf file has been copied to clipboard!')
         return {'FINISHED'}
@@ -58,10 +61,16 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout.box()
-        layout.label(text='This is a plugin suitable for houdini 18+(python3)')
-        layout.label(text='After clicking confirm, the shelf tool folder will be copied to the clipboard for pasting')
-        layout.label(text=r'Please paste it to "C:/Users/{User-Name}/Documents/houdini{version}/toolbar/"')
+        layout.prop(self, 'file')
+
+        layout.label(text='This is a script suitable for houdini 18+(python3)')
         layout.label(text='You can find the icon in the folder and assign it at the shelf tool')
+        layout.label(text='You can copy the shelf tool script and assign the script to a new shelf tool')
+        layout.label(text='Then assign Shortcut for it')
+        layout.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = os.path.join(
+            os.path.dirname(__file__),
+            '..', 'third_party_addons',
+            'tutorial')
 
 
 def register():
