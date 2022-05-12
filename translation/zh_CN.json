@@ -135,6 +135,8 @@
     "2. If no config’s rule is matched": "2. 如果没有配置适合当前文件",
     "   It will popup all available importer in a menu after import all file that match a rule": "    将会导入所有匹配相应规则的文件后，弹出可用导入器菜单",
     "No Operator Found": "没有找到操作符",
+    "Skip Unlinked Socket": "跳过未连接的接口",
+    "Principal BSDF (PBR)": "原理化BSDF（PBR）",
 
     "Config Import/Export": "配置导入/导出",
     "Import Config": "导入配置",

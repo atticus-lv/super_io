@@ -35,13 +35,14 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                                  ('PBR', 'Principal BSDF (PBR)',
                                                   'Export principal node as pbr textures'), ],
                                           default='NODE')
-
+    # source
     socket: bpy.props.EnumProperty(name="Output",
                                    items=enum_active_node_sockets,
                                    options={'SKIP_SAVE'}, )
     uv_map: bpy.props.EnumProperty(name="UV Map",
                                    items=enum_uv, )
 
+    # render
     device: bpy.props.EnumProperty(name='Device',
                                    items=[
                                        ('CPU', 'CPU', 'CPU'),
@@ -56,20 +57,23 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                            ('8192', '8k', ''),
                                            ('CUSTOM', 'Custom', ''), ],
                                        default='2048')
-
+    # image output
     custom_resolution: bpy.props.IntProperty(name='Resolution', default=2048, min=2, max=8192)
 
     samples: bpy.props.IntProperty(name='Samples', default=1, min=1, soft_max=64)
     margin: bpy.props.IntProperty(default=16, name="Margin", step=4)
     extension: bpy.props.EnumProperty(name='Extension',
-                                      items=[('png', 'PNG', ''),],
+                                      items=[('png', 'PNG', ''), ],
                                       default='png')
+    # node mode
     color_space: bpy.props.EnumProperty(name="Color Space",
                                         items=[
                                             ('sRGB', 'sRGB', ''),
                                             ('Non-Color', 'Non-Color', ''),
                                         ],
                                         default='sRGB')
+    # pbr mode
+    skip_pbr_unlinked: bpy.props.BoolProperty(name="Skip Unlinked Socket", default=False)
 
     @classmethod
     def poll(cls, context):
@@ -105,7 +109,8 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         box.prop(self, "operator_type")
         if self.operator_type == 'PBR':
             if context.active_node.bl_idname != 'ShaderNodeBsdfPrincipled':
-                box.label(text='Selected node is not a "Principled BSDF" node', icon='ERROR')
+                box.label(text='Not a "Principled BSDF" node', icon='ERROR')
+            box.prop(self, "skip_pbr_unlinked")
         else:
             box.prop(self, "socket")
             row = box.row(align=True)
@@ -118,14 +123,12 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         box.prop(self, "samples")
         box.separator(factor=0.5)
 
-        box.separator()
-
         col = box.column(align=True)
         col.prop(self, "resolution")
         if self.resolution == 'CUSTOM':
             col.prop(self, "custom_resolution", text='Custom')
 
-        row = box.row(align=True)
+        # row = box.row(align=True)
         # row.prop(self, "extension", expand=True)
         box.prop(self, "margin")
 
@@ -200,56 +203,60 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             metallic_socket = active_node.inputs['Metallic']
             normal_socket = active_node.inputs['Normal']
 
-            normal_node = self.bake(context, active_node,
-                                    resolution=resolution,
-                                    bake_type='NORMAL',
-                                    extra_channel='Normal',
-                                    color_space='Non-Color')
+            if normal_socket.is_linked or (not normal_socket.is_linked and not self.skip_pbr_unlinked):
+                normal_node = self.bake(context, active_node,
+                                        resolution=resolution,
+                                        bake_type='NORMAL',
+                                        extra_channel='Normal',
+                                        color_space='Non-Color')
 
             links.new(emit_node.outputs[0], output_node.inputs[0])
 
             temp_rgb = None
             if color_socket.is_linked:
                 links.new(color_socket.links[0].from_socket, emit_node.inputs[0])
-            else:
+            elif not self.skip_pbr_unlinked:
                 temp_rgb = nodes.new(type='ShaderNodeRGB')
                 temp_rgb.outputs[0].default_value = color_socket.default_value
                 links.new(temp_rgb.outputs[0], emit_node.inputs[0])
 
-            color_node = self.bake(context, active_node,
-                                   resolution=resolution,
-                                   bake_type='EMIT',
-                                   extra_channel='Color')
+            if color_socket.is_linked or (not color_socket.is_linked and not self.skip_pbr_unlinked):
+                color_node = self.bake(context, active_node,
+                                       resolution=resolution,
+                                       bake_type='EMIT',
+                                       extra_channel='Color')
             if temp_rgb: nodes.remove(temp_rgb)
 
             temp_value = None
             if roughness_socket.is_linked:
                 links.new(roughness_socket.links[0].from_socket, emit_node.inputs[0])
-            else:
+            elif not self.skip_pbr_unlinked:
                 temp_value = nodes.new(type='ShaderNodeValue')
                 temp_value.outputs[0].default_value = roughness_socket.default_value
                 links.new(temp_value.outputs[0], emit_node.inputs[0])
 
-            roughness_node = self.bake(context, active_node,
-                                       resolution=resolution,
-                                       bake_type='EMIT',
-                                       extra_channel='Roughness',
-                                       color_space='Non-Color')
+            if roughness_socket.is_linked or (not roughness_socket.is_linked and not self.skip_pbr_unlinked):
+                roughness_node = self.bake(context, active_node,
+                                           resolution=resolution,
+                                           bake_type='EMIT',
+                                           extra_channel='Roughness',
+                                           color_space='Non-Color')
             if temp_value: nodes.remove(temp_value)
 
             temp_value = None
             if metallic_socket.is_linked:
                 links.new(metallic_socket.links[0].from_socket, emit_node.inputs[0])
-            else:
+            elif not self.skip_pbr_unlinked:
                 temp_value = nodes.new(type='ShaderNodeValue')
                 temp_value.outputs[0].default_value = metallic_socket.default_value
                 links.new(temp_value.outputs[0], emit_node.inputs[0])
 
-            metallic_node = self.bake(context, active_node,
-                                      resolution=resolution,
-                                      bake_type='EMIT',
-                                      extra_channel='Metallic',
-                                      color_space='Non-Color')
+            if metallic_socket.is_linked or (not metallic_socket.is_linked and not self.skip_pbr_unlinked):
+                metallic_node = self.bake(context, active_node,
+                                          resolution=resolution,
+                                          bake_type='EMIT',
+                                          extra_channel='Metallic',
+                                          color_space='Non-Color')
 
             if temp_value: nodes.remove(temp_value)
 
