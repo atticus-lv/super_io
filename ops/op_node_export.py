@@ -5,7 +5,7 @@ from .op_image_io import get_active_tree, get_nodes_links
 
 def enum_active_node_sockets(self, context):
     if context.active_node and len(context.active_node.outputs) != 0:
-        return [(a.name, a.name, a.name) for a in context.active_node.outputs]
+        return [(a.name, a.name, a.name, 'NODE_SEL', i) for i, a in enumerate(context.active_node.outputs)]
     else:
         return [("NONE", "None", ""), ]
 
@@ -13,7 +13,7 @@ def enum_active_node_sockets(self, context):
 def enum_uv(self, context):
     enum_uv = []
     if context.active_object and context.active_object.type == "MESH":
-        for uv in context.active_object.data.uv_layers:
+        for i, uv in enumerate(context.active_object.data.uv_layers):
             enum_uv.append((uv.name, uv.name, ''))
     else:
         return [("NONE", "None", ""), ]
@@ -28,11 +28,11 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
     """Select a node and export it as a texture\nSelect active object first"""
     bl_idname = "spio.export_shader_node_as_texture"
     bl_label = "Export Node as Texture"
-    bl_options = {'INTERNAL'}
+    bl_options = {'INTERNAL', 'UNDO_GROUPED'}
 
     operator_type: bpy.props.EnumProperty(name='Type',
                                           items=[('NODE', 'Node', 'Export node as texture'),
-                                                 ('PBR', 'Principal BSDF (PBR)',
+                                                 ('PBR', 'PBR',
                                                   'Export principal node as pbr textures'), ],
                                           default='NODE')
     # source
@@ -61,7 +61,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
     custom_resolution: bpy.props.IntProperty(name='Resolution', default=2048, min=2, max=8192)
 
     samples: bpy.props.IntProperty(name='Samples', default=1, min=1, soft_max=64)
-    margin: bpy.props.IntProperty(default=16, name="Margin", step=4)
+    margin: bpy.props.IntProperty(default=16, name="Margin", min=0)
     extension: bpy.props.EnumProperty(name='Extension',
                                       items=[('png', 'PNG', ''), ],
                                       default='png')
@@ -73,7 +73,8 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                         ],
                                         default='sRGB')
     # pbr mode
-    skip_pbr_unlinked: bpy.props.BoolProperty(name="Skip Unlinked Socket", default=False)
+    skip_pbr_unlinked: bpy.props.BoolProperty(name="Skip Unlinked Socket", default=True)
+    replace: bpy.props.BoolProperty(name="Link to bake images", default=True)
 
     @classmethod
     def poll(cls, context):
@@ -98,20 +99,19 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         row.use_property_split = False
         row.alignment = 'LEFT'
         row.label(text=context.material.name, icon='MATERIAL')
-        if self.operator_type == 'NODE':
-            row.label(icon='RIGHTARROW')
-            row.label(text=context.active_node.name, icon='NODE')
-            row.label(icon='RIGHTARROW')
-            row.label(text=self.socket, icon='NODE_SEL')
+        row.label(icon='RIGHTARROW_THIN')
+        row.label(text=context.active_node.name, icon='NODE')
 
-        box.separator()
-
-        box.prop(self, "operator_type")
         if self.operator_type == 'PBR':
             if context.active_node.bl_idname != 'ShaderNodeBsdfPrincipled':
-                box.label(text='Not a "Principled BSDF" node', icon='ERROR')
-            box.prop(self, "skip_pbr_unlinked")
-        else:
+                col = box.column()
+                col.alert = True
+                col.label(text="Not a 'Principled BSDF' node", icon='ERROR')
+
+        row = box.row(align=True)
+        row.prop(self, "operator_type", expand=True)
+
+        if self.operator_type != 'PBR':
             box.prop(self, "socket")
             row = box.row(align=True)
             row.prop(self, "color_space", expand=True)
@@ -131,6 +131,10 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         # row = box.row(align=True)
         # row.prop(self, "extension", expand=True)
         box.prop(self, "margin")
+        if self.operator_type == 'PBR':
+            box = layout.box()
+            box.prop(self, "skip_pbr_unlinked")
+            box.prop(self, "replace")
 
         layout.label(text='This could take a few minutes', icon='INFO')
 
@@ -196,13 +200,14 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                       bake_type=bake_type,
                                       color_space=self.color_space)
 
-
         elif self.operator_type == 'PBR':
+            # get bake socket
             color_socket = active_node.inputs['Base Color']
             roughness_socket = active_node.inputs['Roughness']
             metallic_socket = active_node.inputs['Metallic']
             normal_socket = active_node.inputs['Normal']
 
+            # bake normal
             if normal_socket.is_linked or (not normal_socket.is_linked and not self.skip_pbr_unlinked):
                 normal_node = self.bake(context, active_node,
                                         resolution=resolution,
@@ -210,24 +215,40 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                         extra_channel='Normal',
                                         color_space='Non-Color')
 
+                normal_node.location = active_node.location[0] - 600, active_node.location[1] - 700
+
+                if self.replace:
+                    normal_map_node = nodes.new("ShaderNodeNormalMap")
+
+                    normal_map_node.location = normal_node.location[0] + 300, normal_node.location[1]
+
+                    links.new(normal_node.outputs[0], normal_map_node.inputs[1])
+                    links.new(normal_map_node.outputs[0], normal_socket)
+
             links.new(emit_node.outputs[0], output_node.inputs[0])
 
-            temp_rgb = None
+            # bake color
+            temp_value = self.create_temp_node_from_socket(nodes, color_socket, type='ShaderNodeRGB')
             if color_socket.is_linked:
                 links.new(color_socket.links[0].from_socket, emit_node.inputs[0])
             elif not self.skip_pbr_unlinked:
-                temp_rgb = nodes.new(type='ShaderNodeRGB')
-                temp_rgb.outputs[0].default_value = color_socket.default_value
-                links.new(temp_rgb.outputs[0], emit_node.inputs[0])
+                links.new(temp_value.outputs[0], emit_node.inputs[0])
 
             if color_socket.is_linked or (not color_socket.is_linked and not self.skip_pbr_unlinked):
                 color_node = self.bake(context, active_node,
                                        resolution=resolution,
                                        bake_type='EMIT',
                                        extra_channel='Color')
-            if temp_rgb: nodes.remove(temp_rgb)
 
-            temp_value = None
+                color_node.location = active_node.location[0] - 300, active_node.location[1]
+
+                if self.replace:
+                    links.new(color_node.outputs[0], color_socket)
+
+            nodes.remove(temp_value)
+
+            # bake roughness
+            temp_value = self.create_temp_node_from_socket(nodes, roughness_socket)
             if roughness_socket.is_linked:
                 links.new(roughness_socket.links[0].from_socket, emit_node.inputs[0])
             elif not self.skip_pbr_unlinked:
@@ -241,14 +262,18 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                            bake_type='EMIT',
                                            extra_channel='Roughness',
                                            color_space='Non-Color')
-            if temp_value: nodes.remove(temp_value)
+                roughness_node.location = active_node.location[0] - 300, active_node.location[1] - 400
 
-            temp_value = None
+                if self.replace:
+                    links.new(roughness_node.outputs[0], roughness_socket)
+
+            nodes.remove(temp_value)
+
+            # bake metallic
+            temp_value = self.create_temp_node_from_socket(nodes, metallic_socket)
             if metallic_socket.is_linked:
                 links.new(metallic_socket.links[0].from_socket, emit_node.inputs[0])
             elif not self.skip_pbr_unlinked:
-                temp_value = nodes.new(type='ShaderNodeValue')
-                temp_value.outputs[0].default_value = metallic_socket.default_value
                 links.new(temp_value.outputs[0], emit_node.inputs[0])
 
             if metallic_socket.is_linked or (not metallic_socket.is_linked and not self.skip_pbr_unlinked):
@@ -258,7 +283,12 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                           extra_channel='Metallic',
                                           color_space='Non-Color')
 
-            if temp_value: nodes.remove(temp_value)
+                metallic_node.location = active_node.location[0] - 300, active_node.location[1] - 300
+
+                if self.replace:
+                    links.new(metallic_node.outputs[0], metallic_socket)
+
+            nodes.remove(temp_value)
 
         # restore
         if ori_output_socket is not None:
@@ -274,6 +304,12 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         active_node.select = True
 
         return {'FINISHED'}
+
+    def create_temp_node_from_socket(self, nodes, socket, type='ShaderNodeValue'):
+        temp_node = nodes.new(type)
+        temp_node.outputs[0].default_value = socket.default_value
+
+        return temp_node
 
     def bake(self, context, active_node, resolution='2048', bake_type="EMIT",
              color_space='sRGB', extra_channel=''):

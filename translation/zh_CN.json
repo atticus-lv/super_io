@@ -136,7 +136,10 @@
     "   It will popup all available importer in a menu after import all file that match a rule": "    将会导入所有匹配相应规则的文件后，弹出可用导入器菜单",
     "No Operator Found": "没有找到操作符",
     "Skip Unlinked Socket": "跳过未连接的接口",
-    "Principal BSDF (PBR)": "原理化BSDF（PBR）",
+    "Link to bake images": "连接到烘焙的贴图",
+    "Export node as texture": "导出节点为图像",
+    "Export principal node as pbr textures": "导出原理化节点为pbr贴图",
+    "Not a 'Principled BSDF' node": "不是一个原理化BSDF节点",
 
     "Config Import/Export": "配置导入/导出",
     "Import Config": "导入配置",
