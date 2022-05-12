@@ -30,6 +30,12 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
     bl_label = "Export Node as Texture"
     bl_options = {'INTERNAL'}
 
+    operator_type: bpy.props.EnumProperty(name='Type',
+                                          items=[('NODE', 'Node', 'Export node as texture'),
+                                                 ('PBR', 'Principal BSDF (PBR)',
+                                                  'Export principal node as pbr textures'), ],
+                                          default='NODE')
+
     socket: bpy.props.EnumProperty(name="Output",
                                    items=enum_active_node_sockets,
                                    options={'SKIP_SAVE'}, )
@@ -41,27 +47,39 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                        ('CPU', 'CPU', 'CPU'),
                                        ('GPU', 'GPU', 'GPU'),
                                    ], default='GPU')
+
     resolution: bpy.props.EnumProperty(name='Resolution',
                                        items=[
-                                           ('512', '512', ''),
-                                           ('1024', '1024', ''),
-                                           ('2048', '2048', ''),
-                                           ('4096', '4096', ''),
-                                           ('8192', '8192', ''),
-                                           ('CUSTOM', 'Custom', ''),
-                                       ], default='2048')
+                                           ('1024', '1k', ''),
+                                           ('2048', '2k', ''),
+                                           ('4096', '4k', ''),
+                                           ('8192', '8k', ''),
+                                           ('CUSTOM', 'Custom', ''), ],
+                                       default='2048')
 
     custom_resolution: bpy.props.IntProperty(name='Resolution', default=2048, min=2, max=8192)
 
     samples: bpy.props.IntProperty(name='Samples', default=1, min=1, soft_max=64)
     margin: bpy.props.IntProperty(default=16, name="Margin", step=4)
+    extension: bpy.props.EnumProperty(name='Extension',
+                                      items=[('png', 'PNG', ''),
+                                             ('exr', 'EXR', ''),
+                                             ('tga', 'TGA', ''), ],
+                                      default='png')
 
     @classmethod
     def poll(cls, context):
         return (context.area.type == "NODE_EDITOR" and
                 context.space_data.edit_tree and
                 context.active_node and
-                context.active_object)
+                context.active_object and
+                len(context.selected_objects) != 0)
+
+    def invoke(self, context, event):
+        if bpy.data.filepath == '':
+            self.report({'ERROR'}, "Save your file first!")
+            return {'CANCELLED'}
+        return context.window_manager.invoke_props_dialog(self, width=350)
 
     def draw(self, context):
         layout = self.layout
@@ -78,25 +96,27 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         layout.separator(factor=0.5)
 
         box = layout.box()
-        box.prop(self, "socket")
+        box.prop(self, "operator_type")
+        if self.operator_type == 'PBR':
+            if context.active_node.bl_idname != 'ShaderNodeBsdfPrincipled':
+                box.label(text='Selected node is not a "Principled BSDF" node', icon='ERROR')
+        else:
+            box.prop(self, "socket")
+
         box.prop(self, "uv_map")
 
         box = layout.box()
         box.prop(self, "device")
         box.prop(self, "samples")
         box.separator(factor=0.5)
+
         box.prop(self, "resolution")
         if self.resolution == 'CUSTOM':
             box.prop(self, "custom_resolution")
+        box.prop(self, "extension")
         box.prop(self, "margin")
 
         layout.label(text='This could take a few minutes', icon='INFO')
-
-    def invoke(self, context, event):
-        if bpy.data.filepath == '':
-            self.report({'ERROR'}, "Save your file first!")
-            return {'CANCELLED'}
-        return context.window_manager.invoke_props_dialog(self,width = 350)
 
     def execute(self, context):
         tree, path = get_active_tree(context)
@@ -106,7 +126,6 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         # store origin socket / nodes
         ori_output_socket = None
         ori_uv = None
-        ori_margin = context.scene.render.bake.margin
         output_node = None
 
         # set origin socket
@@ -142,53 +161,135 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
 
         # create emit node for render
         emit_node = nodes.new("ShaderNodeEmission")
-        links.new(active_node.outputs[self.socket], emit_node.inputs[0])
-        links.new(emit_node.outputs[0], output_node.inputs[0])
 
         # bake texture
         resolution = str(self.custom_resolution) if self.resolution == 'CUSTOM' else self.resolution
-        bake_type = "COMBINED" if active_node.outputs[self.socket].type == "SHADER" else 'EMIT'
 
-        bake_img_node = self.bake(context, active_node,
-                                  resolution=resolution,
-                                  device=self.device,
-                                  samples=self.samples,
-                                  bake_type=bake_type)
+        # bake simple socket
+        if self.operator_type == 'NODE':
+            links.new(active_node.outputs[self.socket], emit_node.inputs[0])
+            links.new(emit_node.outputs[0], output_node.inputs[0])
+
+            if active_node.outputs[self.socket].type == 'SHADER':
+                bake_type = 'COMBINED'
+            else:
+                bake_type = 'EMIT'
+
+            bake_img_node = self.bake(context, active_node,
+                                      resolution=resolution,
+                                      bake_type=bake_type,
+                                      color_space='sRGB' if not self.is_normal_map else 'Non-Color', )
+
+
+        elif self.operator_type == 'PBR':
+            color_socket = active_node.inputs['Base Color']
+            roughness_socket = active_node.inputs['Roughness']
+            metallic_socket = active_node.inputs['Metallic']
+            normal_socket = active_node.inputs['Normal']
+
+            normal_node = self.bake(context, active_node,
+                                    resolution=resolution,
+                                    bake_type='NORMAL',
+                                    extra_channel='Normal',
+                                    color_space='Non-Color')
+            # emit bake
+            links.new(emit_node.outputs[0], output_node.inputs[0])
+
+            temp_rgb = None
+            if color_socket.is_linked:
+                links.new(color_socket.links[0].from_socket, emit_node.inputs[0])
+            else:
+                temp_rgb = nodes.new(type='ShaderNodeRGB')
+                temp_rgb.outputs[0].default_value = color_socket.default_value
+                links.new(temp_rgb.outputs[0], emit_node.inputs[0])
+
+            color_node = self.bake(context, active_node,
+                                   resolution=resolution,
+                                   bake_type='EMIT',
+                                   extra_channel='Color')
+            if temp_rgb: nodes.remove(temp_rgb)
+
+            temp_value = None
+            if roughness_socket.is_linked:
+                links.new(roughness_socket.links[0].from_socket, emit_node.inputs[0])
+            else:
+                temp_value = nodes.new(type='ShaderNodeValue')
+                temp_value.outputs[0].default_value = roughness_socket.default_value
+                links.new(temp_value.outputs[0], emit_node.inputs[0])
+
+            roughness_node = self.bake(context, active_node,
+                                       resolution=resolution,
+                                       bake_type='EMIT',
+                                       extra_channel='Roughness',
+                                       color_space='Non-Color')
+            if temp_value: nodes.remove(temp_value)
+
+            temp_value = None
+            if metallic_socket.is_linked:
+                links.new(metallic_socket.links[0].from_socket, emit_node.inputs[0])
+            else:
+                temp_value = nodes.new(type='ShaderNodeValue')
+                temp_value.outputs[0].default_value = metallic_socket.default_value
+                links.new(temp_value.outputs[0], emit_node.inputs[0])
+
+            metallic_node = self.bake(context, active_node,
+                                      resolution=resolution,
+                                      bake_type='EMIT',
+                                      extra_channel='Metallic',
+                                      color_space='Non-Color')
+
+            if temp_value: nodes.remove(temp_value)
 
         # restore
         if ori_output_socket is not None:
             links.new(ori_output_socket, output_node.inputs[0])
         if ori_uv is not None:
             ori_uv.active = True
-        context.scene.render.bake.margin = ori_margin
 
         # set select
         for node in nodes:
             node.select = False
-        bake_img_node.select = True
-        nodes.active = bake_img_node
         nodes.remove(emit_node)
+        nodes.active = active_node
+        active_node.select = True
 
         return {'FINISHED'}
 
-    def bake(self, context, active_node, resolution='2048', device='GPU', samples=1, bake_type="EMIT"):
+    def bake(self, context, active_node, resolution='2048', bake_type="EMIT",
+             color_space='sRGB', extra_channel=''):
+
         nodes, links = get_nodes_links(context)
 
-        image_name = context.material.name + "_" + active_node.name + "_" + resolution
+        if self.operator_type == 'NODE':
+            image_name = "_".join([context.material.name, active_node.name, self.resolution])
+
+        else:
+            image_name = "_".join([context.material.name, extra_channel, self.resolution])
+
         if image_name in bpy.data.images:
             bpy.data.images.remove(bpy.data.images[image_name])
 
         # create image
+        # know issue with float_buffer, a normal map should not be a 32 bit image, or will convert the color space from linear to srgb
+        # https://developer.blender.org/T94446
+        float_buffer = True
+        if self.extension == 'png':
+            float_buffer = False
+
         img = bpy.data.images.new(image_name,
                                   width=int(resolution), height=int(resolution),
-                                  alpha=True, float_buffer=True)
-
+                                  alpha=True, float_buffer=float_buffer)
+        # set color space
+        img.colorspace_settings.name = color_space
         # create texture node
         texture_node = nodes.new('ShaderNodeTexImage')
         texture_node.name = 'Texture_Bake_Node'
-        texture_node.location = active_node.location[0] - 400, active_node.location[1]
+        texture_node.location = active_node.location[0], active_node.location[1] + 200
 
         # set active node to bake
+        for node in nodes:
+            node.select = False
+
         texture_node.select = True
         texture_node.image = img
         nodes.active = texture_node
@@ -199,6 +300,8 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         ori_direct = context.scene.render.bake.use_pass_direct
         ori_indirect = context.scene.render.bake.use_pass_indirect
         ori_samples = context.scene.cycles.samples
+        ori_margin = context.scene.render.bake.margin
+        # ori_view_transform = context.scene.view_settings.view_transform
 
         # set property
         if bake_type == 'COMBINED':
@@ -209,10 +312,11 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             context.scene.render.bake.use_pass_indirect = True
 
         context.scene.render.engine = 'CYCLES'
-        context.scene.cycles.samples = samples
-        context.scene.cycles.device = device
-
-        bpy.ops.object.bake(type='EMIT')
+        context.scene.cycles.samples = self.samples
+        context.scene.cycles.device = self.device
+        # context.scene.view_settings.view_transform = 'Standard'
+        # bake
+        bpy.ops.object.bake(type='EMIT', use_clear=True)
 
         # restore property
         context.scene.render.bake.use_pass_direct = ori_direct
@@ -220,14 +324,17 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         context.scene.cycles.samples = ori_samples
         context.scene.render.engine = ori_engine
         context.scene.cycles.device = ori_device
+        context.scene.render.bake.margin = ori_margin
+        # context.scene.view_settings.view_transform = ori_view_transform
 
         # save external
         dir = os.path.join(os.path.dirname(bpy.data.filepath), 'textures')
         if not os.path.exists(dir):
             os.makedirs(dir)
 
-        filename = os.path.join(dir, image_name + '.png')
-        img.save_render(filename, scene=None)
+        filename = os.path.join(dir, image_name + '.' + self.extension)
+        img.filepath_raw = filename
+        img.save()  # save image without render setting's color space
 
         return texture_node
 
