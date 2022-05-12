@@ -62,9 +62,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
     samples: bpy.props.IntProperty(name='Samples', default=1, min=1, soft_max=64)
     margin: bpy.props.IntProperty(default=16, name="Margin", step=4)
     extension: bpy.props.EnumProperty(name='Extension',
-                                      items=[('png', 'PNG', ''),
-                                             ('exr', 'EXR', ''),
-                                             ('tga', 'TGA', ''), ],
+                                      items=[('png', 'PNG', ''),],
                                       default='png')
     color_space: bpy.props.EnumProperty(name="Color Space",
                                         items=[
@@ -128,7 +126,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             col.prop(self, "custom_resolution", text='Custom')
 
         row = box.row(align=True)
-        row.prop(self, "extension", expand=True)
+        # row.prop(self, "extension", expand=True)
         box.prop(self, "margin")
 
         layout.label(text='This could take a few minutes', icon='INFO')
@@ -288,7 +286,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         # know issue with float_buffer, a normal map should not be a 32 bit image, or will convert the color space from linear to srgb
         # https://developer.blender.org/T94446
         float_buffer = True
-        if self.extension == 'png':
+        if self.extension == 'png' or self.extension == 'tga':
             float_buffer = False
 
         img = bpy.data.images.new(image_name,
