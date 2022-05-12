@@ -66,6 +66,12 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                              ('exr', 'EXR', ''),
                                              ('tga', 'TGA', ''), ],
                                       default='png')
+    color_space: bpy.props.EnumProperty(name="Color Space",
+                                        items=[
+                                            ('sRGB', 'sRGB', ''),
+                                            ('Non-Color', 'Non-Color', ''),
+                                        ],
+                                        default='sRGB')
 
     @classmethod
     def poll(cls, context):
@@ -85,23 +91,27 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         layout = self.layout
         layout.use_property_split = True
 
-        row = layout.row(align=True)
+        box = layout.box()
+        row = box.row(align=True)
         row.use_property_split = False
         row.alignment = 'LEFT'
         row.label(text=context.material.name, icon='MATERIAL')
-        row.label(icon='RIGHTARROW')
-        row.label(text=context.active_node.name, icon='NODE')
-        row.label(icon='RIGHTARROW')
-        row.label(text=self.socket, icon='NODE_SEL')
-        layout.separator(factor=0.5)
+        if self.operator_type == 'NODE':
+            row.label(icon='RIGHTARROW')
+            row.label(text=context.active_node.name, icon='NODE')
+            row.label(icon='RIGHTARROW')
+            row.label(text=self.socket, icon='NODE_SEL')
 
-        box = layout.box()
+        box.separator()
+
         box.prop(self, "operator_type")
         if self.operator_type == 'PBR':
             if context.active_node.bl_idname != 'ShaderNodeBsdfPrincipled':
                 box.label(text='Selected node is not a "Principled BSDF" node', icon='ERROR')
         else:
             box.prop(self, "socket")
+            row = box.row(align=True)
+            row.prop(self, "color_space", expand=True)
 
         box.prop(self, "uv_map")
 
@@ -110,10 +120,15 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         box.prop(self, "samples")
         box.separator(factor=0.5)
 
-        box.prop(self, "resolution")
+        box.separator()
+
+        col = box.column(align=True)
+        col.prop(self, "resolution")
         if self.resolution == 'CUSTOM':
-            box.prop(self, "custom_resolution")
-        box.prop(self, "extension")
+            col.prop(self, "custom_resolution", text='Custom')
+
+        row = box.row(align=True)
+        row.prop(self, "extension", expand=True)
         box.prop(self, "margin")
 
         layout.label(text='This could take a few minutes', icon='INFO')
@@ -178,7 +193,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             bake_img_node = self.bake(context, active_node,
                                       resolution=resolution,
                                       bake_type=bake_type,
-                                      color_space='sRGB' if not self.is_normal_map else 'Non-Color', )
+                                      color_space=self.color_space)
 
 
         elif self.operator_type == 'PBR':
@@ -192,7 +207,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
                                     bake_type='NORMAL',
                                     extra_channel='Normal',
                                     color_space='Non-Color')
-            # emit bake
+
             links.new(emit_node.outputs[0], output_node.inputs[0])
 
             temp_rgb = None
@@ -316,7 +331,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         context.scene.cycles.device = self.device
         # context.scene.view_settings.view_transform = 'Standard'
         # bake
-        bpy.ops.object.bake(type='EMIT', use_clear=True)
+        bpy.ops.object.bake(type=bake_type, use_clear=True)
 
         # restore property
         context.scene.render.bake.use_pass_direct = ori_direct
