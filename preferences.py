@@ -673,7 +673,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box = layout.box()
         box.operator('spio.check_update', text='Check Update', icon='INFO')
 
-        from .utils.addon_updater.op_check_version import SPIO_check_update
+        from .addon.addon_updater.op_check_version import SPIO_check_update
         SPIO_check_update.draw_update(box)
 
         box = layout.box()
