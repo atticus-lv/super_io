@@ -324,6 +324,42 @@ class SPIO_OT_export_image(ImageCopyDefault, bpy.types.Operator):
     action = 'file'
 
 
+import zipfile
+
+
+class SPIO_OT_import_pbr_zip(bpy.types.Operator):
+    bl_idname = 'spio.import_pbr_zip'
+    bl_label = 'Import Zips as PBR Materials'
+
+    files: StringProperty(name='')
+
+    @classmethod
+    def poll(self, context):
+        return bpy.data.filepath != ''
+
+    def invoke(self, context, event):
+        for filepath in self.files.split('$$'):
+            dir_name = os.path.basename(filepath).split('.')[0] # extract folder
+            # name
+            extract_dir = os.path.join(os.path.dirname(os.path.abspath(bpy.data.filepath)), 'textures', dir_name)
+            if not os.path.exists(extract_dir):
+                os.makedirs(extract_dir)
+
+            if not os.path.isfile(filepath):
+                self.report({'ERROR'}, f'{filepath} is not a zip file')
+                return {'CANCELLED'}
+
+            # extract zip file
+            with zipfile.ZipFile(filepath, 'r') as zip_ref:
+                zip_ref.extractall(extract_dir)
+            # build pbr material from extracted textures
+
+            bpy.ops.spio.create_principled_set_up_material(directory=extract_dir + '/', use_context_space=False,
+                                                           mark_asset=event.alt)
+
+        return {'FINISHED'}
+
+
 class SPIO_OT_import_pbr_folders_as_materials(bpy.types.Operator):
     """Hold Alt to import as asset"""
     bl_idname = "spio.import_pbr_folders_as_materials"
@@ -655,6 +691,7 @@ classes = (
     SPIO_OT_import_image_as_parallax_material,
     SPIO_OT_import_image_as_nodes,
     SPIO_OT_import_image_PBR_setup,
+    SPIO_OT_import_pbr_zip,
     SPIO_OT_import_image_as_world,
     SPIO_OT_import_image_as_plane,
     SPIO_OT_import_image_as_light_gobos,
