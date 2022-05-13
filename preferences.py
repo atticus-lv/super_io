@@ -165,6 +165,7 @@ class ConfigItemProperty(PropertyGroup):
              'Import and Install extra_addon', 'COMMUNITY', 103),
 
             ('ADDONS_IMPORT_IES', 'Import IES (.ies)', 'Import IES file as light', 'LIGHT_SPOT', 104),
+            ('ADDONS_IMPORT_PBR_ZIP', 'Import PBR Material (.zip)', 'Import PBR Material', 'MATERIAL', 105),
 
             None,
             ('CUSTOM', 'Custom', '', 'USER', 666),

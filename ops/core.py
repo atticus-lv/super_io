@@ -404,8 +404,8 @@ class PopupImportMenu():
                         op = col.operator('spio.import_image_pbr_setup')
                         op.files = join_paths
 
-                        op = col.operator('spio.import_pbr_zip')
-                        op.files = join_paths
+                        # op = col.operator('spio.import_pbr_zip')
+                        # op.files = join_paths
 
             if return_menu:
                 return draw_node_editor_menu
