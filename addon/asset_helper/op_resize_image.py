@@ -46,7 +46,7 @@ class SPIO_OT_batch_image_operate(bpy.types.Operator):
     def invoke(self, context, event):
         self.filepaths = None
 
-        from ..clipboard.clipboard import Clipboard
+        from ...clipboard.clipboard import Clipboard
         self.clipboard = Clipboard()
 
         filepaths = self.clipboard.pull_files_from_clipboard(get_pref().force_unicode)
