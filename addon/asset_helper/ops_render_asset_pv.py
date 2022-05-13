@@ -8,7 +8,8 @@ from ...ui.t3dn_bip import previews
 
 __tempPreview__ = {}  # store in global, delete in unregister
 
-image_extensions = ('.png', '.jpg', '.jpeg')
+# image_extensions = ('.png', '.jpg', '.jpeg')
+image_extensions = ('.bip')
 
 
 # image_extensions = ('.bip')
@@ -261,7 +262,6 @@ class SPIO_OI_render_material_asset_preview(render_asset_preview, bpy.types.Oper
 
 from ...ui.ui_panel import import_icon, export_icon, get_pref
 
-
 class SPIO_MT_asset_browser_menu(bpy.types.Menu):
     bl_label = "Asset Helper"
     bl_idname = 'SPIO_MT_asset_browser_menu'
@@ -278,12 +278,10 @@ class SPIO_MT_asset_browser_menu(bpy.types.Menu):
         layout.operator('spio.mark_helper', icon='ASSET_MANAGER')
 
 
-
 def asset_browser(self, context):
     layout = self.layout
     if get_pref().asset_helper:
-        layout.menu(SPIO_MT_asset_browser_menu.bl_idname)
-
+        layout.menu('SPIO_MT_asset_browser_menu')
 
 def register():
     img_preview = previews.new(max_size=(512, 512))
@@ -291,22 +289,28 @@ def register():
     img_preview.img = ()
     __tempPreview__["spio_asset_thumbnails"] = img_preview
 
+    import_icon.register()
+    export_icon.register()
+
     # bpy.utils.register_class(SPIO_OT_render_hdri_preview)
     bpy.utils.register_class(SPIO_OI_render_world_asset_preview)
     bpy.utils.register_class(SPIO_OI_render_material_asset_preview)
 
-    if bpy.app.version > (3, 0, 0):
+    if bpy.app.version >= (3, 0, 0):
         bpy.utils.register_class(SPIO_MT_asset_browser_menu)
         bpy.types.ASSETBROWSER_MT_editor_menus.append(asset_browser)
 
 
 def unregister():
+    if bpy.app.version >= (3, 0, 0):
+        bpy.utils.unregister_class(SPIO_MT_asset_browser_menu)
+        bpy.types.ASSETBROWSER_MT_editor_menus.remove(asset_browser)
+
     # bpy.utils.unregister_class(SPIO_OT_render_hdri_preview)
     bpy.utils.unregister_class(SPIO_OI_render_world_asset_preview)
     bpy.utils.unregister_class(SPIO_OI_render_material_asset_preview)
 
-    if bpy.app.version > (3, 0, 0):
-        bpy.utils.unregister_class(SPIO_MT_asset_browser_menu)
-        bpy.types.ASSETBROWSER_MT_editor_menus.remove(asset_browser)
-
     clear_preview_cache()
+
+    import_icon.unregister()
+    export_icon.unregister()

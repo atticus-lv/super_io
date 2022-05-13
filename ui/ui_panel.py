@@ -26,11 +26,11 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
         pref = get_pref()
 
         row = layout
-        row = row.row(align = True)
+        row = row.row(align=True)
         row.prop(pref, 'ui', expand=True, emboss=False)
         row.separator()
         row.menu('SPIO_MT_ConfigIOMenu', text='', icon='FILE_TICK')
-        row.separator(factor = 2)
+        row.separator(factor=2)
 
     def draw(self, context):
         layout = self.layout
@@ -126,10 +126,11 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
         col.prop(context.scene, 'spio_snapshot_render_settings', slider=True)
         subbox.operator('spio.asset_snap_shot', icon='RENDER_STILL')
 
-
-
         # box.operator('spio.render_hdri_preview', icon='WORLD')
         # box.operator('spio.set_asset_thumb_from_clipboard_image', icon='IMPORT')
+
+
+
 
 
 panels = (

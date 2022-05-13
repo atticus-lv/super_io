@@ -1,7 +1,7 @@
 import bpy
 import os
 from subprocess import run
-from ..preferences import get_pref
+from ...preferences import get_pref
 
 
 class SPIO_OT_batch_image_operate(bpy.types.Operator):
