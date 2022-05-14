@@ -702,6 +702,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box.label(text='Support Paste Vector Patterns copied from Illustrator', icon='EVENT_A')
         box.label(text='Support Paste Selection copied from Photoshop', icon='EVENT_P')
 
+        # box.label(text= 'Extra')
+        # box.operator('wm.url_open', text='import_3dm by jesterKing', icon='URL').url = 'https://github.com/jesterKing/import_3dm'
+
     def draw_settings(self, context, layout):
         s = layout.row(align=False)
         col = s.column(align=True)

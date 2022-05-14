@@ -15,11 +15,14 @@
 </p>
 
 # Intro
+
 ![f_world](res/img/f_world.gif)
 
 **SPIO is a blender addon that allow you to copy and paste to import or export.**
 
-Currently we can not drag and drop to import model in blender, but with this addon, you can easily copy your model/Image in your File Explorer, then paste in blender with **just one click/shortcut**,which has improved the efficiency of importing and exporting blender files / Models / pictures
+Currently we can not drag and drop to import model in blender, but with this addon, you can easily copy your model/Image
+in your File Explorer, then paste in blender with **just one click/shortcut**,which has improved the efficiency of
+importing and exporting blender files / Models / pictures
 
 With third-party Scripts, you are allowed to copy/paste among blender, Cinema 4d and Houdini
 
@@ -34,7 +37,7 @@ And new features which come from great idea!
 
 # Feature
 
-> Check the [document](https://atticus-lv.gitee.io/super_io/#/) above for more information 
+> Check the [document](https://atticus-lv.gitee.io/super_io/#/) above for more information
 
 ![f_config](./res/img/f_preset.png)
 
@@ -122,8 +125,6 @@ And new features which come from great idea!
 
 ![f_addon](res/img/f_addon.png)
 
-
-
 # Thanks
 
 > Thanks to these projects, I can not think of what I would do without them:
@@ -134,6 +135,37 @@ And new features which come from great idea!
 # Log
 
 > English Log at release panel
+
+### v1.4.5 (WIP)
+
+新
+
+#### blender
+
++ 支持vdb导入
++ 第三方插件获取的描述改进（教程）
++ 导出节点为图像现支持烘焙原理花BSDF的pbr图像（法线，金属度，粗糙度，颜色）
++ 新导入配置预设：导入压缩包为pbr纹理
++ 导入插件预设现在会依次弹出启用窗口
+
+更改
+
++ 导入纹理灯光时连接图像至颜色而不是强度
+
+#### houdini
+
++ 新的导出脚本，现在可以选择更多的格式
++ 饼菜单脚本，可以选择四种不同的导出格式
+
+### v1.4.4.fix
+
++ 修复导出打开目录错误
++ 修复导入image/svg文件错误
++ 修复导出配置错误
+
+新
+
++ 导出为 svg（油性铅笔）配置
 
 ### v1.4.4
 
