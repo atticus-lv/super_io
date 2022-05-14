@@ -66,6 +66,20 @@ def get_color_tag_icon(index):
 enum_color_tag_items = get_color_tag_enum_items()
 
 
+def enum_operator_type_addon():
+    from .imexporter.default_addon import addon_lib
+
+    enums = []
+
+    for identifier, d in addon_lib:
+        item = (identifier, d['name'], d['description'], d['icon'], d['number'])
+        enums.append(item)
+
+    return enums
+
+def get_operator_type():
+    pass
+
 class ConfigItemProperty(PropertyGroup):
     # USE
     use_config: BoolProperty(name='Use', default=True)
