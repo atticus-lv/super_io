@@ -32,6 +32,13 @@ class SPIO_OT_import_addon(bpy.types.Operator):
                 for area in window.screen.areas:
                     area.tag_redraw()
 
+        def draw_addon_to_install(self, context):
+            layout = self.layout
+            layout.operator_context = 'INVOKE_DEFAULT'
+            op = layout.operator('preferences.addon_enable', icon='CHECKBOX_DEHLT',text = module)
+            op.module = module
+
+        context.window_manager.popup_menu(draw_addon_to_install, title='Enable Add-on')
         return {'FINISHED'}
 
 
@@ -58,23 +65,8 @@ class SPIO_OT_enable_addon(bpy.types.Operator):
         return {'FINISHED'}
 
 
-def draw_addon_to_install(self, context):
-    layout = self.layout
-    layout.popover(panel="SPIO_PT_InstallAddon", text='Addon to install:', icon='COLLAPSEMENU')
-
-
-def pop_up_addon_list(self, context):
-    if context.window_manager.spio_is_pop_up_addon is False:
-        context.window_manager.popup_menu(draw_addon_to_install, title='Enable Addon')
-        context.window_manager.spio_is_pop_up_addon = True
-
-    if context.window_manager.spio_cache_addons == '':
-        context.window_manager.spio_cache_addons = False
-
-
 def register():
-    bpy.types.WindowManager.spio_cache_addons = StringProperty(update=pop_up_addon_list)
-    bpy.types.WindowManager.spio_is_pop_up_addon = BoolProperty(default=False)
+    bpy.types.WindowManager.spio_cache_addons = StringProperty()
 
     bpy.utils.register_class(SPIO_OT_import_addon)
     bpy.utils.register_class(SPIO_OT_enable_addon)
@@ -82,7 +74,7 @@ def register():
 
 def unregister():
     del bpy.types.WindowManager.spio_cache_addons
-    del bpy.types.WindowManager.spio_is_pop_up_addon
+    del bpy.types.WindowManager.pop_up_addon
 
     bpy.utils.unregister_class(SPIO_OT_import_addon)
     bpy.utils.unregister_class(SPIO_OT_enable_addon)

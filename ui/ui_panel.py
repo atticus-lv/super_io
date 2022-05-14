@@ -76,33 +76,6 @@ class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
         row.separator()
 
 
-class SPIO_PT_InstallAddon(SidebarSetup, bpy.types.Panel):
-    bl_label = 'Install Addon'
-
-    @classmethod
-    def poll(self, context):
-        return context.window_manager.spio_cache_addons != ''
-
-    def draw(self, context):
-        layout = self.layout
-
-        addon_list = [name for name in context.window_manager.spio_cache_addons.split('$$$')]
-
-        for name in addon_list:
-            if name == '': continue
-            op = layout.operator('spio.enable_addon', text=f'Enable "{name}"', icon='CHECKBOX_DEHLT')
-            op.module = name
-            op.remove_cache = False
-
-        if len(addon_list) > 1:
-            op = layout.operator('spio.enable_addon', text='Clear Cache', icon='X')
-            op.module = name
-            op.remove_cache = True
-        # save prefs
-        layout.separator()
-        layout.operator('wm.save_userpref')
-
-
 class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
     bl_label = 'Asset Helper'
     bl_options = {'DEFAULT_CLOSED'}
@@ -140,7 +113,6 @@ panels = (
     SPIO_PT_PrefPanel_283,
     SPIO_PT_PrefPanel_300,
     SPIO_PT_ImportPanel,
-    SPIO_PT_InstallAddon,
     SPIO_PT_AssetHelper,
 )
 
@@ -152,7 +124,6 @@ def register():
         bpy.utils.register_class(SPIO_PT_PrefPanel_300)
 
     bpy.utils.register_class(SPIO_PT_ImportPanel)
-    bpy.utils.register_class(SPIO_PT_InstallAddon)
     bpy.utils.register_class(SPIO_PT_AssetHelper)
 
 
@@ -163,5 +134,4 @@ def unregister():
         bpy.utils.unregister_class(SPIO_PT_PrefPanel_300)
 
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
-    bpy.utils.unregister_class(SPIO_PT_InstallAddon)
     bpy.utils.unregister_class(SPIO_PT_AssetHelper)
