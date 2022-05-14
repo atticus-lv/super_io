@@ -35,7 +35,7 @@ class SPIO_OT_import_addon(bpy.types.Operator):
         def draw_addon_to_install(self, context):
             layout = self.layout
             layout.operator_context = 'INVOKE_DEFAULT'
-            op = layout.operator('preferences.addon_enable', icon='CHECKBOX_DEHLT',text = module)
+            op = layout.operator('preferences.addon_enable', icon='CHECKBOX_DEHLT', text=module)
             op.module = module
 
         context.window_manager.popup_menu(draw_addon_to_install, title='Enable Add-on')
@@ -45,14 +45,17 @@ class SPIO_OT_import_addon(bpy.types.Operator):
 class SPIO_OT_enable_addon(bpy.types.Operator):
     bl_idname = 'spio.enable_addon'
     bl_label = 'Enable Addon'
+    bl_options = {'UNDO_GROUPED'}
 
     module: StringProperty()
     remove_cache: BoolProperty()
 
     def execute(self, context):
+        from addon_utils import enable
+
         try:
             if not self.remove_cache:
-                bpy.ops.preferences.addon_enable("INVOKE_DEFAULT", module=self.module)
+                enable(self.module)
             # update cache
             cache_addons = context.window_manager.spio_cache_addons.split('$$$')
             if self.module in cache_addons:
