@@ -17,10 +17,10 @@ class SPIO_OT_import_addon(bpy.types.Operator):
                                           filter_folder=True, filter_python=False, filter_glob="*.py;*.zip")
 
         if self.filepath.endswith('.py'):
-            module = os.path.split(self.filepath)[1][:-3] # remove .py
+            module = os.path.split(self.filepath)[1][:-3]  # remove .py
         else:
             zip = zipfile.ZipFile(self.filepath)
-            module = zip.namelist()[0].split('/')[0] # get the dir name that blender use to register in the preference
+            module = zip.namelist()[0].split('/')[0]  # get the dir name that blender use to register in the preference
 
         cache_addons = context.window_manager.spio_cache_addons.split('$$$')
 
@@ -39,13 +39,13 @@ class SPIO_OT_enable_addon(bpy.types.Operator):
     bl_idname = 'spio.enable_addon'
     bl_label = 'Enable Addon'
 
-    module:StringProperty()
-    remove_cache:BoolProperty()
+    module: StringProperty()
+    remove_cache: BoolProperty()
 
     def execute(self, context):
         try:
             if not self.remove_cache:
-                bpy.ops.preferences.addon_enable("INVOKE_DEFAULT",module = self.module)
+                bpy.ops.preferences.addon_enable("INVOKE_DEFAULT", module=self.module)
             # update cache
             cache_addons = context.window_manager.spio_cache_addons.split('$$$')
             if self.module in cache_addons:
@@ -58,13 +58,31 @@ class SPIO_OT_enable_addon(bpy.types.Operator):
         return {'FINISHED'}
 
 
+def draw_addon_to_install(self, context):
+    layout = self.layout
+    layout.popover(panel="SPIO_PT_InstallAddon", text='Addon to install:', icon='COLLAPSEMENU')
+
+
+def pop_up_addon_list(self, context):
+    if context.window_manager.spio_is_pop_up_addon is False:
+        context.window_manager.popup_menu(draw_addon_to_install, title='Enable Addon')
+        context.window_manager.spio_is_pop_up_addon = True
+
+    if context.window_manager.spio_cache_addons == '':
+        context.window_manager.spio_cache_addons = False
+
+
 def register():
-    bpy.types.WindowManager.spio_cache_addons = StringProperty()
+    bpy.types.WindowManager.spio_cache_addons = StringProperty(update=pop_up_addon_list)
+    bpy.types.WindowManager.spio_is_pop_up_addon = BoolProperty(default=False)
 
     bpy.utils.register_class(SPIO_OT_import_addon)
     bpy.utils.register_class(SPIO_OT_enable_addon)
 
 
 def unregister():
+    del bpy.types.WindowManager.spio_cache_addons
+    del bpy.types.WindowManager.spio_is_pop_up_addon
+
     bpy.utils.unregister_class(SPIO_OT_import_addon)
     bpy.utils.unregister_class(SPIO_OT_enable_addon)

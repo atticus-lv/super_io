@@ -85,16 +85,22 @@ class SPIO_PT_InstallAddon(SidebarSetup, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        if context.window_manager.spio_cache_addons != '':
-            for name in context.window_manager.spio_cache_addons.split('$$$'):
-                if name == '': continue
-                op = layout.operator('spio.enable_addon', text=f'Enable {name}')
-                op.module = name
-                op.remove_cache = False
 
-        op = layout.operator('spio.enable_addon', text='Clear Cache')
-        op.module = name
-        op.remove_cache = True
+        addon_list = [name for name in context.window_manager.spio_cache_addons.split('$$$')]
+
+        for name in addon_list:
+            if name == '': continue
+            op = layout.operator('spio.enable_addon', text=f'Enable "{name}"', icon='CHECKBOX_DEHLT')
+            op.module = name
+            op.remove_cache = False
+
+        if len(addon_list) > 1:
+            op = layout.operator('spio.enable_addon', text='Clear Cache', icon='X')
+            op.module = name
+            op.remove_cache = True
+        # save prefs
+        layout.separator()
+        layout.operator('wm.save_userpref')
 
 
 class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
@@ -128,9 +134,6 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
 
         # box.operator('spio.render_hdri_preview', icon='WORLD')
         # box.operator('spio.set_asset_thumb_from_clipboard_image', icon='IMPORT')
-
-
-
 
 
 panels = (
