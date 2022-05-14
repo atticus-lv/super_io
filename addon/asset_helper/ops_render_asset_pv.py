@@ -9,10 +9,8 @@ from ...ui.t3dn_bip import previews
 __tempPreview__ = {}  # store in global, delete in unregister
 
 # image_extensions = ('.png', '.jpg', '.jpeg')
-image_extensions = ('.bip')
+image_extensions = ('.bip', '.png')
 
-
-# image_extensions = ('.bip')
 
 def check_extension(input_string: str, extensions: set) -> bool:
     for ex in extensions:
@@ -56,6 +54,11 @@ def enum_thumbnails_from_dir(directory, context):
         image_names = []
         for fn in os.listdir(directory):
             if check_extension(fn.lower(), image_extensions):
+                # check that a bip file exists
+                name = os.path.splitext(fn)[0]
+                if name + '.bip' in image_names: continue
+                if name + '.png' in image_names: image_names.remove(name + '.png')
+
                 image_names.append(fn)
 
         for i, name in enumerate(image_names):
@@ -262,6 +265,7 @@ class SPIO_OI_render_material_asset_preview(render_asset_preview, bpy.types.Oper
 
 from ...ui.ui_panel import import_icon, export_icon, get_pref
 
+
 class SPIO_MT_asset_browser_menu(bpy.types.Menu):
     bl_label = "Asset Helper"
     bl_idname = 'SPIO_MT_asset_browser_menu'
@@ -282,6 +286,7 @@ def asset_browser(self, context):
     layout = self.layout
     if get_pref().asset_helper:
         layout.menu('SPIO_MT_asset_browser_menu')
+
 
 def register():
     img_preview = previews.new(max_size=(512, 512))
