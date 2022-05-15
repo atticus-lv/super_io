@@ -53,6 +53,7 @@ def get_preset_chars(path):
 class SPIO_OT_read_preset(bpy.types.Operator):
     bl_idname = "spio.read_preset"
     bl_label = "Add from Preset"
+    bl_options = {'INTERNAL'}
 
     bl_idname_input: bpy.props.StringProperty(name="ID Name")
 
