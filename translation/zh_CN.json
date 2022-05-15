@@ -141,6 +141,7 @@
     "Export principal node as pbr textures": "导出原理化节点为pbr贴图",
     "Not a 'Principled BSDF' node": "不是一个原理化BSDF节点",
     "Addon to install:": "安装的插件:",
+    "Add from Preset": "从预设添加",
 
     "Config Import/Export": "配置导入/导出",
     "Import Config": "导入配置",

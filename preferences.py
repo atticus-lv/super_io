@@ -77,8 +77,10 @@ def enum_operator_type_addon():
 
     return enums
 
+
 def get_operator_type():
     pass
+
 
 class ConfigItemProperty(PropertyGroup):
     # USE
@@ -200,6 +202,7 @@ class ConfigItemProperty(PropertyGroup):
                                ],
                                default='VIEW_3D')
     prop_list: CollectionProperty(type=OperatorProperty)
+    show_prop_list: BoolProperty(name='Properties', default=True)
 
 
 class OperatorPropAction:
@@ -953,22 +956,30 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             row.alert = True
             row.label(icon='TOOL_SETTINGS', text=text)
 
-            if item.bl_idname != '':
+            # set a box
+            col = col.box().column(align=True)
+            col.use_property_split = False
+            row = col.row(align = False)
+            row.prop(item, 'show_prop_list', icon='TRIA_DOWN' if item.show_prop_list else 'TRIA_RIGHT', emboss=False)
+            row.operator('spio.read_preset',icon = 'PRESET').bl_idname_input = item.bl_idname
+
+            if item.bl_idname != '' and item.show_prop_list:
+
                 row = col.row()
                 if len(item.prop_list) != 0:
                     row.label(text='Property')
                     row.label(text='Value')
+
                 for prop_index, prop_item in enumerate(item.prop_list):
-                    row = col.row(align=True)
+                    row = col.row()
                     row.prop(prop_item, 'name', text='')
                     row.prop(prop_item, 'value', text='')
 
                     d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
                     d.config_list_index = self.config_list_index
                     d.prop_index = prop_index
-
-                row = col.row(align=True)
-                row.alignment = 'LEFT'
+                col.separator()
+                row = col.row(align=False)
                 d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
                 d.config_list_index = self.config_list_index
 

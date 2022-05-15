@@ -1,5 +1,50 @@
 import bpy.app
 
+exporter_lib = {
+    'EXPORT_DAE': {
+        'name': 'Collada (.dae)',
+        'bl_idname': 'export_dae',
+        'icon': 'EXPORT',
+        'number': 199
+    },
+    'EXPORT_ABC': {
+        'name': 'Alembic (.abc)',
+        'bl_idname': 'wm.alembic_export',
+        'icon': 'IMPORT',
+        'number': 198
+    },
+    'EXPORT_USD': {
+        'name': 'USD (.usd)',
+        'bl_idname': 'export_usd',
+        'icon': 'IMPORT',
+        'number': 197
+    },
+    'EXPORT_USDC': {
+        'name': 'USD (.usdc)',
+        'bl_idname': 'wm.usd_export',
+        'icon': 'IMPORT',
+        'number': 196
+    },
+    'EXPORT_USDA': {
+        'name': 'USD (.usda)',
+        'bl_idname': 'wm.usd_export',
+        'icon': 'IMPORT',
+        'number': 195
+    },
+    'EXPORT_PLY': {
+        'name': 'Stanford (.ply)',
+        'bl_idname': 'export_mesh.ply',
+        'icon': 'IMPORT',
+        'number': 194
+    },
+    'EXPORT_STL': {
+        'name': 'Stl (.stl)',
+        'bl_idname': 'export_mesh.stl',
+        'icon': 'IMPORT',
+        'number': 193
+    },
+}
+
 exporter_min = {
     'blend': 'spio.export_blend',
     'stl': 'export_mesh.stl',
