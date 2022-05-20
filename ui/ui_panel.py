@@ -1,8 +1,11 @@
 import bpy
 from ..ops.core import get_pref
 from ..preferences import SPIO_Preference
-from ..ops.ops_super_import import import_icon
-from ..ops.ops_super_export import export_icon
+
+
+from .icon_utils import RSN_Preview
+import_icon = RSN_Preview(image='import.bip', name='import_icon2')
+export_icon = RSN_Preview(image='export.bip', name='import_icon2')
 
 
 class SidebarSetup:
@@ -118,6 +121,9 @@ panels = (
 
 
 def register():
+    import_icon.register()
+    export_icon.register()
+
     if bpy.app.version < (3, 0, 0):
         bpy.utils.register_class(SPIO_PT_PrefPanel_283)
     else:
@@ -135,3 +141,6 @@ def unregister():
 
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
     bpy.utils.unregister_class(SPIO_PT_AssetHelper)
+
+    import_icon.unregister()
+    export_icon.unregister()

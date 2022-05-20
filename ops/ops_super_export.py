@@ -1,6 +1,6 @@
 import bpy
 
-from .op_dynamic_io import IO_Base
+from .dynamic_io import IO_Base
 from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import is_float, get_pref, convert_value
 from ..ui.icon_utils import RSN_Preview

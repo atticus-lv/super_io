@@ -6,7 +6,7 @@ import sys
 import bpy
 from bpy.props import (StringProperty)
 
-from .op_dynamic_io import IO_Base
+from .dynamic_io import IO_Base
 from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import get_pref
 
