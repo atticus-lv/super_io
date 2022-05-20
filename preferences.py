@@ -250,7 +250,6 @@ class SPIO_OT_OperatorPropRemove(OperatorPropAction, bpy.types.Operator):
     action = 'REMOVE'
 
 
-from .ops.core import convert_value
 
 
 class SPIO_OT_ConfigListAction:
@@ -295,6 +294,8 @@ class SPIO_OT_ConfigListAction:
                         # skip if the prop is not filled
                         if prop == '' or value == '': continue
                         prop_item = new_item.prop_list.add()
+
+                        from .ops.core import convert_value
                         setattr(prop_item, prop, convert_value(value))
 
             old_index = pref.config_list_index

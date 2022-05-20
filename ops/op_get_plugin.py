@@ -57,9 +57,9 @@ class SPIO_OT_load_text(bpy.types.Operator):
 
 
 item = [
-    ('houdini_spio_import.py', 'Import (Shelf Tool)', ''),
-    ('houdini_spio_export.py', 'Export (Shelf Tool)', ''),
-    ('houdini_spio_export_radius.py', 'Export (Radial Menu)', ''),
+    ('houdini_spio_import', 'Import (Shelf Tool)', ''),
+    ('houdini_spio_export', 'Export (Shelf Tool)', ''),
+    ('houdini_spio_export_radius', 'Export (Radial Menu)', ''),
 ]
 
 

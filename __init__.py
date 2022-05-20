@@ -27,6 +27,8 @@ addon_dir = os.path.dirname(__file__)
 py_paths = [os.path.join(root, f) for root, dirs, files in os.walk(addon_dir) for f in files if
             f.endswith('.py') and f != '__init__.py']
 
+exclude_dirs = ['third_party_addons', 'clipboard', 'util']
+
 for path in py_paths:
     name = os.path.basename(path)[:-3]
     correct_path = path.replace('\\', '/')
@@ -34,21 +36,32 @@ for path in py_paths:
     dir_list = [list(g) for k, g in groupby(correct_path.split('/'), lambda x: x == __folder_name__) if
                 not k]
     # combine dir and make dict like this: 'name:folder.name'
-    if 'third_party_addons' in dir_list[-1]:
-        continue
-    elif 'clipboard' in dir_list[-1]:
-        continue
+    for dir in exclude_dirs:
+        if dir in dir_list[-1]: continue
 
     r_name_raw = __folder_name__ + '.' + '.'.join(dir_list[-1])
     __dict__[name] = r_name_raw[:-3]
 
-# auto reload
-# for name in __dict__.values():
-#     if name in sys.modules:
-#         importlib.reload(sys.modules[name])
-#     else:
-globals()[name] = importlib.import_module(name)
-setattr(globals()[name], 'modules', __dict__)
+# set
+for name in __dict__.values():
+    if name not in sys.modules:
+        globals()[name] = importlib.import_module(name)
+        setattr(globals()[name], 'modules', __dict__)
+
+
+# manual reload
+def reload():
+    register()
+    unregister()
+
+    for name in __dict__.values():
+        if name in sys.modules:
+            try:
+                importlib.reload(sys.modules[name])
+            except Exception as e:
+                pass
+
+    register()
 
 
 def prepare():
@@ -56,7 +69,7 @@ def prepare():
     addons = [
         'io_import_images_as_planes',
         'io_import_dxf',
-        'io_import_obj',  # 3.0 and lower obj io
+        # 'io_import_obj',  # 3.0 and lower obj io
         'io_scene_obj',  # 3.1 and heigher obj io
         'io_scene_fbx',
         'io_scene_gltf2',
