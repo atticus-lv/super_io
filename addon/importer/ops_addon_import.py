@@ -77,7 +77,6 @@ def register():
 
 def unregister():
     del bpy.types.WindowManager.spio_cache_addons
-    del bpy.types.WindowManager.pop_up_addon
 
     bpy.utils.unregister_class(SPIO_OT_import_addon)
     bpy.utils.unregister_class(SPIO_OT_enable_addon)

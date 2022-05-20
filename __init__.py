@@ -34,7 +34,7 @@ for path in py_paths:
     dir_list = [list(g) for k, g in groupby(correct_path.split('/'), lambda x: x == __folder_name__) if
                 not k]
     # combine dir and make dict like this: 'name:folder.name'
-    if 'third_party_addons' not in dir_list[-1]:
+    if 'third_party_addons' not in dir_list[-1] or 'clipboard' not in dir_list[-1]:
         r_name_raw = __folder_name__ + '.' + '.'.join(dir_list[-1])
         __dict__[name] = r_name_raw[:-3]
 
@@ -83,7 +83,10 @@ def register():
 def unregister():
     for name in __dict__.values():
         if name in sys.modules and hasattr(sys.modules[name], 'unregister'):
-            sys.modules[name].unregister()
+            try:
+                sys.modules[name].unregister()
+            except Exception as e:
+                print(e)
 
 
 if __name__ == '__main__':
