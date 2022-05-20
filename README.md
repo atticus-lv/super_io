@@ -138,6 +138,10 @@ And new features which come from great idea!
 
 ### v1.4.5 (WIP)
 
+修复
+
++ 加载插件时会导致(win error 10054)
+
 新
 
 #### blender
@@ -147,6 +151,7 @@ And new features which come from great idea!
 + 导出节点为图像现支持烘焙原理花BSDF的pbr图像（法线，金属度，粗糙度，颜色）
 + 新导入配置预设：导入压缩包为pbr纹理
 + 导入插件预设现在会依次弹出启用窗口
++ 自定义配置现可读取导入导出预设（fbx，obj，abc等）
 
 更改
 

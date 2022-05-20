@@ -22,6 +22,17 @@ class OperatorProperty(PropertyGroup):
     name: StringProperty(name='Property')
     value: StringProperty(name='Value')
 
+    # value_type: EnumProperty(items=[
+    #     ('STRING', 'String', 'String'),
+    #     ('INT', 'Integer', 'Integer'),
+    #     ('FLOAT', 'Float', 'Float'),
+    #     ('BOOL', 'Boolean', 'Boolean'),
+    # ], default='STRING')
+    #
+    # value_int: IntProperty(name='Value')
+    # value_float: FloatProperty(name='Value')
+    # value_bool: BoolProperty(name='Value')
+
 
 def correct_blidname(self, context):
     if self.bl_idname.startswith('bpy.ops.'):
@@ -959,9 +970,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             # set a box
             col = col.box().column(align=True)
             col.use_property_split = False
-            row = col.row(align = False)
+            row = col.row(align=False)
             row.prop(item, 'show_prop_list', icon='TRIA_DOWN' if item.show_prop_list else 'TRIA_RIGHT', emboss=False)
-            row.operator('spio.read_preset',icon = 'PRESET').bl_idname_input = item.bl_idname
+            row.operator('spio.read_preset', icon='PRESET').bl_idname_input = item.bl_idname
 
             if item.bl_idname != '' and item.show_prop_list:
 
