@@ -3,8 +3,6 @@ from __future__ import annotations
 import subprocess
 import os
 import sys
-import ctypes
-import ctypes.wintypes as w
 
 from locale import getdefaultlocale
 
@@ -293,7 +291,11 @@ class PowerShellClipboard:
 
 
 class WinTypeClipboard:
+
     def __init__(self):
+        import ctypes
+        import ctypes.wintypes as w
+
         self.file_urls = []
 
         self.CF_HDROP = 15
@@ -324,6 +326,8 @@ class WinTypeClipboard:
         return self.file_urls
 
     def pull(self, force_unicode=False):
+        import ctypes
+        import ctypes.wintypes as w
         # get
         try:
             if self.OpenClipboard(None):
