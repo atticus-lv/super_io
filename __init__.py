@@ -36,19 +36,19 @@ for path in py_paths:
     # combine dir and make dict like this: 'name:folder.name'
     if 'third_party_addons' in dir_list[-1]:
         continue
-    elif 'clipboard' not in dir_list[-1]:
+    elif 'clipboard' in dir_list[-1]:
         continue
 
     r_name_raw = __folder_name__ + '.' + '.'.join(dir_list[-1])
     __dict__[name] = r_name_raw[:-3]
 
 # auto reload
-for name in __dict__.values():
-    if name in sys.modules:
-        importlib.reload(sys.modules[name])
-    else:
-        globals()[name] = importlib.import_module(name)
-        setattr(globals()[name], 'modules', __dict__)
+# for name in __dict__.values():
+#     if name in sys.modules:
+#         importlib.reload(sys.modules[name])
+#     else:
+globals()[name] = importlib.import_module(name)
+setattr(globals()[name], 'modules', __dict__)
 
 
 def prepare():
