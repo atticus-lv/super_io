@@ -20,7 +20,8 @@ importer = {
 
     'svg': 'import_curve.svg',
     'dxf': 'import_scene.dxf',
-    'vdb': 'object.volume_import'
+    'vdb': 'object.volume_import',
+    'bvh': 'import_anim.bvh',
 }
 
 

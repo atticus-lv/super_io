@@ -37,13 +37,13 @@ def prepare():
     addons = [
         'io_import_images_as_planes',
         'io_import_dxf',
-        # 'io_import_obj',  # 3.0 and lower obj io
         'io_scene_obj',  # 3.1 and heigher obj io
         'io_scene_fbx',
         'io_scene_gltf2',
         'io_curve_svg',
         'io_mesh_stl',
         'io_mesh_ply',
+        'io_anim_bvh',
         # 'node_wrangler', # use to set up pbr textures
 
     ]
