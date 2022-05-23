@@ -757,12 +757,6 @@ def register():
         bpy.utils.register_class(cls)
 
     try:
-        for key in get_pref().config_list.__annotations__.keys():
-            the_value = getattr(ConfigItemProperty, key)
-    except Exception as e:
-        print(e)
-
-    try:
         change_panel_category()
 
     except(Exception) as e:

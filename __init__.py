@@ -2,7 +2,7 @@ bl_info = {
     "name": "Super IO (SPIO)",
     "author": "Atticus",
     "blender": (2, 83, 0),
-    "version": (1, 4, 5, 1),
+    "version": (1, 4, 5, 2),
     "category": "Import-Export",
     "support": "COMMUNITY",
     "doc_url": "https://atticus-lv.gitee.io/super_io/#/",
@@ -66,7 +66,10 @@ def register():
 
 def unregister():
     for cls in reversed(classes):
-        cls.unregister()
+        try:
+            cls.unregister()
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':

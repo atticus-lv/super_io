@@ -117,9 +117,6 @@ panels = (
 
 
 def register():
-    import_icon.register()
-    export_icon.register()
-
     if bpy.app.version < (3, 0, 0):
         bpy.utils.register_class(SPIO_PT_PrefPanel_283)
     else:
@@ -138,5 +135,3 @@ def unregister():
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
     bpy.utils.unregister_class(SPIO_PT_AssetHelper)
 
-    import_icon.unregister()
-    export_icon.unregister()

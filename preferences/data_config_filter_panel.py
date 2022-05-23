@@ -108,8 +108,8 @@ def register():
     bpy.types.WindowManager.spio_filter = PointerProperty(type=ConfigListFilterProperty)
 
 
-def unreal_register():
-    bpy.utils.register_class(ConfigListFilterProperty)
-    bpy.utils.register_class(SPIO_OT_color_tag_selector)
+def unregister():
+    bpy.utils.unregister_class(ConfigListFilterProperty)
+    bpy.utils.unregister_class(SPIO_OT_color_tag_selector)
 
     del bpy.types.WindowManager.spio_filter
