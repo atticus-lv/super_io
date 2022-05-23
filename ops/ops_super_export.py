@@ -5,7 +5,7 @@ from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import is_float, get_pref, convert_value
 from ..ui.icon_utils import RSN_Preview
 
-export_icon = RSN_Preview(image='export.bip', name='import_icon')
+from ..preferences.data_icon import export_icon
 
 
 class WM_OT_super_export(IO_Base, bpy.types.Operator):
@@ -29,7 +29,7 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
 
         # dynamic operator
         ##################
-        from .op_dynamic_io import DynamicExport
+        from .dynamic_io import DynamicExport
 
         if self.use_custom_config:
 
@@ -110,16 +110,12 @@ def draw_menu(self, context):
 
 
 def register():
-    export_icon.register()
-
     bpy.utils.register_class(WM_OT_super_export)
 
     bpy.types.IMAGE_MT_image.append(draw_menu)
 
 
 def unregister():
-    export_icon.unregister()
-
     bpy.utils.unregister_class(WM_OT_super_export)
 
     bpy.types.IMAGE_MT_image.remove(draw_menu)

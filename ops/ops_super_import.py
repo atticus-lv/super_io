@@ -10,9 +10,7 @@ from .dynamic_io import IO_Base
 from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import get_pref
 
-from ..ui.icon_utils import RSN_Preview
-
-import_icon = RSN_Preview(image='import.bip', name='import_icon')
+from ..preferences.data_icon import import_icon
 
 
 class SuperImport(IO_Base, bpy.types.Operator):
@@ -122,7 +120,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
 
         # dynamic operator
         ##################
-        from .op_dynamic_io import DynamicImport
+        from .dynamic_io import DynamicImport
         from ..imexporter.default_importer import get_importer
 
         importer = get_importer(cpp_obj_importer=get_pref().cpp_obj_importer)
@@ -272,8 +270,6 @@ def node_context_menu(self, context):
 
 
 def register():
-    import_icon.register()
-
     bpy.utils.register_class(WM_OT_super_import)
 
     # Global ext
@@ -284,8 +280,6 @@ def register():
 
 
 def unregister():
-    import_icon.unregister()
-
     bpy.types.NODE_MT_context_menu.remove(node_context_menu)
 
     bpy.utils.unregister_class(WM_OT_super_import)

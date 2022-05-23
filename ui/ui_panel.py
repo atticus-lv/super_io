@@ -1,11 +1,7 @@
 import bpy
 from ..ops.core import get_pref
-from ..preferences import SPIO_Preference
-
-
-from .icon_utils import RSN_Preview
-import_icon = RSN_Preview(image='import.bip', name='import_icon2')
-export_icon = RSN_Preview(image='export.bip', name='import_icon2')
+from ..preferences.prefs import SPIO_Preference
+from ..preferences.data_icon import import_icon, export_icon
 
 
 class SidebarSetup:

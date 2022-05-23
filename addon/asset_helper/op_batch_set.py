@@ -91,7 +91,7 @@ class SPIO_OT_remove_tag_from_selected_assets(selected_assets, bpy.types.Operato
 
 
 def draw_context_menu_prepend(self, context):
-    from ...preferences import get_pref
+    from ...preferences.prefs import get_pref
     if get_pref().asset_helper and bpy.app.version >= (3, 0, 0):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'

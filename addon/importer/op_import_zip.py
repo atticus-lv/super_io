@@ -3,7 +3,7 @@ import os
 import zipfile
 
 from bpy.props import StringProperty
-from ...preferences import get_pref
+from ...preferences.prefs import get_pref
 from ...ops.op_image_io import get_dir
 
 

@@ -347,7 +347,7 @@ import re
 from pathlib import Path
 from mathutils import Vector
 from os import path
-from ..preferences import get_pref
+from ..preferences.prefs import get_pref
 
 
 # base on node wrangler

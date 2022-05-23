@@ -1,6 +1,6 @@
 import bpy
 import os
-from ...preferences import get_pref
+from ...preferences.prefs import get_pref
 from ...ui.t3dn_bip import previews
 
 # Image items

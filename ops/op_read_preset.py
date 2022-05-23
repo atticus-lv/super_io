@@ -1,7 +1,7 @@
 import bpy
 import os
 from os.path import join
-from ..preferences import get_pref
+from ..preferences.prefs import get_pref
 
 import re
 

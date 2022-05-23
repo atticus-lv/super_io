@@ -21,47 +21,15 @@ from itertools import groupby
 __folder_name__ = __name__
 __dict__ = {}
 
-addon_dir = os.path.dirname(__file__)
+from . import translation, ui, ops, addon, preferences
 
-# get all .py file dir
-py_paths = [os.path.join(root, f) for root, dirs, files in os.walk(addon_dir) for f in files if
-            f.endswith('.py') and f != '__init__.py']
-
-exclude_dirs = ['third_party_addons', 'clipboard', 'util']
-
-for path in py_paths:
-    name = os.path.basename(path)[:-3]
-    correct_path = path.replace('\\', '/')
-    # split dir with folder name
-    dir_list = [list(g) for k, g in groupby(correct_path.split('/'), lambda x: x == __folder_name__) if
-                not k]
-    # combine dir and make dict like this: 'name:folder.name'
-    for dir in exclude_dirs:
-        if dir in dir_list[-1]: continue
-
-    r_name_raw = __folder_name__ + '.' + '.'.join(dir_list[-1])
-    __dict__[name] = r_name_raw[:-3]
-
-# set
-for name in __dict__.values():
-    if name not in sys.modules:
-        globals()[name] = importlib.import_module(name)
-        setattr(globals()[name], 'modules', __dict__)
-
-
-# manual reload
-def reload():
-    register()
-    unregister()
-
-    for name in __dict__.values():
-        if name in sys.modules:
-            try:
-                importlib.reload(sys.modules[name])
-            except Exception as e:
-                pass
-
-    register()
+classes = (
+    preferences,
+    ops,
+    addon,
+    ui,
+    translation
+)
 
 
 def prepare():
@@ -87,23 +55,18 @@ def prepare():
 
 
 def register():
-    for name in __dict__.values():
-        if name in sys.modules and hasattr(sys.modules[name], 'register'):
-            try:
-                sys.modules[name].register()
-            except ValueError:  # open template file may cause this problem
-                pass
+    for cls in classes:
+        try:
+            cls.register()
+        except Exception as e:
+            print(e)
 
     prepare()
 
 
 def unregister():
-    for name in __dict__.values():
-        if name in sys.modules and hasattr(sys.modules[name], 'unregister'):
-            try:
-                sys.modules[name].unregister()
-            except Exception as e:
-                print(e)
+    for cls in reversed(classes):
+        cls.unregister()
 
 
 if __name__ == '__main__':

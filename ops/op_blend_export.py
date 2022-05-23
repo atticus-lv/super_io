@@ -7,7 +7,6 @@ import shutil
 import sys
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
-from .ops_super_import import import_icon
 from .core import get_pref, PostProcess
 
 

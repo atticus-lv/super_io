@@ -12,7 +12,7 @@ import urllib.error
 import shutil
 import ssl
 
-from ...preferences import get_pref
+from ...preferences.prefs import get_pref
 from ... import __folder_name__
 from ... import bl_info
 from . import state

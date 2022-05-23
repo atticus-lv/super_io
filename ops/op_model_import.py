@@ -2,7 +2,7 @@ import bpy
 
 from bpy.props import StringProperty
 from ..imexporter.default_importer import get_importer
-from ..preferences import get_pref
+from ..preferences.prefs import get_pref
 
 
 class SPIO_OT_import_model(bpy.types.Operator):

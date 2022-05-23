@@ -9,211 +9,13 @@ from bpy.props import (EnumProperty,
                        PointerProperty)
 from bpy.types import PropertyGroup
 
-from . import __folder_name__
+from .. import __folder_name__
 import rna_keymap_ui
 
 
 def get_pref():
     """get preferences of this plugin"""
     return bpy.context.preferences.addons.get(__folder_name__).preferences
-
-
-class OperatorProperty(PropertyGroup):
-    name: StringProperty(name='Property')
-    value: StringProperty(name='Value')
-
-    # value_type: EnumProperty(items=[
-    #     ('STRING', 'String', 'String'),
-    #     ('INT', 'Integer', 'Integer'),
-    #     ('FLOAT', 'Float', 'Float'),
-    #     ('BOOL', 'Boolean', 'Boolean'),
-    # ], default='STRING')
-    #
-    # value_int: IntProperty(name='Value')
-    # value_float: FloatProperty(name='Value')
-    # value_bool: BoolProperty(name='Value')
-
-
-def correct_blidname(self, context):
-    if self.bl_idname.startswith('bpy.ops.'):
-        self.bl_idname = self.bl_idname[8:]
-    if self.bl_idname.endswith('()'):
-        self.bl_idname = self.bl_idname[:-2]
-
-
-def correct_name(self, context):
-    pref = get_pref()
-    names = [item.name for item in pref.config_list if item.name == self.name and item.name != '']
-    if len(names) != 1:
-        self.name += '(1)'
-
-
-def get_color_tag_enum_items():
-    if bpy.app.version < (2, 93, 0):
-        items = [
-            (f'COLOR_0{i}',
-             '',
-             '',
-             f'COLORSET_0{i}_VEC' if i != 0 else 'COLORSET_13_VEC', i) for i in range(0, 9)
-        ]
-    else:
-        items = [
-            (f'COLOR_0{i}',
-             '',
-             '',
-             f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION', i) for i in range(0, 9)
-        ]
-
-    return items
-
-
-def get_color_tag_icon(index):
-    if bpy.app.version < (2, 93, 0):
-        return 'COLORSET_13_VEC' if index == 0 else f'COLORSET_0{index}_VEC'
-    else:
-        return f'COLLECTION_COLOR_0{index}' if index != 0 else 'OUTLINER_COLLECTION'
-
-
-enum_color_tag_items = get_color_tag_enum_items()
-
-
-def enum_operator_type_addon():
-    from .imexporter.default_addon import addon_lib
-
-    enums = []
-
-    for identifier, d in addon_lib:
-        item = (identifier, d['name'], d['description'], d['icon'], d['number'])
-        enums.append(item)
-
-    return enums
-
-
-def get_operator_type():
-    pass
-
-
-class ConfigItemProperty(PropertyGroup):
-    # USE
-    use_config: BoolProperty(name='Use', default=True)
-    # UI
-    color_tag: EnumProperty(name='Color Tag',
-                            items=enum_color_tag_items)
-    # IO type
-    io_type: EnumProperty(name='IO Type',
-                          items=[('IMPORT', 'Import', '', 'IMPORT', 0), ('EXPORT', 'Export', '', 'EXPORT', 1)],
-                          default='IMPORT')
-    # information
-    name: StringProperty(name='Preset Name', update=correct_name)
-    description: StringProperty(name='Description',
-                                description='Show in the popup operator tips')
-    # extension
-    extension: StringProperty(name='Extension')
-
-    # custom import match rule
-    ###############################
-    match_rule: EnumProperty(name='Match Rule',
-                             items=[('NONE', 'None (Default)', ''),
-                                    ('STARTSWITH', 'Startswith', ''),
-                                    ('ENDSWITH', 'Endswith', ''),
-                                    ('IN', 'Contain', ''),
-                                    ('REGEX', 'Regex (Match or not)', ''), ],
-                             default='NONE', description='Matching rule of the name')
-
-    match_value: StringProperty(name='Match Value', default='')
-
-    # custom export temp path
-    temporary_directory: StringProperty(name='Temporary Directory', subtype='DIR_PATH',
-                                        description="Temporary Directory to store export files.\nIf empty, use blender's default temporary directory")
-
-    # remove grease pencil from default because this design is only allow one default importer
-    operator_type: EnumProperty(
-        name='Operator Type',
-        items=[
-            ("", "Import", "Default blender build-in importer", "CUBE", 0),
-            None,
-            ('DEFAULT_DAE', 'Collada (.dae)', '', 'IMPORT', 99),
-            ('DEFAULT_ABC', 'Alembic (.abc)', '', 'IMPORT', 98),
-            ('DEFAULT_USD', 'USD (.usd/.usda/.usdc)', '', 'IMPORT', 97),
-            ('DEFAULT_SVG', 'SVG (.svg)', '', 'GP_SELECT_POINTS', 96),
-            ('DEFAULT_PLY', 'Stanford (.ply)', '', 'IMPORT', 95),
-            ('DEFAULT_STL', 'Stl (.stl)', '', 'IMPORT', 94),
-            ('DEFAULT_FBX', 'FBX (.fbx)', '', 'IMPORT', 93),
-            ('DEFAULT_GLTF', 'glTF 2.0 (.gltf/.glb)', '', 'IMPORT', 92),
-            ('DEFAULT_OBJ', 'Wavefront (.obj)', '', 'IMPORT', 91),
-            ('DEFAULT_X3D', 'X3D (.x3d/.wrl)', '', 'IMPORT', 90),
-
-            ("", "Export", "Default blender build-in exporter", "CUBE", 0),
-
-            ('EXPORT_DAE', 'Collada (.dae)', '', 'EXPORT', 199),
-            ('EXPORT_ABC', 'Alembic (.abc)', '', 'EXPORT', 198),
-            ('EXPORT_USD', 'USD (.usd)', '', 'EXPORT', 197),
-            ('EXPORT_USDC', 'USD (.usdc)', '', 'EXPORT', 196),
-            ('EXPORT_USDA', 'USD (.usda)', '', 'EXPORT', 195),
-            ('EXPORT_PLY', 'Stanford (.ply)', '', 'EXPORT', 194),
-            ('EXPORT_STL', 'Stl (.stl)', '', 'EXPORT', 193),
-            ('EXPORT_FBX', 'FBX (.fbx)', '', 'EXPORT', 192),
-            ('EXPORT_GLTF', 'glTF 2.0 (.gltf)', '', 'EXPORT', 191),
-            ('EXPORT_OBJ', 'Wavefront (.obj)', '', 'EXPORT', 190),
-            ('EXPORT_SVG', 'Grease Pencil (.svg)', '', 'EXPORT', 189),
-            None,
-            ('EXPORT_BLEND', 'Blend (.blend)', '', 'BLENDER', 200),
-
-            ("", "Import Blend", "Import Blend File", "BLENDER", 0),
-            None,
-            ('APPEND_BLEND_MATERIAL', 'Append All Materials', 'Append All', 'MATERIAL', 1),
-            ('APPEND_BLEND_COLLECTION', 'Append All Collections', 'Append All',
-             'OUTLINER_COLLECTION', 2),
-            ('APPEND_BLEND_OBJECT', 'Append All Objects', 'Append All', 'OBJECT_DATA', 3),
-            ('APPEND_BLEND_WORLD', 'Append All Worlds', 'Append All', 'WORLD', 4),
-            ('APPEND_BLEND_NODETREE', 'Append All Node Groups', 'Append All', 'NODETREE', 5),
-
-            None,
-            ('LINK_BLEND_MAT', 'Link All Materials', 'Load All', 'MATERIAL', 11),
-            ('LINK_BLEND_COLLECTION', 'Link All Collections', 'Load All',
-             'OUTLINER_COLLECTION', 12),
-            ('LINK_BLEND_OBJECT', 'Link All Objects', 'Load All', 'OBJECT_DATA',
-             13),
-            ('LINK_BLEND_WORLD', 'Link All Worlds', 'Load All', 'WORLD', 14),
-            ('LINK_BLEND_NODE', 'Link All Node Groups', 'Load All', 'NODETREE',
-             15),
-
-            None,
-            ('ADDONS_BLEND_MATERIAL', 'Append and Assign material',
-             'Import material from a single file and assign it to active object', 'MATERIAL', 101),
-            ('ADDONS_BLEND_WORLD', 'Append and Assign world',
-             'Import world from a single file and set it as context world', 'WORLD', 102),
-
-            ("", "Add-ons", "Custom operator and properties input", "USER", 0),
-            # ('ADDONS_SVG', 'Grease Pencil (.svg)', '', 'GP_SELECT_STROKES', 100),
-
-            None,
-            ('ADDONS_INSTALL_ADDON', 'Install Addon (.py/.zip)',
-             'Import and Install extra_addon', 'COMMUNITY', 103),
-
-            ('ADDONS_IMPORT_IES', 'Import IES (.ies)', 'Import IES file as light', 'LIGHT_SPOT', 104),
-            ('ADDONS_IMPORT_PBR_ZIP', 'Import PBR Material (.zip)', 'Import PBR Material', 'MATERIAL', 105),
-
-            None,
-            ('CUSTOM', 'Custom', '', 'USER', 666),
-        ],
-        default='DEFAULT_OBJ', )
-
-    # custom operator
-    bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
-    context: EnumProperty(name="Operator Context",
-                          items=[("INVOKE_DEFAULT", "INVOKE_DEFAULT", ''),
-                                 ("EXEC_DEFAULT", "EXEC_DEFAULT", ''), ],
-                          default='EXEC_DEFAULT')
-    context_area: EnumProperty(name="Area",
-                               items=[
-                                   ("VIEW_3D", "3D View", ''),
-                                   ("IMAGE_EDITOR", "Image Editor", ''),
-                                   ("NODE_EDITOR", "Node Editor", ''),
-                               ],
-                               default='VIEW_3D')
-    prop_list: CollectionProperty(type=OperatorProperty)
-    show_prop_list: BoolProperty(name='Properties', default=True)
 
 
 class OperatorPropAction:
@@ -248,8 +50,6 @@ class SPIO_OT_OperatorPropRemove(OperatorPropAction, bpy.types.Operator):
     bl_label = "Remove Prop"
 
     action = 'REMOVE'
-
-
 
 
 class SPIO_OT_ConfigListAction:
@@ -295,7 +95,7 @@ class SPIO_OT_ConfigListAction:
                         if prop == '' or value == '': continue
                         prop_item = new_item.prop_list.add()
 
-                        from .ops.core import convert_value
+                        from ..ops.core import convert_value
                         setattr(prop_item, prop, convert_value(value))
 
             old_index = pref.config_list_index
@@ -367,94 +167,7 @@ class SPIO_OT_ConfigListMoveDown(SPIO_OT_ConfigListMove, bpy.types.Operator):
     action = 'DOWN'
 
 
-class ConfigListFilterProperty(PropertyGroup):
-    filter_type: EnumProperty(name='Filter Type', items=[
-        ('name', 'Name', ''),
-        ('extension', 'Extension', ''),
-        ('match_rule', 'Match Rule', ''),
-        ('color_tag', 'Color Tag', ''),
-    ], default='name')
-    filter_name: StringProperty(default='', name="Name")
-
-    filter_extension: StringProperty(default='', name="Extension")
-
-    filter_match_rule: EnumProperty(name='Match Rule',
-                                    items=[('NONE', 'None (Default)', ''),
-                                           ('STARTSWITH', 'Startswith', ''),
-                                           ('ENDSWITH', 'Endswith', ''),
-                                           ('IN', 'Contain', ''),
-                                           ('REGEX', 'Regex (Match or not)', ''), ],
-                                    default='NONE', description='Matching rule of the name')
-
-    filter_color_tag: EnumProperty(name='Color Tag',
-                                   items=enum_color_tag_items)
-
-    reverse: BoolProperty(name="Reverse", default=False,
-                          options=set(),
-                          description="Reverse", )
-
-    show_import: BoolProperty(name='Show Import', default=True)
-    show_export: BoolProperty(name='Show Export', default=True)
-
-
-class SPIO_OT_color_tag_selector(bpy.types.Operator):
-    bl_idname = 'spio.color_tag_selector'
-    bl_label = 'Color Tag'
-
-    index: IntProperty(name='Config list Index')
-
-    dep_classes = []
-
-    @classmethod
-    def poll(cls, context):
-        return len(get_pref().config_list) != 0
-
-    def execute(self, context):
-        # clear
-        for cls in self.dep_classes:
-            bpy.utils.unregister_class(cls)
-        self.dep_classes.clear()
-
-        pref = get_pref()
-        item = pref.config_list[self.index]
-
-        for i in range(0, 9):
-            # set color tag
-            def execute(self, context):
-                self.item.color_tag = f'COLOR_0{self.index}'
-                context.area.tag_redraw()
-                return {'FINISHED'}
-
-            # define
-            op_cls = type("DynOp",
-                          (bpy.types.Operator,),
-                          {"bl_idname": f'wm.spio_color_tag_{i}',
-                           "bl_label": 'Select',
-                           "bl_description": f'Color {i}',
-                           "execute": execute,
-                           # custom pass in
-                           'index': i,
-                           'item': item, },
-                          )
-
-            self.dep_classes.append(op_cls)
-
-        # register
-        for cls in self.dep_classes:
-            bpy.utils.register_class(cls)
-
-        def draw(cls, context):
-            layout = cls.layout
-            row = cls.layout.row(align=True)
-            row.scale_x = 1.12
-            for i in range(0, 9):
-                row.operator(f'wm.spio_color_tag_{i}', text='',
-                             icon=get_color_tag_icon(i))
-
-        context.window_manager.popup_menu(draw, title="Color", icon='OUTLINER_COLLECTION' if bpy.app.version > (
-            2, 93, 0) else 'COLORSET_13_VEC')
-
-        return {'FINISHED'}
+from .data_icon import get_color_tag_icon
 
 
 class PREF_UL_ConfigList(bpy.types.UIList):
@@ -592,7 +305,7 @@ class NWPrincipledPreferences(bpy.types.PropertyGroup):
 
 
 def change_panel_category():
-    from .ui import ui_panel
+    from ..ui import ui_panel
 
     for panel in ui_panel.panels:
         if "bl_rna" in panel.__dict__:
@@ -611,8 +324,11 @@ def update_category(self, context):
         self.report({'ERROR'}, f'Category change failed:\n{e}')
 
 
+from .data_config_prop import ConfigItemProperty
+
+
 class SPIO_Preference(bpy.types.AddonPreferences):
-    bl_idname = __package__
+    bl_idname = __folder_name__
 
     # Tab
     ui: EnumProperty(name='UI', items=[
@@ -702,7 +418,7 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         box = layout.box()
         box.operator('spio.check_update', text='Check Update', icon='INFO')
 
-        from .addon.addon_updater.op_check_version import SPIO_check_update
+        from ..addon.addon_updater.op_check_version import SPIO_check_update
         SPIO_check_update.draw_update(box)
 
         box = layout.box()
@@ -820,6 +536,8 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         old_km_name = ""
         get_kmi_l = []
+
+        from .data_keymap import addon_keymaps
 
         for km_add, kmi_add in addon_keymaps:
             for km_con in kc.keymaps:
@@ -1022,69 +740,19 @@ class SPIO_PT_ListFilterPanel(bpy.types.Panel):
 classes = [
     SPIO_PT_ListFilterPanel,
 
-    OperatorProperty,
     SPIO_OT_OperatorPropAdd, SPIO_OT_OperatorPropRemove,
 
-    ConfigItemProperty,
     SPIO_OT_ConfigListAdd, SPIO_OT_ConfigListRemove, SPIO_OT_ConfigListCopy, SPIO_OT_ConfigListMoveUP,
     SPIO_OT_ConfigListMoveDown,
 
-    SPIO_OT_color_tag_selector,
-
-    ConfigListFilterProperty, PREF_UL_ConfigList,
+    PREF_UL_ConfigList,
     SPIO_MT_ConfigIOMenu,
     NWPrincipledPreferences,
     SPIO_Preference
 ]
 
-addon_keymaps = []
-
-
-def add_keybind():
-    wm = bpy.context.window_manager
-    if wm.keyconfigs.addon:
-        km = wm.keyconfigs.addon.keymaps.new(name='3D View', space_type='VIEW_3D')
-        kmi = km.keymap_items.new("wm.super_import", 'V', 'PRESS', ctrl=True, shift=True)
-        addon_keymaps.append((km, kmi))
-
-        km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
-        kmi = km.keymap_items.new("wm.super_import", 'V', 'PRESS', ctrl=True, shift=True)
-        addon_keymaps.append((km, kmi))
-
-        km = wm.keyconfigs.addon.keymaps.new(name='Node Editor', space_type='NODE_EDITOR')
-        kmi = km.keymap_items.new("wm.super_export", 'C', 'PRESS', ctrl=True, shift=True)
-        addon_keymaps.append((km, kmi))
-
-        km = wm.keyconfigs.addon.keymaps.new(name='Image Generic', space_type='IMAGE_EDITOR')
-        kmi = km.keymap_items.new("wm.super_export", 'C', 'PRESS', ctrl=True, shift=True)
-        addon_keymaps.append((km, kmi))
-
-        km = wm.keyconfigs.addon.keymaps.new(name='3D View', space_type='VIEW_3D')
-        kmi = km.keymap_items.new("wm.super_export", 'C', 'PRESS', ctrl=True, shift=True)
-        addon_keymaps.append((km, kmi))
-
-        km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
-        kmi = km.keymap_items.new("wm.super_import", 'V', 'PRESS', ctrl=True, shift=True)
-        addon_keymaps.append((km, kmi))
-
-        km = wm.keyconfigs.addon.keymaps.new(name='File Browser', space_type='FILE_BROWSER')
-        kmi = km.keymap_items.new("wm.super_export", 'C', 'PRESS', ctrl=True, shift=True)
-        addon_keymaps.append((km, kmi))
-
-
-def remove_keybind():
-    wm = bpy.context.window_manager
-    kc = wm.keyconfigs.addon
-    if kc:
-        for km, kmi in addon_keymaps:
-            km.keymap_items.remove(kmi)
-
-    addon_keymaps.clear()
-
 
 def register():
-    add_keybind()
-
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -1094,8 +762,6 @@ def register():
     except Exception as e:
         print(e)
 
-    bpy.types.WindowManager.spio_filter = PointerProperty(type=ConfigListFilterProperty)
-
     try:
         change_panel_category()
 
@@ -1104,9 +770,7 @@ def register():
 
 
 def unregister():
-    remove_keybind()
-
-    for cls in classes:
+    for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
 
     del bpy.types.WindowManager.spio_filter

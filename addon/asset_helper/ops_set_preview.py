@@ -47,7 +47,7 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
         self.clipboard = None
 
         from ...clipboard.clipboard import Clipboard
-        from ...preferences import get_pref
+        from ...preferences.prefs import get_pref
 
         self.clipboard = Clipboard()
         filepaths = self.clipboard.pull_files_from_clipboard(force_unicode=get_pref().force_unicode)
