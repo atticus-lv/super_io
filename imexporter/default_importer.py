@@ -37,7 +37,7 @@ importer_lib = {
     'DEFAULT_DAE': {
         'bl_idname': 'wm.collada_import',
         'name': 'Collada (.dae)',
-        'description': 'wm.collada_import',
+        'description': '',
         'icon': 'IMPORT',
         'number': 99,
         'ext': 'dae'

@@ -4,44 +4,129 @@ exporter_lib = {
     'EXPORT_DAE': {
         'name': 'Collada (.dae)',
         'bl_idname': 'export_dae',
+        'description': '',
         'icon': 'EXPORT',
-        'number': 199
+        'number': 199,
+        'ext': 'dae',
+        'prop_list': {
+            'selected': True
+        }
     },
     'EXPORT_ABC': {
         'name': 'Alembic (.abc)',
         'bl_idname': 'wm.alembic_export',
-        'icon': 'IMPORT',
-        'number': 198
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 198,
+        'ext': 'abc',
+        'prop_list': {
+            'selected': True
+        }
     },
     'EXPORT_USD': {
         'name': 'USD (.usd)',
         'bl_idname': 'export_usd',
-        'icon': 'IMPORT',
-        'number': 197
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 197,
+        'ext': 'usd',
+        'prop_list': {
+            'selected_objects_only': True
+        },
     },
     'EXPORT_USDC': {
         'name': 'USD (.usdc)',
         'bl_idname': 'wm.usd_export',
-        'icon': 'IMPORT',
-        'number': 196
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 196,
+        'ext': 'usdc',
+        'prop_list': {
+            'selected_objects_only': True
+        },
     },
     'EXPORT_USDA': {
         'name': 'USD (.usda)',
         'bl_idname': 'wm.usd_export',
-        'icon': 'IMPORT',
-        'number': 195
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 195,
+        'ext': 'usda',
+        'prop_list': {
+            'selected_objects_only': True
+        },
     },
     'EXPORT_PLY': {
         'name': 'Stanford (.ply)',
         'bl_idname': 'export_mesh.ply',
-        'icon': 'IMPORT',
-        'number': 194
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 194,
+        'ext': 'ply',
+        'prop_list': {
+            'use_selection': True
+        },
     },
     'EXPORT_STL': {
         'name': 'Stl (.stl)',
         'bl_idname': 'export_mesh.stl',
-        'icon': 'IMPORT',
-        'number': 193
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 193,
+        'ext': 'stl',
+        'prop_list': {
+            'use_selection': True
+        },
+    },
+    'EXPORT_FBX': {
+        'name': 'Stl (.stl)',
+        'bl_idname': 'export_scene.fbx',
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 192,
+        'ext': 'fbx',
+        'prop_list': {
+            'use_selection': True
+        },
+    },
+    'EXPORT_GLTF': {
+        'name': 'glTF 2.0 (.gltf)',
+        'bl_idname': 'export_scene.gltf',
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 191,
+        'ext': 'gltf',
+        'prop_list': {
+            'use_selection': True,
+            'export_format': 'GLTF_EMBEDDED'
+        },
+    },
+    'EXPORT_OBJ': {
+        'name': 'Wavefront (.obj)',
+        'bl_idname': 'export_scene.obj',
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 190,
+        'ext': 'obj',
+        'prop_list': {
+            'use_selection': True
+        }
+    },
+    'EXPORT_SVG': {
+        'name': 'Grease Pencil (.svg)',
+        'bl_idname': 'wm.gpencil_export_svg',
+        'description': '',
+        'icon': 'EXPORT',
+        'number': 189,
+        'ext': 'svg'
+    },
+    'EXPORT_BLEND': {
+        'name': 'Blend (.blend)',
+        'bl_idname': 'spio.export_blend',
+        'description': '',
+        'icon': 'BLENDER',
+        'number': 200,
+        'ext': 'blend'
     },
 }
 
