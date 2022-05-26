@@ -21,7 +21,7 @@ class OperatorProperty(PropertyGroup):
     #     ('FLOAT', 'Float', 'Float'),
     #     ('BOOL', 'Boolean', 'Boolean'),
     # ], default='STRING')
-    #
+    # value_string:StringProperty(name= 'Value')
     # value_int: IntProperty(name='Value')
     # value_float: FloatProperty(name='Value')
     # value_bool: BoolProperty(name='Value')
@@ -65,14 +65,40 @@ enum_color_tag_items = get_color_tag_enum_items()
 
 def enum_operator_type_addon():
     from ..imexporter.default_addon import addon_lib
+    from ..imexporter.default_importer import importer_lib
+    from ..imexporter.default_exporter import exporter_lib
 
     enums = []
 
-    for identifier, d in addon_lib:
+    enums_addon = []
+    enums_import = []
+    enums_export = []
+
+    for identifier, d in addon_lib.items():
         item = (identifier, d['name'], d['description'], d['icon'], d['number'])
-        enums.append(item)
+        enums_addon.append(item)
+
+    for identifier, d in importer_lib.items():
+        item = (identifier, d['name'], d['description'], d['icon'], d['number'])
+        enums_import.append(item)
+
+    for identifier, d in exporter_lib.items():
+        item = (identifier, d['name'], d['description'], d['icon'], d['number'])
+        enums_export.append(item)
+
+    enums.append(("", "Import", "Default blender build-in importer", "CUBE", 0), )
+    enums += enums_import
+
+    enums.append(("", "Export", "Default blender build-in exporter", "CUBE", 0), )
+    enums += enums_export
+
+    enums.append(("", "Import Blend", "Import Blend File", "BLENDER", 0), )
 
     return enums
+
+
+enums = enum_operator_type_addon()
+print(enums)
 
 
 def get_operator_type():
