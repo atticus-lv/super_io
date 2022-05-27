@@ -113,5 +113,4 @@ class PowerShellClipboard():
         self.push(script)
 
 
-if __name__ == '__main__':
-    radialmenu.setRadialMenu(generate_menu())
+radialmenu.setRadialMenu(generate_menu())
