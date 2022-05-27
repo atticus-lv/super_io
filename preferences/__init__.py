@@ -6,10 +6,16 @@ classes = (
 
 
 def register():
-    for cls in classes:
-        cls.register()
+    data_icon.register()
+    data_config_prop.register()
+    data_config_filter_panel.register()
+    data_keymap.register()
+    prefs.register()
 
 
 def unregister():
-    for cls in classes:
-        cls.unregister()
+    prefs.unregister()
+    data_config_prop.unregister()
+    data_config_filter_panel.unregister()
+    data_keymap.unregister()
+    data_icon.unregister()

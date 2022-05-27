@@ -65,7 +65,7 @@ def register():
 
 
 def unregister():
-    for cls in reversed(classes):
+    for cls in classes:
         try:
             cls.unregister()
         except Exception as e:
