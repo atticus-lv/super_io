@@ -1,4 +1,5 @@
 import bpy
+import re
 
 from bpy.props import (EnumProperty,
                        StringProperty,
@@ -97,8 +98,28 @@ def enum_operator_type_addon():
     return enums
 
 
-enums = enum_operator_type_addon()
-print(enums)
+def get_prop_args_by_idname(bl_idname: str):
+    op = getattr(getattr(bpy.ops, 'wm'), 'alembic_import')
+
+    s = str(op.idname).split(bl_idname)[-1]
+    s = s[1:-2] + ','
+
+    rule = r'(.*?)=(.*?),'
+
+    res = re.findall(rule, s)
+    prop_val = dict()
+
+    for k, v in res:
+        if v in {'True', 'False'}:
+            v = eval(v)
+        elif v.isdigit():
+            v = eval(v)
+        elif v == '""':
+            v = ''
+
+        prop_val[k] = v
+
+    print(prop_val)
 
 
 def get_operator_type():
