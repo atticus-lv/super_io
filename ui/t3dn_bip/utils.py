@@ -42,7 +42,7 @@ def support_pillow() -> bool:
 
 
 def install_pillow() -> bool:
-    '''Install Pillow and import the Image module.'''
+    '''Click Install to auto install, tutorial to check tutorial image Pillow and import the Image module.'''
     if 'python' in Path(sys.executable).stem.lower():
         exe = sys.executable
     else:

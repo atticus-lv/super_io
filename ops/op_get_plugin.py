@@ -1,12 +1,14 @@
 import bpy
 import os
+import shutil
+
 from bpy.props import EnumProperty
 from ..ui.icon_utils import RSN_Preview
 
 
 class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
     bl_idname = 'spio.copy_c4d_plugin'
-    bl_label = 'Get Cinema 4d Plugin'
+    bl_label = 'Install Cinema 4d Plugin'
 
     def execute(self, context):
         return {'FINISHED'}
@@ -22,18 +24,81 @@ class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
         layout.label(text="Copy the plugin folder under c4d's /plugins/")
         layout.label(text='You can find it in extension menu')
 
-        row = layout.row()
-
-        row.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = os.path.join(
-            os.path.dirname(__file__),
-            '..', 'third_party_addons',
-            'tutorial')
-
         file = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Cinema 4d'))
+            os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Cinema 4d v0.2'))
         full_path = os.path.abspath(file)
 
-        row.operator('wm.path_open', text='Open', icon='FILEBROWSER').filepath = full_path
+        layout.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = full_path
+
+
+def set_hou_package_config(package_path, version='19.0'):
+    d = f"""
+    {{
+	"env": [
+		{{
+			"SPIO": "{package_path}"
+		}},
+		{{
+			"HOUDINI_PYTHONWARNINGS": "ignore"
+		}}
+	],
+	"path": "$SPIO"
+	
+    }}
+    """
+
+    doc_path = os.path.expanduser('~\Documents')
+    package_config_path = os.path.join(doc_path, f'houdini{version}', 'packages')
+    if not os.path.exists(package_config_path):
+        os.makedirs(package_config_path)
+    fp = os.path.join(package_config_path, 'SPIO.json')
+
+    with open(fp, 'w', encoding='utf-8') as f:
+        f.write(d)
+
+
+class SPIO_OT_copy_houdini_script(bpy.types.Operator):
+    """"""
+    bl_idname = 'spio.copy_houdini_script'
+    bl_label = 'Install Houdini Package'
+
+    version: EnumProperty(name='Version', items=[
+        ('19.0', '19.0', ''),
+        ('18.5', '18.5', ''),
+        ('18.0', '18.0', ''),
+    ])
+
+    def execute(self, context):
+        package_path = os.path.join(
+            os.path.dirname(__file__),
+            '..', 'third_party_addons',
+            'Super IO for Houdini v0.3').replace('\\', '/')
+
+        set_hou_package_config(package_path, self.version)
+        self.report({"INFO"}, 'Successfully Write Package json File')
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_popup(self, width=400)
+
+    def draw(self, context):
+        layout = self.layout.box()
+        layout.use_property_split = True
+
+        layout.label(text='This is a script suitable for houdini 18+(python3)')
+        layout.label(text="Click 'Install' to auto install, 'Tutorial' to check tutorial image")
+        layout.label(text='Then assign Shortcut for it')
+        layout.separator()
+
+        layout.prop(self, 'version')
+
+        layout.operator_context = "EXEC_DEFAULT"
+        layout.operator('spio.copy_houdini_script', text='Install', icon='IMPORT').version = self.version
+
+        layout.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = os.path.join(
+            os.path.dirname(__file__),
+            '..', 'third_party_addons',
+            'Super IO for Houdini v0.3')
 
 
 class SPIO_OT_load_text(bpy.types.Operator):
@@ -54,47 +119,6 @@ class SPIO_OT_load_text(bpy.types.Operator):
         bpy.ops.spio.pop_editor(editor_text=filename)
 
         return {'FINISHED'}
-
-
-item = [
-    ('houdini_spio_import', 'Import (Shelf Tool)', ''),
-    ('houdini_spio_export', 'Export (Shelf Tool)', ''),
-    ('houdini_spio_export_radius', 'Export (Radial Menu)', ''),
-]
-
-
-class SPIO_OT_copy_houdini_script(bpy.types.Operator):
-    """Copy to clipboard
-复制到剪切板"""
-    bl_idname = 'spio.copy_houdini_script'
-    bl_label = 'Get Houdini Script'
-
-    def execute(self, context):
-        return {'FINISHED'}
-
-    def invoke(self, context, event):
-        return context.window_manager.invoke_popup(self, width=400)
-
-    def draw(self, context):
-        layout = self.layout.box()
-        layout.use_property_split = True
-
-        layout.label(text='This is a script suitable for houdini 18+(python3)')
-        layout.label(text='You can find the icon in the folder and assign it at the shelf tool')
-        layout.label(text='Then assign Shortcut for it')
-
-        row = layout.row()
-        col = row.column()
-        col.scale_y = 3
-        col.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = os.path.join(
-            os.path.dirname(__file__),
-            '..', 'third_party_addons',
-            'tutorial')
-
-        col = row.column()
-        for file, label, des in item:
-            filepath = os.path.join(os.path.dirname(__file__), '..', 'third_party_addons', 'houdini', file)
-            col.operator('spio.load_text', text=label, icon='FILEBROWSER').filepath = filepath
 
 
 def register():

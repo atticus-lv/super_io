@@ -1,0 +1,7 @@
+1. Open 'SPIO.json'   
+2. Change "put package path here" to "{Current Folder Path}"
+3. Copy SPIO.json to C:\Users\{user name}\Documents\houdini19.0\packages
+
+1. 打开 'SPIO.json'
+2. 更改 "put package path here" 为 "{当前文件夹的路径}"
+3. 复制 SPIO.json 到 C:\Users\{用户名}\Documents\houdini19.0\packages
