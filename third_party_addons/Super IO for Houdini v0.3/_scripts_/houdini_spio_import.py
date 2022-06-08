@@ -1,7 +1,7 @@
 # log
-# v1.0
+# v0.1
 # initial win
-# v2.0
+# v0.2
 # add more ext support, add abc/usd node support
 
 from __future__ import annotations

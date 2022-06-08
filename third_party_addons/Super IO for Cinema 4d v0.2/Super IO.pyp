@@ -1,9 +1,9 @@
 # log
-# v1.0
+# v0.1
 # Only Scripts
-# v2.0
+# v0.2
 # promote into a plugin for cinema4d
-#
+
 
 from __future__ import annotations
 

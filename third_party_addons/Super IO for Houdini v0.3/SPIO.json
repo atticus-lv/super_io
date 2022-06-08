@@ -1,0 +1,12 @@
+{
+	"env": [
+		{
+			"SPIO": "put package path here"
+		},
+		{
+			"HOUDINI_PYTHONWARNINGS": "ignore"
+		}
+	],
+	"path": "$SPIO"
+	
+}

@@ -1,0 +1,11 @@
+1. Open 'SPIO.json'   
+2. Change "put package path here" to "{Current Folder Path}"
+3. Copy SPIO.json to C:\Users\{user name}\Documents\houdini19.0\packages
+4. Open Houdini, click '+' on tool shelf, found SPIO and add it
+5. Assign Shortcut to the shelf tool and enjoy it!
+
+1. 打开 'SPIO.json'
+2. 更改 "put package path here" 为 "{当前文件夹的路径}"
+3. 复制 SPIO.json 到 C:\Users\{用户名}\Documents\houdini19.0\packages
+4. 打开houdini， 点击工具架 ‘+’ 加号， 找到SPIO并且添加
+5. 为工具添加快捷键设置，开始使用吧！
