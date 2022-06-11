@@ -12,7 +12,7 @@ class MacClipboard():
 
     def pull(self, force_unicode=False):
         self.file_urls = []
-        from .pasteboard import _native as pasteboard
+        from . import _native as pasteboard
 
         pb = pasteboard.Pasteboard()
 
