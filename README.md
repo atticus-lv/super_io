@@ -11,7 +11,7 @@
     <a href="https://atticus-lv.gitee.io/super_io/#/">
 	[Gitee] 
     </a>
-    Blender 2.83 ~ 3.0
+    Blender 2.83 ~ 3.2
 </p>
 
 # Intro
