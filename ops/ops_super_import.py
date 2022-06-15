@@ -10,7 +10,7 @@ from .dynamic_io import IO_Base
 from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import get_pref
 
-from ..preferences.data_icon import import_icon
+from ..preferences.data_icon import G_ICON_ID
 
 
 class SuperImport(IO_Base, bpy.types.Operator):
@@ -259,13 +259,13 @@ class WM_OT_super_import(SuperImport):
 
 def file_context_menu(self, context):
     layout = self.layout
-    layout.operator('wm.super_import', icon_value=import_icon.get_image_icon_id())
+    layout.operator('wm.super_import', icon_value=G_ICON_ID['import'])
     layout.separator()
 
 
 def node_context_menu(self, context):
     layout = self.layout
-    layout.operator('node.spio_import', icon_value=import_icon.get_image_icon_id())
+    layout.operator('node.spio_import', icon_value=G_ICON_ID['import'])
     layout.separator()
 
 

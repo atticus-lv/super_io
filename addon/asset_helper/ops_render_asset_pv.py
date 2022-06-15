@@ -263,7 +263,8 @@ class SPIO_OI_render_material_asset_preview(render_asset_preview, bpy.types.Oper
         return {'FINISHED'}
 
 
-from ...ui.ui_panel import import_icon, export_icon, get_pref
+from ...ui.ui_panel import get_pref
+from ...preferences.data_icon import G_ICON_ID
 
 
 class SPIO_MT_asset_browser_menu(bpy.types.Menu):
@@ -273,8 +274,8 @@ class SPIO_MT_asset_browser_menu(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
         layout.operator_context = 'INVOKE_DEFAULT'
-        layout.operator('wm.super_import', icon_value=import_icon.get_image_icon_id())
-        layout.operator('wm.super_export', icon_value=export_icon.get_image_icon_id())
+        layout.operator('wm.super_import', icon_value=G_ICON_ID['import'])
+        layout.operator('wm.super_export', icon_value=G_ICON_ID['export'])
 
         layout.separator()
         layout.operator('spio.batch_image_operate', icon='RENDERLAYERS')
@@ -293,9 +294,6 @@ def register():
     img_preview.img_dir = ""
     img_preview.img = ()
     __tempPreview__["spio_asset_thumbnails"] = img_preview
-
-    import_icon.register()
-    export_icon.register()
 
     # bpy.utils.register_class(SPIO_OT_render_hdri_preview)
     bpy.utils.register_class(SPIO_OI_render_world_asset_preview)
@@ -317,5 +315,3 @@ def unregister():
 
     clear_preview_cache()
 
-    import_icon.unregister()
-    export_icon.unregister()

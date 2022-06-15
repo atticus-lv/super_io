@@ -3,9 +3,8 @@ import bpy
 from .dynamic_io import IO_Base
 from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import is_float, get_pref, convert_value
-from ..ui.icon_utils import RSN_Preview
 
-from ..preferences.data_icon import export_icon
+from ..preferences.data_icon import G_ICON_ID
 
 
 class WM_OT_super_export(IO_Base, bpy.types.Operator):
@@ -106,7 +105,7 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
 def draw_menu(self, context):
     layout = self.layout
     layout.separator()
-    layout.operator('wm.super_export', icon_value=export_icon.get_image_icon_id())
+    layout.operator('wm.super_export', icon_value=G_ICON_ID['export'])
 
 
 def register():

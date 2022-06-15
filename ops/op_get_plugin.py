@@ -3,7 +3,6 @@ import os
 import shutil
 
 from bpy.props import EnumProperty
-from ..ui.icon_utils import RSN_Preview
 
 
 class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):

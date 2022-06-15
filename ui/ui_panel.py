@@ -1,7 +1,7 @@
 import bpy
 from ..ops.core import get_pref
 from ..preferences.prefs import SPIO_Preference
-from ..preferences.data_icon import import_icon, export_icon
+from ..preferences.data_icon import G_ICON_ID
 
 
 class SidebarSetup:
@@ -70,8 +70,8 @@ class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
         row.alignment = 'CENTER'
         row.scale_y = 1.5
         row.separator()
-        row.operator("wm.super_import", icon_value=import_icon.get_image_icon_id())
-        row.operator("wm.super_export", icon_value=export_icon.get_image_icon_id())
+        row.operator("wm.super_import", icon_value=G_ICON_ID['import'])
+        row.operator("wm.super_export", icon_value=G_ICON_ID['export'])
         row.separator()
 
 
