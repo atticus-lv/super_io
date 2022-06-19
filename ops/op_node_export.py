@@ -76,6 +76,12 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
     skip_pbr_unlinked: bpy.props.BoolProperty(name="Skip Unlinked Socket", default=True)
     replace: bpy.props.BoolProperty(name="Link to bake images", default=True)
 
+    # sequence (only node mode)
+    sequence: bpy.props.BoolProperty(name='Sequence', default=False)
+    frame_start: bpy.props.IntProperty(name='Frame Start')
+    frame_end: bpy.props.IntProperty(name='Frame End')
+    frame_step: bpy.props.IntProperty(name='Frame Step', min=1)
+
     @classmethod
     def poll(cls, context):
         return (context.area.type == "NODE_EDITOR" and
@@ -88,6 +94,12 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         if bpy.data.filepath == '':
             self.report({'ERROR'}, "Save your file first!")
             return {'CANCELLED'}
+
+        # sequence
+        self.frame_step = context.scene.frame_step
+        self.frame_start = context.scene.frame_start
+        self.frame_end = context.scene.frame_end
+
         return context.window_manager.invoke_props_dialog(self, width=350)
 
     def draw(self, context):
@@ -135,6 +147,14 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             box = layout.box()
             box.prop(self, "skip_pbr_unlinked")
             box.prop(self, "replace")
+        else:
+            box = layout.box()
+            box.prop(self, 'sequence')
+            if self.sequence:
+                col = box.column(align=True)
+                col.prop(self, 'frame_start')
+                col.prop(self, 'frame_end')
+                col.prop(self, 'frame_step')
 
         layout.label(text='This could take a few minutes', icon='INFO')
 
@@ -195,10 +215,34 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             else:
                 bake_type = 'EMIT'
 
-            bake_img_node = self.bake(context, active_node,
-                                      resolution=resolution,
-                                      bake_type=bake_type,
-                                      color_space=self.color_space)
+            if not self.sequence:
+                bake_img_node = self.bake(context, active_node,
+                                          resolution=resolution,
+                                          bake_type=bake_type,
+                                          color_space=self.color_space)
+            else:
+                if self.frame_end < self.frame_start:
+                    self.frame_end = self.frame_start
+
+                frame_duration = int((self.frame_end + 1 - self.frame_start) / self.frame_step)
+
+                for i in range(frame_duration):
+                    context.scene.frame_current = self.frame_start + i * self.frame_step
+
+                    bake_img_node = self.bake(context, active_node,
+                                              resolution=resolution,
+                                              bake_type=bake_type,
+                                              color_space=self.color_space)
+                    # open dir for getting process
+                    if i == 0:
+                        bpy.ops.wm.path_open(filepath=os.path.dirname(bake_img_node.image.filepath))
+                        bake_img_node.image.source = 'SEQUENCE'
+                        bake_img_node.image_user.frame_duration = frame_duration
+                        bake_img_node.image_user.use_cyclic = True
+                        bake_img_node.image_user.use_auto_refresh = True
+                    else:
+                        bpy.data.images.remove(bake_img_node.image)
+                        nodes.remove(bake_img_node)
 
         elif self.operator_type == 'PBR':
             # get bake socket
@@ -318,7 +362,9 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
 
         if self.operator_type == 'NODE':
             image_name = "_".join([context.material.name, active_node.name, self.resolution])
-
+            if self.sequence:
+                suffix = f'{context.scene.frame_current}'.zfill(4)
+                image_name += '_' + suffix
         else:
             image_name = "_".join([context.material.name, extra_channel, self.resolution])
 
