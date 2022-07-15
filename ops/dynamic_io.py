@@ -113,7 +113,9 @@ class DynamicExport:
             temp_dir = bpy.path.abspath(bpy.context.preferences.filepaths.temporary_directory)
             if temp_dir == '':
                 # win temp file
-                temp_dir = os.path.join(os.getenv('APPDATA'), os.path.pardir, 'Local', 'Temp')
+                temp_dir = os.path.join(os.path.expanduser('~'), 'spio_temp')
+                if not "spio_temp" in os.listdir(os.path.expanduser('~')):
+                    os.makedirs(temp_dir)
         else:
             temp_dir = bpy.path.abspath(temp_dir)
             if not os.path.exists(temp_dir):

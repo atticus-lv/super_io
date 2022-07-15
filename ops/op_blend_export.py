@@ -35,7 +35,9 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
         temp_dir = ori_dir
         if ori_dir == '' or not os.path.exists(ori_dir):
             # win temp file
-            temp_dir = os.path.join(os.getenv('APPDATA'), os.path.pardir, 'Local', 'Temp')
+            temp_dir = os.path.join(os.path.expanduser('~'), 'spio_temp')
+            if not "spio_temp" in os.listdir(os.path.expanduser('~')):
+                os.makedirs(temp_dir)
 
         return temp_dir
 
