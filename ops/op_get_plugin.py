@@ -30,7 +30,7 @@ class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
         layout.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = full_path
 
 
-def set_hou_package_config(package_path, version='19.0'):
+def set_hou_package_config(package_path, target_path):
     d = f"""
     {{
 	"env": [
@@ -46,8 +46,7 @@ def set_hou_package_config(package_path, version='19.0'):
     }}
     """
 
-    doc_path = os.path.expanduser('~\Documents')
-    package_config_path = os.path.join(doc_path, f'houdini{version}', 'packages')
+    package_config_path = target_path
     if not os.path.exists(package_config_path):
         os.makedirs(package_config_path)
     fp = os.path.join(package_config_path, 'SPIO.json')
@@ -67,17 +66,23 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
         ('18.0', '18.0', ''),
     ])
 
+    package_path: bpy.props.StringProperty(name='Packages Path', default='', subtype='DIR_PATH')
+
     def execute(self, context):
-        package_path = os.path.join(
+        pointer_path = os.path.join(
             os.path.dirname(__file__),
             '..', 'third_party_addons',
             'Super IO for Houdini v0.3').replace('\\', '/')
 
-        set_hou_package_config(package_path, self.version)
+        set_hou_package_config(pointer_path, self.package_path)
         self.report({"INFO"}, 'Successfully Write Package json File')
         return {'FINISHED'}
 
     def invoke(self, context, event):
+        doc_path_ = os.path.expanduser('~\Documents')
+        package_config_path = os.path.join(doc_path_, f'houdini{self.version}', 'packages')
+        self.package_path = package_config_path
+
         return context.window_manager.invoke_popup(self, width=400)
 
     def draw(self, context):
@@ -90,6 +95,7 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
         layout.separator()
 
         layout.prop(self, 'version')
+        layout.prop(self, 'package_path')
 
         layout.operator_context = "EXEC_DEFAULT"
         layout.operator('spio.copy_houdini_script', text='Install', icon='IMPORT').version = self.version

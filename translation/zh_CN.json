@@ -185,6 +185,7 @@
     "You can find it in extension menu": "你可以在扩展菜单中找到它",
     "Then assign Shortcut for it": "然后为它设置快捷键",
     "Install Tutorial": "安裝教程",
+    "Packages Path": "包路径",
 
     "This is a script suitable for houdini 18+(python3)": "这是一个适用于houdini 18+(python3)的脚本",
     "Click 'Install' to auto install, 'Tutorial' to check tutorial image": "点击'安装'自动安装，'教程'查看教程图片"
