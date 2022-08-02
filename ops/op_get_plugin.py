@@ -1,6 +1,8 @@
 import bpy
 import os
 import shutil
+from pathlib import Path
+from os.path import expanduser
 
 from bpy.props import EnumProperty
 
@@ -30,12 +32,12 @@ class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
         layout.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = full_path
 
 
-def set_hou_package_config(package_path, target_path):
+def set_hou_package_config(pointer_path, package_config_path):
     d = f"""
     {{
 	"env": [
 		{{
-			"SPIO": "{package_path}"
+			"SPIO": "{pointer_path}"
 		}},
 		{{
 			"HOUDINI_PYTHONWARNINGS": "ignore"
@@ -45,48 +47,52 @@ def set_hou_package_config(package_path, target_path):
 	
     }}
     """
-
-    package_config_path = target_path
+    print(package_config_path)
     if not os.path.exists(package_config_path):
-        os.makedirs(package_config_path)
-    fp = os.path.join(package_config_path, 'SPIO.json')
+        os.mkdir(package_config_path)
+    fp = package_config_path + '/' + 'SPIO.json'
 
     with open(fp, 'w', encoding='utf-8') as f:
         f.write(d)
+
+
+def init_package_path(self, context):
+    setattr(self, 'package_path',
+            os.path.join(expanduser('~\Documents'), f'houdini{self.version}', 'packages'))
 
 
 class SPIO_OT_copy_houdini_script(bpy.types.Operator):
     """"""
     bl_idname = 'spio.copy_houdini_script'
     bl_label = 'Install Houdini Package'
+    bl_options = {'REGISTER', 'UNDO'}
 
     version: EnumProperty(name='Version', items=[
+        ('19.5', '19.5', ''),
         ('19.0', '19.0', ''),
         ('18.5', '18.5', ''),
         ('18.0', '18.0', ''),
-    ])
+    ], update=init_package_path, default='19.0')
 
     package_path: bpy.props.StringProperty(name='Packages Path', default='', subtype='DIR_PATH')
 
     def execute(self, context):
-        pointer_path = os.path.join(
-            os.path.dirname(__file__),
-            '..', 'third_party_addons',
-            'Super IO for Houdini v0.3').replace('\\', '/')
+        pointer_path = Path(__file__).parent.joinpath('third_party_addons', 'Super IO for Houdini v0.3').resolve()
 
-        set_hou_package_config(pointer_path, self.package_path)
+        package_path = Path(self.package_path).resolve()
+
+        set_hou_package_config(str(pointer_path).replace('\\', '/'), str(package_path).replace('\\', '/'))
+
         self.report({"INFO"}, 'Successfully Write Package json File')
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        doc_path_ = os.path.expanduser('~\Documents')
-        package_config_path = os.path.join(doc_path_, f'houdini{self.version}', 'packages')
-        self.package_path = package_config_path
-
+        init_package_path(self, context)
         return context.window_manager.invoke_popup(self, width=400)
 
     def draw(self, context):
         layout = self.layout.box()
+        layout.operator_context = 'INVOKE_DEFAULT'
         layout.use_property_split = True
 
         layout.label(text='This is a script suitable for houdini 18+(python3)')
@@ -98,7 +104,7 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
         layout.prop(self, 'package_path')
 
         layout.operator_context = "EXEC_DEFAULT"
-        layout.operator('spio.copy_houdini_script', text='Install', icon='IMPORT').version = self.version
+        layout.operator('spio.copy_houdini_script', text='Install', icon='IMPORT').package_path = self.package_path
 
         layout.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = os.path.join(
             os.path.dirname(__file__),
