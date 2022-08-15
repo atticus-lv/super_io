@@ -77,7 +77,7 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
     package_path: bpy.props.StringProperty(name='Packages Path', default='', subtype='DIR_PATH')
 
     def execute(self, context):
-        pointer_path = Path(__file__).parent.joinpath('third_party_addons', 'Super IO for Houdini v0.3').resolve()
+        pointer_path = Path(__file__).parent.parent.joinpath('third_party_addons', 'Super IO for Houdini v0.3').resolve()
 
         package_path = Path(self.package_path).resolve()
 
