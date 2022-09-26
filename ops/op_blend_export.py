@@ -5,6 +5,8 @@ import os
 import shutil
 
 import sys
+from pathlib import Path
+from os.path import join, exists
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from .core import get_pref, PostProcess
@@ -34,29 +36,29 @@ class SPIO_OT_export_blend(ImageCopyDefault, bpy.types.Operator):
         ori_dir = bpy.context.preferences.filepaths.temporary_directory
         temp_dir = ori_dir
         if ori_dir == '' or not os.path.exists(ori_dir):
-            # win temp file
-            temp_dir = os.path.join(os.path.expanduser('~'), 'spio_temp')
-            if not "spio_temp" in os.listdir(os.path.expanduser('~')):
-                os.makedirs(temp_dir)
+            temp_dir = str(Path(bpy.app.tempdir).parent)
 
         return temp_dir
 
     def execute(self, context):
         # copy buffer
         bpy.ops.view3d.copybuffer()
-        temp_dir = self.get_temp_dir() # win support only(not sure the temp dir of macOS)
+        temp_dir = self.get_temp_dir()  # win support only(not sure the temp dir of macOS)
         if self.filepath == '': self.filepath = os.path.join(temp_dir, context.active_object.name + '.blend')
 
-        if os.path.exists(self.filepath):
+        if exists(self.filepath):
             os.remove(self.filepath)  # remove exist file
 
         POST = PostProcess()
-        POST.fix_blend(os.path.join(temp_dir, 'copybuffer.blend'), scripts_file_name=self.scripts_file_name)
+        POST.fix_blend(join(temp_dir, 'copybuffer.blend'),
+                       scripts_file_name=self.scripts_file_name)
         # Copy
-        shutil.copy(os.path.join(temp_dir, 'copybuffer.blend'), self.filepath)
+        shutil.copy(join(temp_dir, 'copybuffer.blend'),
+                    self.filepath)
         # Prefs
         POST.copy_to_clipboard(paths=[self.filepath], op=self)
-        POST.open_dir(temp_dir)
+        POST.open_dir(self.filepath)
+
         return {'FINISHED'}
 
 
