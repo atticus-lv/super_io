@@ -136,6 +136,9 @@ class ConfigItemProperty(PropertyGroup):
     io_type: EnumProperty(name='IO Type',
                           items=[('IMPORT', 'Import', '', 'IMPORT', 0), ('EXPORT', 'Export', '', 'EXPORT', 1)],
                           default='IMPORT')
+
+    # is build-in
+    is_builtin: BoolProperty(name='Built-in', default=False)
     # information
     name: StringProperty(name='Preset Name', update=correct_name)
     description: StringProperty(name='Description',

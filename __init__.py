@@ -12,11 +12,6 @@ bl_info = {
     "location": "3DView > F3 > Super Import('Ctrl Shift V') / Super Export('Ctrl Shift C')",
 }
 
-import importlib
-import sys
-import os
-from itertools import groupby
-
 # get folder name
 __folder_name__ = __name__
 __dict__ = {}
@@ -54,6 +49,15 @@ def prepare():
             pass
 
 
+def install_require():
+    try:
+        import yaml
+    except ModuleNotFoundError:
+        import sys
+        import subprocess
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml"])
+
+
 def register():
     for cls in classes:
         try:
@@ -63,6 +67,8 @@ def register():
 
     prepare()
 
+    install_require()
+
 
 def unregister():
     for cls in classes:
@@ -70,7 +76,3 @@ def unregister():
             cls.unregister()
         except Exception as e:
             print(e)
-
-
-if __name__ == '__main__':
-    register()
