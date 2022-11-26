@@ -42,6 +42,9 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
     uv_map: bpy.props.EnumProperty(name="UV Map",
                                    items=enum_uv, )
 
+    # bake selected to active
+    use_selected_to_active: bpy.props.BoolProperty(name="Selected to Active")
+
     # render
     device: bpy.props.EnumProperty(name='Device',
                                    items=[
@@ -87,8 +90,7 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         return (context.area.type == "NODE_EDITOR" and
                 context.space_data.edit_tree and
                 context.active_node and
-                context.active_object and
-                len(context.selected_objects) != 0)
+                context.active_object)
 
     def invoke(self, context, event):
         if bpy.data.filepath == '':
@@ -129,6 +131,13 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             row.prop(self, "color_space", expand=True)
 
         box.prop(self, "uv_map")
+        box.prop(self, "use_selected_to_active")
+
+        if self.use_selected_to_active:
+            subbox = box.box().column(align=True)
+            subbox.prop(context.scene.render.bake, "use_cage")
+            subbox.prop(context.scene.render.bake, "cage_extrusion")
+            subbox.prop(context.scene.render.bake, "max_ray_distance")
 
         box = layout.box()
         box.prop(self, "device")
@@ -166,6 +175,10 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
         # store origin socket / nodes
         ori_output_socket = None
         ori_uv = None
+        ori_selected_to_active = context.scene.render.bake.use_selected_to_active
+        if not self.use_selected_to_active:
+            context.scene.render.bake.use_selected_to_active = False
+
         output_node = None
 
         # set origin socket
@@ -186,6 +199,9 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
 
         elif self.uv_map == 'NONE':
             self.report({'ERROR'}, "No UV map selected")
+            return {'CANCELLED'}
+        elif len(context.selected_objects) == 0:
+            self.report({'ERROR'}, "Select at least one object")
             return {'CANCELLED'}
 
         # set active uv
@@ -252,7 +268,8 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             normal_socket = active_node.inputs['Normal']
 
             # bake normal
-            if normal_socket.is_linked or (not normal_socket.is_linked and not self.skip_pbr_unlinked):
+            if normal_socket.is_linked or (
+                    not normal_socket.is_linked and not self.skip_pbr_unlinked) or self.use_selected_to_active:
                 normal_node = self.bake(context, active_node,
                                         resolution=resolution,
                                         bake_type='NORMAL',
@@ -339,6 +356,8 @@ class SPIO_OT_export_shader_node_as_texture(bpy.types.Operator):
             links.new(ori_output_socket, output_node.inputs[0])
         if ori_uv is not None:
             ori_uv.active = True
+
+        context.scene.render.bake.use_selected_to_active = ori_selected_to_active
 
         # set select
         for node in nodes:
