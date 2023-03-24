@@ -141,6 +141,7 @@ class DynamicExport:
         src_active = context.active_object
         selected_objects = context.selected_objects.copy()
 
+        bpy.ops.object.select_all(action='DESELECT')
         for obj in selected_objects:
             filepath = os.path.join(temp_dir, obj.name + f'.{self.extension}').replace('\\', '/')
             paths.append(filepath)
@@ -151,6 +152,7 @@ class DynamicExport:
 
             op_args.update({'filepath': filepath})
             op_callable(**op_args)
+            obj.select_set(False)
 
         context.view_layer.objects.active = src_active
 
