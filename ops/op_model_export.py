@@ -40,14 +40,17 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
 
     def export_batch(self, context, op_callable, op_args, target_dir):
         paths = []
+        temp_dir = self.get_temp_dir()
 
         src_active = context.active_object
         selected_objects = context.selected_objects.copy()
 
+        bpy.ops.object.select_all(action='DESELECT')
         for obj in selected_objects:
-            filepath = os.path.join(target_dir, obj.name + f'.{self.extension}')
+            filepath = os.path.join(temp_dir, obj.name + f'.{self.extension}').replace('\\', '/')
             paths.append(filepath)
 
+            bpy.ops.object.select_all(action='DESELECT')
             context.view_layer.objects.active = obj
             obj.select_set(True)
 
@@ -56,7 +59,7 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
             obj.select_set(False)
 
         context.view_layer.objects.active = src_active
-
+        # print(paths)
         return paths
 
     def export_single(self, context, op_callable, op_args, target_dir):
@@ -93,6 +96,8 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
         op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
 
         op_args = exporter_ops_props.get(self.extension)
+
+
 
         if self.batch_mode:
             paths = self.export_batch(context, op_callable, op_args, temp_dir)
