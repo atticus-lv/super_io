@@ -18,7 +18,7 @@ def register_icon():
         if file.endswith('.bip'):
             mats_icon.append(icon_dir.joinpath(file))
     # 注册
-    pcoll = previews.new()
+    pcoll = previews.new(lazy_load=not bpy.app.background)
 
     for icon_path in mats_icon:
         pcoll.load(icon_path.name[:-4], str(icon_path), 'IMAGE')
@@ -32,8 +32,8 @@ def unregister_icon():
 
     for pcoll in G_PV_COLL.values():
         previews.remove(pcoll)
-        G_PV_COLL.clear()
 
+    G_PV_COLL.clear()
     G_ICON_ID.clear()
 
 
