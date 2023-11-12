@@ -109,8 +109,7 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
 
 
 panels = (
-    SPIO_PT_PrefPanel_283,
-    SPIO_PT_PrefPanel_300,
+    SPIO_PT_PrefPanel_283 if bpy.app.version < (3, 0, 0) else SPIO_PT_PrefPanel_300,
     SPIO_PT_ImportPanel,
     SPIO_PT_AssetHelper,
 )
