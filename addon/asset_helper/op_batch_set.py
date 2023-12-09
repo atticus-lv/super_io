@@ -7,11 +7,11 @@ class selected_assets:
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context, 'selected_asset_files') and context.selected_asset_files
+        return hasattr(context, 'selected_assets') and context.selected_assets
 
     def get_local_selected_assets(self, context):
         current_library_name = context.area.spaces.active.params.asset_library_ref
-        match_obj = [asset_file.local_id for asset_file in context.selected_asset_files if
+        match_obj = [asset_file.local_id for asset_file in context.selected_assets if
                      current_library_name == "LOCAL"]
 
         return match_obj

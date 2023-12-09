@@ -119,7 +119,7 @@ class render_asset_preview:
 
     @classmethod
     def poll(cls, context):
-        return context.selected_asset_files and bpy.data.filepath != ''
+        return context.selected_assets and bpy.data.filepath != ''
 
     def invoke(self, context, event):
         d = {'WORLD': 'World', 'MATERIAL': 'Material'}
@@ -139,8 +139,10 @@ class render_asset_preview:
         return context.window_manager.invoke_props_dialog(self, width=250)
 
     def get_match_obj(self, context):
-        current_library_name = context.area.spaces.active.params.asset_library_ref
-        match_obj = [asset_file.local_id for asset_file in context.selected_asset_files if
+        parm = context.area.spaces.active.params
+        asset_library_reference = parm.asset_library_ref if bpy.app.version < (4, 0, 0) else parm.asset_library_reference
+        current_library_name = asset_library_reference
+        match_obj = [asset_file.local_id for asset_file in context.selected_assets if
                      current_library_name == "LOCAL"]
         return match_obj
 
