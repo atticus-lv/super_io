@@ -102,7 +102,8 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
                     # get asset data
                     override = context.copy()
                     override['id'] = obj
-                    bpy.ops.ed.lib_id_load_custom_preview(override, filepath=path)
+                    with bpy.context.temp_override(id = obj):
+                        bpy.ops.ed.lib_id_load_custom_preview(filepath=path)
 
         redraw_window()
 
