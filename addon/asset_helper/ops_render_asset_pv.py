@@ -143,7 +143,7 @@ class render_asset_preview:
         asset_library_reference = parm.asset_library_ref if bpy.app.version < (4, 0, 0) else parm.asset_library_reference
         current_library_name = asset_library_reference
         match_obj = [asset_file.local_id for asset_file in context.selected_assets if
-                     current_library_name == "LOCAL"]
+                     hasattr(asset_file, 'local_id')]
         return match_obj
 
     def draw_settings(self, context, layout):
