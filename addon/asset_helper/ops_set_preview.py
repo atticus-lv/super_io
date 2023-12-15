@@ -82,7 +82,8 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
             for obj in match_obj:
                 override = context.copy()
                 override['id'] = obj
-                bpy.ops.ed.lib_id_load_custom_preview(override, filepath=self.filepaths[0])
+                with bpy.context.temp_override(id=obj):
+                    bpy.ops.ed.lib_id_load_custom_preview(filepath=self.filepaths[0])
         else:
             for path in self.filepaths:
                 basename = os.path.basename(path)
@@ -100,8 +101,6 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
                     index = match_names.index(name)
                     obj = match_obj[index]
                     # get asset data
-                    override = context.copy()
-                    override['id'] = obj
                     with bpy.context.temp_override(id = obj):
                         bpy.ops.ed.lib_id_load_custom_preview(filepath=path)
 
