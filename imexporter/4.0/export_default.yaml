@@ -5,7 +5,7 @@
 # Wavefront (.obj)  name must be unique
 #  bl_idname: 'wm.obj_import' bl_idname, call this operator
 #  icon: 'EXPORT'            icon, use blender icon
-#  category: 'Export'       category, use blender category
+#         category, use blender category
 #  file_types: {'obj'}     file_types, file extension
 #  args:                  args, arguments for operator, default pass in 'filepath'
 # pre_script:             pre_script, run before operator
@@ -15,7 +15,7 @@
 # 导出Obj (.obj)  名称必须唯一
 #  bl_idname: 'wm.obj_import' bl_idname, 调用这个操作
 #  icon: 'EXPORT'            icon, 使用blender图标
-#  category: 'Export'       category, 使用blender分类
+#         category, 使用blender分类
 # file_types: {'obj'}     file_types, 文件扩展名
 #  args:                  args, 操作的参数, 默认传入'filepath'
 # pre_script:             pre_script, 在操作前运行
@@ -24,7 +24,6 @@
 Collada (.dae):
   bl_idname: 'wm.collada_export'
   icon: 'EXPORT'
-  category: 'Export'
   file_types: { 'dae' }
   pre_script:
   post_script:
@@ -34,7 +33,6 @@ Collada (.dae):
 Alembic (.abc):
   bl_idname: 'wm.alembic_export'
   icon: 'EXPORT'
-  category: 'Export'
   file_types: { 'abc' }
   pre_script:
   post_script:
@@ -44,7 +42,6 @@ Alembic (.abc):
 USD (.usd):
   bl_idname: 'wm.usd_export'
   icon: 'EXPORT'
-  category: 'Export'
   file_types: { 'usd', 'usda', 'usdc' }
   pre_script:
   post_script:
@@ -54,7 +51,6 @@ USD (.usd):
 Stanford (.ply):
   bl_idname: 'import_mesh.ply'
   icon: 'EXPORT'
-  category: 'Export'
   file_types: { 'ply' }
   pre_script:
   post_script:
@@ -64,7 +60,6 @@ Stanford (.ply):
 Stl (.stl):
   bl_idname: 'import_mesh.stl'
   icon: 'EXPORT'
-  category: 'Export'
   file_types: { 'stl' }
   pre_script:
   post_script:
@@ -74,7 +69,6 @@ Stl (.stl):
 FBX (.fbx):
   bl_idname: 'import_scene.fbx'
   icon: 'EXPORT'
-  category: 'Export'
   file_types: { 'fbx' }
   pre_script:
   post_script:
@@ -84,7 +78,6 @@ FBX (.fbx):
 Wavefront (.obj):
   bl_idname: 'wm.obj_import'
   icon: 'EXPORT'
-  category: 'Export'
   file_types: { 'obj' }
   pre_script:
   post_script:
@@ -93,7 +86,6 @@ Wavefront (.obj):
 glTF 2.0 (.gltf/.glb):
   bl_idname: 'import_scene.gltf'
   icon: 'EXPORT'
-  category: 'Export'
   file_types: { 'gltf', 'glb' }
   pre_script:
   post_script:
@@ -104,7 +96,6 @@ glTF 2.0 (.gltf/.glb):
 X3D (.x3d/.wrl):
   bl_idname: 'import_scene.x3d'
   icon: 'EXPORT'
-  category: 'Export'
   file_types: { 'x3d', 'wrl' }
   pre_script:
   post_script:
