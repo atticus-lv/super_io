@@ -1,4 +1,4 @@
-{
+data = {
     "Super Import": "超级导入",
     "Super Export": "超级导出",
     "Config": "配置",
@@ -8,19 +8,19 @@
     "Developer: Atticus": "开发者: Atticus",
     "Current Version:": "当前版本:",
     "Latest Version:": "最新版本:",
-    "Check Update":"检查更新",
-    "Download":"下载",
-    "Regenerate":"重新生成",
-    "Addons":"插件",
-    "Asset Helper":"资产助手",
-    "Change Log":"更新日志",
-    "Third-party":"互导",
-    "Install Cinema 4d Plugin":"安装c4d插件",
-    "Cinema 4d Plugin has been copied to clipboard!":"c4d插件文件夹已经复制到剪贴板！",
-    "Install Houdini Package":"安装houdini插件",
-    "Install":"安装",
-    "Successfully Write Package json File":"成功写入Package json文件",
-    "Select at least one object":"至少选择一个物体",
+    "Check Update": "检查更新",
+    "Download": "下载",
+    "Regenerate": "重新生成",
+    "Addons": "插件",
+    "Asset Helper": "资产助手",
+    "Change Log": "更新日志",
+    "Third-party": "互导",
+    "Install Cinema 4d Plugin": "安装c4d插件",
+    "Cinema 4d Plugin has been copied to clipboard!": "c4d插件文件夹已经复制到剪贴板！",
+    "Install Houdini Package": "安装houdini插件",
+    "Install": "安装",
+    "Successfully Write Package json File": "成功写入Package json文件",
+    "Select at least one object": "至少选择一个物体",
 
     "Use N Panel": "使用侧面板",
     "Match Rule": "匹配规则",
@@ -113,7 +113,6 @@
     "Selected assets will be set to the same preview": "选中的资产都将设置为相同的预览",
     "Match Type": "匹配类型",
 
-
     "Export BLEND": "导出BLEND",
     "Import IES (.ies)": "导入IES",
     "No update available (Network error or using a dev version)": "没有可用的更新 (网络错误或使用开发版本)",
@@ -190,6 +189,5 @@
 
     "This is a script suitable for houdini 18+(python3)": "这是一个适用于houdini 18+(python3)的脚本",
     "Click 'Install' to auto install, 'Tutorial' to check tutorial image": "点击'安装'自动安装，'教程'查看教程图片"
-
 
 }
