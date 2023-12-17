@@ -212,7 +212,7 @@ class ConfigItemProperty(PropertyGroup):
              15),
 
             None,
-            ('ADDONS_BLEND_MATERIAL', 'Append and Assign material',
+            ('ADDONS_BLEND_MATERIAL', 'Append and Assign Material',
              'Import material from a single file and assign it to active object', 'MATERIAL', 101),
             ('ADDONS_BLEND_WORLD', 'Append and Assign world',
              'Import world from a single file and set it as context world', 'WORLD', 102),

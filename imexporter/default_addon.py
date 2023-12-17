@@ -11,7 +11,7 @@ importer_addon = {
 addon_lib = {
     'ADDONS_BLEND_MATERIAL': {
         'bl_idname': 'spio.load_and_assign_material',
-        'name': 'Append and Assign material',
+        'name': 'Append and Assign Material',
         'description': 'Import material from a single file and assign it to active object',
         'icon': 'MATERIAL',
         'number': 101
@@ -38,7 +38,7 @@ addon_lib = {
         'number': 104
     },
     'ADDONS_IMPORT_PBR_ZIP': {
-        'bl_idname': 'spio.import_ies',
+        'bl_idname': 'spio.import_pbr_zip',
         'name': 'Import IES (.ies)',
         'description': 'Import IES file as light',
         'icon': 'MATERIAL',
