@@ -1,0 +1,100 @@
+# config for default importer
+# example for custom importer config using bpy.ops.wm.obj_import()
+
+#- name: 'Wavefront (.obj)'  name must be unique
+#  bl_idname: 'wm.obj_import' bl_idname, call this operator
+#  icon: 'EXPORT'            icon, use blender icon
+#  category: 'Export'       category, use blender category
+#  file_types: {'obj'}     file_types, file extension
+#  args:                  args, arguments for operator, default pass in 'filepath'
+
+
+- name: 'Collada (.dae)'
+  bl_idname: 'wm.collada_export'
+  icon: 'EXPORT'
+  category: 'Export'
+  file_types: { 'dae' }
+  pre_script:
+  post_script:
+  args:
+    selected: True
+
+- name: 'Alembic (.abc)'
+  bl_idname: 'wm.alembic_export'
+  icon: 'EXPORT'
+  category: 'Export'
+  file_types: { 'abc' }
+  pre_script:
+  post_script:
+  args:
+    selected: True
+
+- name: 'USD (.usd)'
+  bl_idname: 'wm.usd_export'
+  icon: 'EXPORT'
+  category: 'Export'
+  file_types: { 'usd', 'usda', 'usdc' }
+  pre_script:
+  post_script:
+  args:
+    selected_objects_only: True
+
+- name: 'Stanford (.ply)'
+  bl_idname: 'import_mesh.ply'
+  icon: 'EXPORT'
+  category: 'Export'
+  file_types: { 'ply' }
+  pre_script:
+  post_script:
+  args:
+    use_selection: True
+
+- name: 'Stl (.stl)'
+  bl_idname: 'import_mesh.stl'
+  icon: 'EXPORT'
+  category: 'Export'
+  file_types: { 'stl'
+  pre_script:
+  post_script:
+  args:
+    use_selection: True
+
+- name: 'FBX (.fbx)'
+  bl_idname: 'import_scene.fbx'
+  icon: 'EXPORT'
+  category: 'Export'
+  file_types: { 'fbx' }
+  pre_script:
+  post_script:
+  args:
+    use_selection: True
+
+- name: 'Wavefront (.obj)'
+  bl_idname: 'wm.obj_import'
+  icon: 'EXPORT'
+  category: 'Export'
+  file_types: { 'obj' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'glTF 2.0 (.gltf/.glb)'
+  bl_idname: 'import_scene.gltf'
+  icon: 'EXPORT'
+  category: 'Export'
+  file_types: { 'gltf', 'glb' }
+  pre_script:
+  post_script:
+  args:
+    use_selection: True
+    export_format: GLTF_EMBEDDED
+
+- name: 'X3D (.x3d/.wrl)'
+  bl_idname: 'import_scene.x3d'
+  icon: 'EXPORT'
+  category: 'Export'
+  file_types: { 'x3d', 'wrl' }
+  pre_script:
+  post_script:
+  args:
+

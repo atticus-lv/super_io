@@ -1,0 +1,109 @@
+# config for default importer
+# example for custom importer config using bpy.ops.wm.obj_import()
+
+#- name: 'Wavefront (.obj)'  name must be unique
+#  bl_idname: 'wm.obj_import' bl_idname, call this operator
+#  icon: 'IMPORT'            icon, use blender icon
+#  category: 'Import'       category, use blender category
+#  file_types: {'obj'}     file_types, file extension
+#  args:                  args, arguments for operator, default pass in 'filepath'
+
+
+- name: 'Collada (.dae)'
+  bl_idname: 'wm.collada_import'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'dae' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'Alembic (.abc)'
+  bl_idname: 'wm.alembic_import'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'abc' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'USD (.usd/.usda/.usdc)'
+  bl_idname: 'wm.usd_import'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'usd', 'usda', 'usdc' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'Stanford (.ply)'
+  bl_idname: 'import_mesh.ply'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'ply' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'Stl (.stl)'
+  bl_idname: 'import_mesh.stl'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'stl' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'FBX (.fbx)'
+  bl_idname: 'import_scene.fbx'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'fbx' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'Wavefront (.obj)'
+  bl_idname: 'wm.obj_import'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'obj' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'glTF 2.0 (.gltf/.glb)'
+  bl_idname: 'import_scene.gltf'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'gltf', 'glb' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'X3D (.x3d/.wrl)'
+  bl_idname: 'import_scene.x3d'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'x3d', 'wrl' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'OpenVDB (.vdb)'
+  bl_idname: 'object.volume_import'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'vdb' }
+  pre_script:
+  post_script:
+  args:
+
+- name: 'Motion Capture (.bvh)'
+  bl_idname: 'import_anim.bvh'
+  icon: 'IMPORT'
+  category: 'Import'
+  file_types: { 'bvh' }
+  pre_script:
+  post_script:
+  args:
