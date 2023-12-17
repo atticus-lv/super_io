@@ -11,6 +11,17 @@ class ConfigFile(Enum):
     IMPORT_SPIO = 'import_spio.yaml'
 
 
+class AssetDir(Enum):
+    DIRECTORY = 'asset'
+    SCRIPTS = 'scripts'
+    TEMPLATES = 'templates'
+
+
+class TemplateDir(Enum):
+    WORLD = 'World.blend'
+    PARALLAX_MAPPING = 'ParallaxMapping_2022_5_9.blend'
+
+
 class ScriptDir(Enum):
     pass
 
@@ -18,13 +29,6 @@ class ScriptDir(Enum):
 class ExternalDir(Enum):
     C4D = 'Super IO for Cinema 4d v0.2'
     HOUDINI = 'Super IO for Houdini v0.3'
-
-
-class AssetDir(Enum):
-    CATEGORY_DEFINE = 'blender_assets.cats.txt'
-    MODIFIER = 'modifier'
-    MESHLESS_PATTERN = 'meshless_pattern'
-    LIGHTING = 'lighting'
 
 
 class ModulesDir(Enum):
@@ -39,7 +43,30 @@ class DefaultIcons(Enum):
     IMPORT_BIP = 'import_.bip'
     EXPORT_BIP = 'export.bip'
 
+
 def get_modules_dir():
     d = Path(__file__).parent.joinpath(ModulesDir.DIRECTORY.value)
+
+    return d
+
+
+def get_asset_dir(subpath: AssetDir | None = None) -> Path:
+    d = Path(__file__).parent.joinpath(AssetDir.DIRECTORY.value)
+
+    assert subpath in AssetDir or subpath is None, f'Asset {subpath} not found.'
+
+    if subpath is not None:
+        d = d.joinpath(subpath.value)
+
+    return d
+
+
+def get_template_dir(subpath: TemplateDir | None = None) -> Path:
+    d = get_asset_dir().joinpath(AssetDir.TEMPLATES.value)
+
+    assert subpath in TemplateDir or subpath is None, f'Template {subpath} not found.'
+
+    if subpath is not None:
+        d = d.joinpath(subpath.value)
 
     return d

@@ -4,6 +4,8 @@ import sys
 import math
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
+from ..public_path_utils import get_template_dir, TemplateDir
+
 
 class image_io:
     bl_options = {'UNDO_GROUPED'}
@@ -159,12 +161,11 @@ class SPIO_OT_import_image_as_world(image_io, bpy.types.Operator):
     def invoke(self, context, event):
         for filepath in self.files.split('$$'):
             # get preset node group
-            cur_dir = os.path.dirname(__file__)
-            node_group_file = os.path.join(cur_dir, 'templates', "World.blend")
+            node_group_file = get_template_dir(TemplateDir.WORLD)
 
             img = self.load_image_by_path(filepath)
 
-            with bpy.data.libraries.load(node_group_file, link=False) as (data_from, data_to):
+            with bpy.data.libraries.load(str(node_group_file), link=False) as (data_from, data_to):
                 setattr(data_to, 'worlds', getattr(data_from, 'worlds'))
 
             world = data_to.worlds[0]
@@ -230,12 +231,11 @@ class SPIO_OT_import_image_as_parallax_material(image_io, bpy.types.Operator):
 
     def invoke(self, context, event):
         for filepath in self.files.split('$$'):
-            cur_dir = os.path.dirname(__file__)
-            node_group_file = os.path.join(cur_dir, 'templates', "ParallaxMapping_2022_5_9.blend")
+            node_group_file = get_template_dir(TemplateDir.PARALLAX_MAPPING)
 
             img = self.load_image_by_path(filepath)
 
-            with bpy.data.libraries.load(node_group_file, link=False) as (data_from, data_to):
+            with bpy.data.libraries.load(str(node_group_file), link=False) as (data_from, data_to):
                 data_to.materials = ['ParallaxMapping']
 
             mat = bpy.data.materials['ParallaxMapping']
