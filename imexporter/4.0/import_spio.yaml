@@ -1,4 +1,4 @@
-- name: 'Append and Assign Material'
+Append and Assign Material:
   bl_idname: 'spio.load_and_assign_material'
   description: 'Import material from a single file and assign it to active object'
   icon: 'MATERIAL'
@@ -8,7 +8,7 @@
   post_script:
   args:
 
-- name: 'Append and Assign world'
+Append and Assign world:
   bl_idname: 'spio.load_and_assign_world'
   description: 'Import world from a single file and set it as context world'
   icon: 'WORLD'
@@ -18,7 +18,7 @@
   post_script:
   args:
 
-- name: 'Install Addon (.py/.zip)'
+Install Addon (.py/.zip):
   bl_idname: 'spio.import_addon'
   description: 'Import and Install extra_addon'
   icon: 'COMMUNITY'
@@ -28,7 +28,7 @@
   post_script:
   args:
 
-- name: 'Import IES (.ies)'
+Import IES (.ies):
   bl_idname: 'spio.import_ies'
   description: 'Import IES file as light'
   icon: 'LIGHT_SPOT'
@@ -38,7 +38,7 @@
   post_script:
   args:
 
-- name: 'Import Zips as PBR Materials'
+Import Zips as PBR Materials:
   bl_idname: 'import_pbr_zip'
   description: 'Import zip file as PBR materials'
   icon: 'MATERIAL'
@@ -47,4 +47,3 @@
   pre_script:
   post_script:
   args:
-
