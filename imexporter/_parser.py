@@ -79,6 +79,9 @@ class SPIO_Config:
 
         with open(file, 'r', encoding='utf-8') as f:
             data = yaml.load(f, Loader=Loader)
+            # versioning, maybe useful in the future
+            if 'version' in data:
+                data.pop('version')
 
         return data
 
