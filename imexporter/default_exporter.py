@@ -184,6 +184,8 @@ def get_exporter(cpp_obj_exporter=True, extend=False):
     m = exporter_min.copy()
     if cpp_obj_exporter and bpy.app.version >= (3, 1, 0):
         m['obj'] = 'wm.obj_export'
+    elif bpy.app.version >= (4, 0, 0):
+        m['obj'] = 'wm.obj_export'
     if extend:
         m.update(exporter_extend)
 
@@ -192,7 +194,9 @@ def get_exporter(cpp_obj_exporter=True, extend=False):
 
 def get_exporter_ops_props(cpp_obj_exporter=True):
     props = exporter_ops_props.copy()
-    if cpp_obj_exporter and bpy.app.version >= (3, 1, 0):
+    if bpy.app.version >= (4, 0, 0) or (
+            cpp_obj_exporter and bpy.app.version >= (3, 1, 0)
+    ):
         props['obj'] = {'export_selected_objects': True}
     else:
         props['obj'] = {'use_selection': True}
