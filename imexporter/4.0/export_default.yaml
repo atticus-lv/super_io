@@ -76,17 +76,18 @@ FBX (.fbx):
     use_selection: True
 
 Wavefront (.obj):
-  bl_idname: 'wm.obj_import'
+  bl_idname: 'wm.obj_export'
   icon: 'EXPORT'
   file_types: { 'obj' }
   pre_script:
   post_script:
   args:
+    use_selection: True
 
 glTF 2.0 (.gltf/.glb):
-  bl_idname: 'import_scene.gltf'
+  bl_idname: 'export_scene.gltf'
   icon: 'EXPORT'
-  file_types: { 'gltf', 'glb' }
+  file_types: { 'gltf'}
   pre_script:
   post_script:
   args:
@@ -94,9 +95,9 @@ glTF 2.0 (.gltf/.glb):
     export_format: GLTF_EMBEDDED
 
 X3D (.x3d/.wrl):
-  bl_idname: 'import_scene.x3d'
+  bl_idname: 'export_scene.x3d'
   icon: 'EXPORT'
-  file_types: { 'x3d', 'wrl' }
+  file_types: {'x3d'}
   pre_script:
   post_script:
   args:
