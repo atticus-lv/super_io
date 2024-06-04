@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Super IO (SPIO)",
     "author": "Atticus",
-    "blender": (2, 83, 0),
-    "version": (1, 4, 8),
+    "blender": (4, 1, 0),
+    "version": (1, 5, 0),
     "category": "Import-Export",
     "support": "COMMUNITY",
     "doc_url": "https://atticus-lv.gitee.io/super_io/#/",
