@@ -95,6 +95,13 @@ class ConfigItemHelper():
                                         extend=get_pref().extend_export_menu)
         exporter_ops_props = get_exporter_ops_props(cpp_obj_exporter=get_pref().cpp_obj_exporter)
 
+        # get namespace to store operator param
+        # cat, name = MESH_OT_process_cad.bl_idname.split('.')
+        # op = getattr(getattr(bpy.ops, cat), name)
+        # for key, value in dict(op.get_rna_type().properties).items():
+        #     if key == 'namespace':
+        #         namespace = value.default
+        #         break
         # init
         op_callable = None
         ops_args = dict()
@@ -286,7 +293,7 @@ class PopupExportMenu():
             return draw_asset_browser_menu
 
         context.window_manager.popup_menu(draw_asset_browser_menu,
-                                          title=f'Super Export: ({len(context.selected_asset_files)} assets to render)',
+                                          title=f'Super Export: ({len(context.selected_assets)} assets to render)',
                                           icon='IMAGE_DATA')
 
     def default_node_editor_menu(self, return_menu=False):

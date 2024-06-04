@@ -1,0 +1,11 @@
+# This file is the config file for blender 4.0
+# Define the default category for import and export
+# !include will include the yaml file in the same directory
+# Check the yaml file for more format details
+
+# version: 0.1
+version: 0.1
+
+Import: !include ./import_default.yaml
+Export: !include ./export_default.yaml
+Import-spio: !include ./import_spio.yaml

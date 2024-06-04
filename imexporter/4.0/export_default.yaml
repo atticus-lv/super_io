@@ -1,0 +1,104 @@
+# config for default importer
+# example for custom importer config using bpy.ops.wm.obj_import()
+
+# English Example:
+# Wavefront (.obj)  name must be unique
+#  bl_idname: 'wm.obj_import' bl_idname, call this operator
+#  icon: 'EXPORT'            icon, use blender icon
+#         category, use blender category
+#  file_types: {'obj'}     file_types, file extension
+#  args:                  args, arguments for operator, default pass in 'filepath'
+# pre_script:             pre_script, run before operator
+# post_script:            post_script, run after operator
+
+# Chinese Example:
+# 导出Obj (.obj)  名称必须唯一
+#  bl_idname: 'wm.obj_import' bl_idname, 调用这个操作
+#  icon: 'EXPORT'            icon, 使用blender图标
+#         category, 使用blender分类
+# file_types: {'obj'}     file_types, 文件扩展名
+#  args:                  args, 操作的参数, 默认传入'filepath'
+# pre_script:             pre_script, 在操作前运行
+# post_script:            post_script, 在操作后运行
+
+Collada (.dae):
+  bl_idname: 'wm.collada_export'
+  icon: 'EXPORT'
+  file_types: { 'dae' }
+  pre_script:
+  post_script:
+  args:
+    selected: True
+
+Alembic (.abc):
+  bl_idname: 'wm.alembic_export'
+  icon: 'EXPORT'
+  file_types: { 'abc' }
+  pre_script:
+  post_script:
+  args:
+    selected: True
+
+USD (.usd):
+  bl_idname: 'wm.usd_export'
+  icon: 'EXPORT'
+  file_types: { 'usd', 'usda', 'usdc' }
+  pre_script:
+  post_script:
+  args:
+    selected_objects_only: True
+
+Stanford (.ply):
+  bl_idname: 'import_mesh.ply'
+  icon: 'EXPORT'
+  file_types: { 'ply' }
+  pre_script:
+  post_script:
+  args:
+    use_selection: True
+
+Stl (.stl):
+  bl_idname: 'import_mesh.stl'
+  icon: 'EXPORT'
+  file_types: { 'stl' }
+  pre_script:
+  post_script:
+  args:
+    use_selection: True
+
+FBX (.fbx):
+  bl_idname: 'import_scene.fbx'
+  icon: 'EXPORT'
+  file_types: { 'fbx' }
+  pre_script:
+  post_script:
+  args:
+    use_selection: True
+
+Wavefront (.obj):
+  bl_idname: 'wm.obj_export'
+  icon: 'EXPORT'
+  file_types: { 'obj' }
+  pre_script:
+  post_script:
+  args:
+    use_selection: True
+
+glTF 2.0 (.gltf/.glb):
+  bl_idname: 'export_scene.gltf'
+  icon: 'EXPORT'
+  file_types: { 'gltf'}
+  pre_script:
+  post_script:
+  args:
+    use_selection: True
+    export_format: GLTF_EMBEDDED
+
+X3D (.x3d/.wrl):
+  bl_idname: 'export_scene.x3d'
+  icon: 'EXPORT'
+  file_types: {'x3d'}
+  pre_script:
+  post_script:
+  args:
+
