@@ -11,8 +11,12 @@
     <a href="https://atticus-lv.gitee.io/super_io/#/">
 	[Gitee] 
     </a>
-    Blender 2.83 ~ 3.2
+    Blender 2.83 ~ 3.6 (1.4.8 and lower) 4.0+ (1.5.0)
 </p>
+# Notice
+
+> Since blender 4.1 has support Drag and Drop, this addon will be deprecated soon
+> See new addon https://github.com/atticus-lv/CustomDragImport for more information
 
 # Intro
 
@@ -27,7 +31,6 @@ importing and exporting blender files / Models / pictures
 With third-party Scripts, you are allowed to copy/paste among blender, Cinema 4d and Houdini
 
 > Support windows / Mac platforms(Not Fully Support, only win with c4d/houdini addon)
->
 
 # Contributing
 
