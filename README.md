@@ -13,10 +13,11 @@
     </a>
     Blender 2.83 ~ 3.6 (1.4.8 and lower) 4.0+ (1.5.0)
 </p>
+
 # Notice
 
 > Since blender 4.1 has support Drag and Drop, this addon will be deprecated soon
-> See new addon https://github.com/atticus-lv/CustomDragImport for more information
+> See new addon https://github.com/atticus-lv/CustomDragImport , a improve version of super_io (Import only now, support clipboard and drag import)
 
 # Intro
 
