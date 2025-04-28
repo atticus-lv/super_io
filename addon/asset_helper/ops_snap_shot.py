@@ -61,7 +61,8 @@ class SPIO_OT_asset_snap_shot(bpy.types.Operator):
         ob.asset_mark()
         override = bpy.context.copy()
         override['id'] = ob
-        bpy.ops.ed.lib_id_load_custom_preview(override, filepath=filepath)
+        with context.temp_override(**override):
+            bpy.ops.ed.lib_id_load_custom_preview(filepath=filepath)
 
         # Unhide the objects hidden for the render
         for o in tempHidden:
