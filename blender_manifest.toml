@@ -26,6 +26,8 @@ network = "Check GitHub releases and import remote PBR assets"
 [build]
 paths_exclude_pattern = [
   "__pycache__/",
+  "build/",
+  "dist/",
   ".*",
   "*.zip",
 ]
