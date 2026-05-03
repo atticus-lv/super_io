@@ -1,8 +1,9 @@
-from . import data_icon, data_config_prop, data_keymap, data_config_filter_panel, prefs
+from . import data_icon, data_config_prop, data_config_store, data_keymap, data_config_filter_panel, prefs
 
 classes = (
     data_icon,
     data_config_prop,
+    data_config_store,
     data_config_filter_panel,
     data_keymap,
     prefs,
@@ -12,6 +13,8 @@ classes = (
 def register():
     for cls in classes:
         cls.register()
+
+    data_config_store.load_or_migrate_runtime_config()
 
 
 def unregister():

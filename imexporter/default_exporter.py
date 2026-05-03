@@ -1,17 +1,6 @@
 import bpy.app
 
 exporter_lib = {
-    'EXPORT_DAE': {
-        'name': 'Collada (.dae)',
-        'bl_idname': 'export_dae',
-        'description': '',
-        'icon': 'EXPORT',
-        'number': 199,
-        'ext': 'dae',
-        'prop_list': {
-            'selected': True
-        }
-    },
     'EXPORT_ABC': {
         'name': 'Alembic (.abc)',
         'bl_idname': 'wm.alembic_export',
@@ -58,24 +47,24 @@ exporter_lib = {
     },
     'EXPORT_PLY': {
         'name': 'Stanford (.ply)',
-        'bl_idname': 'export_mesh.ply',
+        'bl_idname': 'wm.ply_export',
         'description': '',
         'icon': 'EXPORT',
         'number': 194,
         'ext': 'ply',
         'prop_list': {
-            'use_selection': True
+            'export_selected_objects': True
         },
     },
     'EXPORT_STL': {
         'name': 'Stl (.stl)',
-        'bl_idname': 'export_mesh.stl',
+        'bl_idname': 'wm.stl_export',
         'description': '',
         'icon': 'EXPORT',
         'number': 193,
         'ext': 'stl',
         'prop_list': {
-            'use_selection': True
+            'export_selected_objects': True
         },
     },
     'EXPORT_FBX': {
@@ -103,18 +92,18 @@ exporter_lib = {
     },
     'EXPORT_OBJ': {
         'name': 'Wavefront (.obj)',
-        'bl_idname': 'export_scene.obj',
+        'bl_idname': 'wm.obj_export',
         'description': '',
         'icon': 'EXPORT',
         'number': 190,
         'ext': 'obj',
         'prop_list': {
-            'use_selection': True
+            'export_selected_objects': True
         }
     },
     'EXPORT_SVG': {
         'name': 'Grease Pencil (.svg)',
-        'bl_idname': 'wm.gpencil_export_svg',
+        'bl_idname': 'wm.grease_pencil_export_svg',
         'description': '',
         'icon': 'EXPORT',
         'number': 189,
@@ -132,43 +121,48 @@ exporter_lib = {
 
 exporter_min = {
     'blend': 'spio.export_blend',
-    'stl': 'export_mesh.stl',
-    'obj': 'export_scene.obj',
+    'stl': 'wm.stl_export',
+    'obj': 'wm.obj_export',
     'fbx': 'export_scene.fbx',
 }
 
 exporter_extend = {
     'abc': 'wm.alembic_export',
+    'usd': 'wm.usd_export',
     'usdc': 'wm.usd_export',
+    'usda': 'wm.usd_export',
     'gltf': 'export_scene.gltf',
-    'ply': 'export_mesh.ply',
-    'svg': 'wm.gpencil_export_svg',
+    'ply': 'wm.ply_export',
+    'svg': 'wm.grease_pencil_export_svg',
 }
 
 exporter_ops_props = {
     'obj': {
-        'use_selection': True
+        'export_selected_objects': True
     },
     'fbx': {
         'use_selection': True
     },
     'stl': {
-        'use_selection': True
+        'export_selected_objects': True
     },
     'gltf': {
         'use_selection': True,
         'export_format': 'GLTF_EMBEDDED'
     },
     'ply': {
-        'use_selection': True
-    },
-    'dae': {
-        'selected': True
+        'export_selected_objects': True
     },
     'abc': {
         'selected': True
     },
+    'usd': {
+        'selected_objects_only': True
+    },
     'usdc': {
+        'selected_objects_only': True
+    },
+    'usda': {
         'selected_objects_only': True
     },
     'blend': {
@@ -180,25 +174,13 @@ exporter_ops_props = {
 }
 
 
-def get_exporter(cpp_obj_exporter=True, extend=False):
+def get_exporter(extend=False):
     m = exporter_min.copy()
-    if cpp_obj_exporter and bpy.app.version >= (3, 1, 0):
-        m['obj'] = 'wm.obj_export'
-    elif bpy.app.version >= (4, 0, 0):
-        m['obj'] = 'wm.obj_export'
     if extend:
         m.update(exporter_extend)
 
     return m
 
 
-def get_exporter_ops_props(cpp_obj_exporter=True):
-    props = exporter_ops_props.copy()
-    if bpy.app.version >= (4, 0, 0) or (
-            cpp_obj_exporter and bpy.app.version >= (3, 1, 0)
-    ):
-        props['obj'] = {'export_selected_objects': True}
-    else:
-        props['obj'] = {'use_selection': True}
-
-    return props
+def get_exporter_ops_props():
+    return exporter_ops_props.copy()

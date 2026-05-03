@@ -10,6 +10,7 @@ from bpy.types import PropertyGroup
 from .prefs import get_pref
 from .data_config_prop import enum_color_tag_items
 from .data_icon import get_color_tag_icon
+from .data_config_store import get_config_list
 
 class ConfigListFilterProperty(PropertyGroup):
     filter_type: EnumProperty(name='Filter Type', items=[
@@ -51,7 +52,7 @@ class SPIO_OT_color_tag_selector(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(get_pref().config_list) != 0
+        return len(get_config_list(context)) != 0
 
     def execute(self, context):
         # clear
@@ -59,8 +60,7 @@ class SPIO_OT_color_tag_selector(bpy.types.Operator):
             bpy.utils.unregister_class(cls)
         self.dep_classes.clear()
 
-        pref = get_pref()
-        item = pref.config_list[self.index]
+        item = get_config_list(context)[self.index]
 
         for i in range(0, 9):
             # set color tag
@@ -95,8 +95,7 @@ class SPIO_OT_color_tag_selector(bpy.types.Operator):
                 row.operator(f'wm.spio_color_tag_{i}', text='',
                              icon=get_color_tag_icon(i))
 
-        context.window_manager.popup_menu(draw, title="Color", icon='OUTLINER_COLLECTION' if bpy.app.version > (
-            2, 93, 0) else 'COLORSET_13_VEC')
+        context.window_manager.popup_menu(draw, title="Color", icon='OUTLINER_COLLECTION')
 
         return {'FINISHED'}
 

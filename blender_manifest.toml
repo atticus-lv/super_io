@@ -1,0 +1,33 @@
+schema_version = "1.0.0"
+
+id = "super_io"
+version = "1.6.0"
+name = "Super IO"
+tagline = "Clipboard driven custom import and export shortcuts"
+maintainer = "Atticus"
+type = "add-on"
+
+website = "https://github.com/atticus-lv/super_io"
+tags = ["Import-Export"]
+blender_version_min = "5.0.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2022-2026 Atticus",
+]
+
+[permissions]
+files = "Import export and persist custom IO configuration"
+clipboard = "Read and write file paths for copy paste workflows"
+network = "Check GitHub releases and import remote PBR assets"
+
+[build]
+paths_exclude_pattern = [
+  "__pycache__/",
+  "build/",
+  "dist/",
+  ".*",
+  "*.zip",
+]

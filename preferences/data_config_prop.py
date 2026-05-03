@@ -25,27 +25,20 @@ def correct_blidname(self, context):
 
 
 def correct_name(self, context):
-    pref = get_pref()
-    names = [item.name for item in pref.config_list if item.name == self.name and item.name != '']
+    from .data_config_store import get_config_list
+
+    names = [item.name for item in get_config_list(context) if item.name == self.name and item.name != '']
     if len(names) != 1:
         self.name += '(1)'
 
 
 def get_color_tag_enum_items():
-    if bpy.app.version < (2, 93, 0):
-        items = [
-            (f'COLOR_0{i}',
-             '',
-             '',
-             f'COLORSET_0{i}_VEC' if i != 0 else 'COLORSET_13_VEC', i) for i in range(0, 9)
-        ]
-    else:
-        items = [
-            (f'COLOR_0{i}',
-             '',
-             '',
-             f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION', i) for i in range(0, 9)
-        ]
+    items = [
+        (f'COLOR_0{i}',
+         '',
+         '',
+         f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION', i) for i in range(0, 9)
+    ]
 
     return items
 
@@ -60,6 +53,7 @@ def get_operator_type():
 
 
 class ConfigItemProperty(PropertyGroup):
+    identifier: StringProperty(name='Identifier', default='')
     # USE
     use_config: BoolProperty(name='Use', default=True)
     # UI
@@ -98,7 +92,6 @@ class ConfigItemProperty(PropertyGroup):
         items=[
             ("", "Import", "Default blender build-in importer", "CUBE", 0),
             None,
-            ('DEFAULT_DAE', 'Collada (.dae)', '', 'IMPORT', 99),
             ('DEFAULT_ABC', 'Alembic (.abc)', '', 'IMPORT', 98),
             ('DEFAULT_USD', 'USD (.usd/.usda/.usdc)', '', 'IMPORT', 97),
             ('DEFAULT_SVG', 'SVG (.svg)', '', 'GP_SELECT_POINTS', 96),
@@ -107,11 +100,9 @@ class ConfigItemProperty(PropertyGroup):
             ('DEFAULT_FBX', 'FBX (.fbx)', '', 'IMPORT', 93),
             ('DEFAULT_GLTF', 'glTF 2.0 (.gltf/.glb)', '', 'IMPORT', 92),
             ('DEFAULT_OBJ', 'Wavefront (.obj)', '', 'IMPORT', 91),
-            ('DEFAULT_X3D', 'X3D (.x3d/.wrl)', '', 'IMPORT', 90),
 
             ("", "Export", "Default blender build-in exporter", "CUBE", 0),
 
-            ('EXPORT_DAE', 'Collada (.dae)', '', 'EXPORT', 199),
             ('EXPORT_ABC', 'Alembic (.abc)', '', 'EXPORT', 198),
             ('EXPORT_USD', 'USD (.usd)', '', 'EXPORT', 197),
             ('EXPORT_USDC', 'USD (.usdc)', '', 'EXPORT', 196),

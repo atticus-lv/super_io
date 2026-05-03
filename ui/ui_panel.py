@@ -40,21 +40,8 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
             SPIO_Preference.draw_config(pref, context, layout)
 
 
-class SPIO_PT_PrefPanel_283(SPIO_PT_PrefPanel):
-    bl_label = ' '
-    bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(self, context):
-        return super().poll(context) and bpy.app.version < (3, 0, 0)
-
-
-class SPIO_PT_PrefPanel_300(SPIO_PT_PrefPanel):
+class SPIO_PT_PrefPanel_Main(SPIO_PT_PrefPanel):
     bl_options = {'HEADER_LAYOUT_EXPAND', 'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(self, context):
-        return super().poll(context) and not bpy.app.version < (3, 0, 0)
 
 
 class SPIO_PT_ImportPanel(SidebarSetup, bpy.types.Panel):
@@ -81,7 +68,7 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
 
     @classmethod
     def poll(self, context):
-        return get_pref().asset_helper and bpy.app.version >= (3, 0, 0)
+        return get_pref().asset_helper
 
     def draw(self, context):
         layout = self.layout
@@ -109,29 +96,20 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
 
 
 panels = (
-    SPIO_PT_PrefPanel_283,
-    SPIO_PT_PrefPanel_300,
+    SPIO_PT_PrefPanel_Main,
     SPIO_PT_ImportPanel,
     SPIO_PT_AssetHelper,
 )
 
 
 def register():
-    if bpy.app.version < (3, 0, 0):
-        bpy.utils.register_class(SPIO_PT_PrefPanel_283)
-    else:
-        bpy.utils.register_class(SPIO_PT_PrefPanel_300)
-
+    bpy.utils.register_class(SPIO_PT_PrefPanel_Main)
     bpy.utils.register_class(SPIO_PT_ImportPanel)
     bpy.utils.register_class(SPIO_PT_AssetHelper)
 
 
 def unregister():
-    if bpy.app.version < (3, 0, 0):
-        bpy.utils.unregister_class(SPIO_PT_PrefPanel_283)
-    else:
-        bpy.utils.unregister_class(SPIO_PT_PrefPanel_300)
-
+    bpy.utils.unregister_class(SPIO_PT_PrefPanel_Main)
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
     bpy.utils.unregister_class(SPIO_PT_AssetHelper)
 

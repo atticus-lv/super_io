@@ -40,9 +40,6 @@ class DefaultIcons(Enum):
     IMPORT = 'import.png'
     EXPORT = 'export.png'
 
-    IMPORT_BIP = 'import_.bip'
-    EXPORT_BIP = 'export.bip'
-
 
 def get_modules_dir():
     d = Path(__file__).parent.joinpath(ModulesDir.DIRECTORY.value)

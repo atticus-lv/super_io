@@ -7,11 +7,14 @@ import os
 
 def get_pref():
     """get preferences of this plugin"""
-    return bpy.context.preferences.addons.get(__folder_name__).preferences
+    addon = bpy.context.preferences.addons.get(__folder_name__)
+    if addon is not None:
+        return addon.preferences
+    return None
 
 
 def viewlayer_fix_291(self, context):
-    return context.view_layer.depsgraph if bpy.app.version >= (2, 91, 0) else context.view_layer
+    return context.view_layer.depsgraph
 
 
 class MeasureTime():
@@ -51,10 +54,7 @@ def get_op_by_idname(bl_idname):
 
 
 def remove_prefix(s, prefix):
-    if bpy.app.version < (2, 93, 0):
-        return s[len(prefix):]
-    else:
-        return s.removeprefix(prefix)
+    return s.removeprefix(prefix)
 
 
 from ..imexporter.default_importer import get_importer
@@ -83,17 +83,18 @@ class ConfigItemHelper():
             self.__setattr__('prop_list', ops_config)
 
     def is_config_item_poll(self, context_area_type):
-        if get_pref().experimental:
+        pref = get_pref()
+        if pref and pref.experimental:
             return self.item.context_area == bpy.context.area.type
 
         return True
 
     def get_operator_and_args(self):
         from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
+        pref = get_pref()
         # get exporter by preferences
-        default_exporter = get_exporter(cpp_obj_exporter=get_pref().cpp_obj_exporter,
-                                        extend=get_pref().extend_export_menu)
-        exporter_ops_props = get_exporter_ops_props(cpp_obj_exporter=get_pref().cpp_obj_exporter)
+        default_exporter = get_exporter(extend=pref.extend_export_menu if pref else False)
+        exporter_ops_props = get_exporter_ops_props()
 
         # get namespace to store operator param
         # cat, name = MESH_OT_process_cad.bl_idname.split('.')
@@ -118,7 +119,7 @@ class ConfigItemHelper():
 
         # default operator
         elif operator_type.startswith('DEFAULT'):
-            importer = get_importer(cpp_obj_importer=get_pref().cpp_obj_importer)
+            importer = get_importer()
             bl_idname = importer.get(remove_prefix(operator_type, 'DEFAULT_').lower())
             op_callable = get_op_by_idname(bl_idname)
 
@@ -146,7 +147,7 @@ class ConfigItemHelper():
 
         elif operator_type.startswith('EXPORT'):
             ext = remove_prefix(operator_type, 'EXPORT_').lower()
-            bl_idname = default_exporter.get(ext)
+            bl_idname = get_exporter(extend=True).get(ext)
             op_callable = get_op_by_idname(bl_idname)
 
             ops_args = exporter_ops_props.get(ext)
@@ -178,7 +179,9 @@ class ConfigHelper():
     and also to export config to json file/import json file as config'''
 
     def __init__(self, check_use=False, filter=None, io_type="IMPORT"):
-        pref_config = get_pref().config_list
+        from ..preferences.data_config_store import get_config_list
+
+        pref_config = get_config_list()
 
         config_list = dict()
         index_list = []
@@ -327,9 +330,8 @@ class PopupExportMenu():
             # col.separator()
             from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
             # get exporter by preferences
-            default_exporter = get_exporter(cpp_obj_exporter=get_pref().cpp_obj_exporter,
-                                            extend=get_pref().extend_export_menu)
-            exporter_ops_props = get_exporter_ops_props(cpp_obj_exporter=get_pref().cpp_obj_exporter)
+            default_exporter = get_exporter(extend=get_pref().extend_export_menu)
+            exporter_ops_props = get_exporter_ops_props()
 
             for ext, bl_idname in default_exporter.items():
                 op = col.operator('spio.export_model', text=f'Export {ext.upper()}')

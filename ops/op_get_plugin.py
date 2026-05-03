@@ -58,7 +58,7 @@ def set_hou_package_config(pointer_path, package_config_path):
 
 def init_package_path(self, context):
     setattr(self, 'package_path',
-            os.path.join(expanduser('~\Documents'), f'houdini{self.version}', 'packages'))
+            os.path.join(expanduser('~'), 'Documents', f'houdini{self.version}', 'packages'))
 
 
 class SPIO_OT_copy_houdini_script(bpy.types.Operator):
