@@ -1,0 +1,195 @@
+name: Blender Extension
+
+on:
+  pull_request:
+  push:
+    branches:
+      - blender-5
+      - main
+      - master
+      - "codex/**"
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Upload the built extension zip to a GitHub Release"
+        required: true
+        type: boolean
+        default: false
+      release_tag:
+        description: "Release tag to publish to; defaults to the current tag when run from a tag"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUTF8: "1"
+
+jobs:
+  test:
+    name: Test Blender ${{ matrix.blender-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - blender-version: "5.0.0"
+            blender-series: "5.0"
+          - blender-version: "5.1.1"
+            blender-series: "5.1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache Blender
+        uses: actions/cache@v4
+        with:
+          path: .cache/blender/blender-${{ matrix.blender-version }}-linux-x64
+          key: blender-${{ runner.os }}-${{ matrix.blender-version }}-linux-x64
+
+      - name: Download Blender
+        env:
+          BLENDER_VERSION: ${{ matrix.blender-version }}
+          BLENDER_SERIES: ${{ matrix.blender-series }}
+        run: |
+          set -euo pipefail
+          archive="blender-${BLENDER_VERSION}-linux-x64"
+          blender_dir="${GITHUB_WORKSPACE}/.cache/blender/${archive}"
+
+          if [ ! -x "${blender_dir}/blender" ]; then
+            mkdir -p "${GITHUB_WORKSPACE}/.cache/blender"
+            curl --fail --location --retry 3 \
+              "https://download.blender.org/release/Blender${BLENDER_SERIES}/${archive}.tar.xz" \
+              --output "${RUNNER_TEMP}/${archive}.tar.xz"
+            tar -xf "${RUNNER_TEMP}/${archive}.tar.xz" -C "${GITHUB_WORKSPACE}/.cache/blender"
+          fi
+
+          echo "BLENDER_BIN=${blender_dir}/blender" >> "${GITHUB_ENV}"
+
+      - name: Check Python syntax
+        run: |
+          python -m compileall \
+            __init__.py \
+            __make_addon_zip.py \
+            metadata.py \
+            preferences \
+            ops \
+            addon \
+            imexporter \
+            translation \
+            ui \
+            tests \
+            clipboard \
+            public_path_utils.py
+
+      - name: Validate extension source
+        run: |
+          "${BLENDER_BIN}" --factory-startup --command extension validate "${GITHUB_WORKSPACE}"
+
+      - name: Run Blender smoke test
+        run: |
+          "${BLENDER_BIN}" --factory-startup --background \
+            --python "${GITHUB_WORKSPACE}/tests/blender_smoke.py" \
+            -- --workspace "${GITHUB_WORKSPACE}"
+
+  package:
+    name: Package Extension
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Blender
+        uses: actions/cache@v4
+        with:
+          path: .cache/blender/blender-5.0.0-linux-x64
+          key: blender-${{ runner.os }}-5.0.0-linux-x64
+
+      - name: Download Blender
+        env:
+          BLENDER_VERSION: "5.0.0"
+          BLENDER_SERIES: "5.0"
+        run: |
+          set -euo pipefail
+          archive="blender-${BLENDER_VERSION}-linux-x64"
+          blender_dir="${GITHUB_WORKSPACE}/.cache/blender/${archive}"
+
+          if [ ! -x "${blender_dir}/blender" ]; then
+            mkdir -p "${GITHUB_WORKSPACE}/.cache/blender"
+            curl --fail --location --retry 3 \
+              "https://download.blender.org/release/Blender${BLENDER_SERIES}/${archive}.tar.xz" \
+              --output "${RUNNER_TEMP}/${archive}.tar.xz"
+            tar -xf "${RUNNER_TEMP}/${archive}.tar.xz" -C "${GITHUB_WORKSPACE}/.cache/blender"
+          fi
+
+          echo "BLENDER_BIN=${blender_dir}/blender" >> "${GITHUB_ENV}"
+
+      - name: Build extension package
+        env:
+          PACKAGE_DIR: ${{ runner.temp }}/super_io-dist
+        run: |
+          set -euo pipefail
+          mkdir -p "${PACKAGE_DIR}"
+          "${BLENDER_BIN}" --factory-startup --command extension build \
+            --source-dir "${GITHUB_WORKSPACE}" \
+            --output-dir "${PACKAGE_DIR}"
+
+          shopt -s nullglob
+          packages=("${PACKAGE_DIR}"/super_io-*.zip)
+          if [ "${#packages[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one extension zip, found ${#packages[@]}"
+            exit 1
+          fi
+
+          echo "PACKAGE_PATH=${packages[0]}" >> "${GITHUB_ENV}"
+
+      - name: Validate extension package
+        run: |
+          "${BLENDER_BIN}" --factory-startup --command extension validate "${PACKAGE_PATH}"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: super_io-extension
+          path: ${{ env.PACKAGE_PATH }}
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.release_tag || '' }}
+        run: |
+          set -euo pipefail
+
+          release_tag="${INPUT_RELEASE_TAG}"
+          if [ -z "${release_tag}" ] && [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            release_tag="${GITHUB_REF_NAME}"
+          fi
+
+          if [ -z "${release_tag}" ]; then
+            echo "::error::release_tag is required when manually publishing from a non-tag ref"
+            exit 1
+          fi
+
+          if gh release view "${release_tag}" > /dev/null 2>&1; then
+            gh release upload "${release_tag}" "${PACKAGE_PATH}" --clobber
+          else
+            gh release create "${release_tag}" "${PACKAGE_PATH}" \
+              --target "${GITHUB_SHA}" \
+              --title "${release_tag}" \
+              --notes "Automated Blender extension build."
+          fi
