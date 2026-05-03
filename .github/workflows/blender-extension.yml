@@ -98,6 +98,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Cache Blender
         uses: actions/cache@v4
@@ -154,6 +156,83 @@ jobs:
           path: ${{ env.PACKAGE_PATH }}
           if-no-files-found: error
 
+      - name: Generate release notes
+        run: |
+          set -euo pipefail
+
+          release_tag="${GITHUB_REF_NAME}"
+          release_commit="$(git rev-list -n 1 "${release_tag}")"
+          previous_tag="$(git describe --tags --abbrev=0 "${release_commit}^" 2> /dev/null || true)"
+
+          if [ -n "${previous_tag}" ]; then
+            commit_range="${previous_tag}..${release_tag}"
+            compare_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${previous_tag}...${release_tag}"
+          else
+            commit_range="${release_tag}"
+            compare_url=""
+          fi
+
+          notes_file="${RUNNER_TEMP}/RELEASE_NOTES.md"
+          breaking_file="${RUNNER_TEMP}/release-breaking.md"
+          feat_file="${RUNNER_TEMP}/release-feat.md"
+          fix_file="${RUNNER_TEMP}/release-fix.md"
+          change_file="${RUNNER_TEMP}/release-change.md"
+
+          : > "${breaking_file}"
+          : > "${feat_file}"
+          : > "${fix_file}"
+          : > "${change_file}"
+
+          field_separator=$'\x1f'
+          record_separator=$'\x1e'
+
+          while IFS= read -r -d "${record_separator}" record || [ -n "${record}" ]; do
+            record="${record#$'\n'}"
+            hash="${record%%${field_separator}*}"
+            rest="${record#*${field_separator}}"
+            subject="${rest%%${field_separator}*}"
+            body="${rest#*${field_separator}}"
+
+            [ -n "${hash}" ] || continue
+            entry="- ${subject} (${hash})"
+
+            if [[ "${subject}" =~ ^[a-zA-Z0-9_-]+(\(.+\))?!: ]] || grep -qi '^BREAKING CHANGE:' <<< "${body}"; then
+              echo "${entry}" >> "${breaking_file}"
+            elif [[ "${subject}" == feat:* || "${subject}" == feat\(* ]]; then
+              echo "${entry}" >> "${feat_file}"
+            elif [[ "${subject}" == fix:* || "${subject}" == fix\(* ]]; then
+              echo "${entry}" >> "${fix_file}"
+            else
+              echo "${entry}" >> "${change_file}"
+            fi
+          done < <(git log --no-merges --format='%h%x1f%s%x1f%b%x1e' "${commit_range}")
+
+          {
+            echo "## ${release_tag}"
+            echo
+            if [ -n "${compare_url}" ]; then
+              echo "[Compare changes](${compare_url})"
+              echo
+            fi
+
+            echo "### Breaking Changes"
+            if [ -s "${breaking_file}" ]; then cat "${breaking_file}"; else echo "- None"; fi
+            echo
+
+            echo "### Features"
+            if [ -s "${feat_file}" ]; then cat "${feat_file}"; else echo "- None"; fi
+            echo
+
+            echo "### Fixes"
+            if [ -s "${fix_file}" ]; then cat "${fix_file}"; else echo "- None"; fi
+            echo
+
+            echo "### Changes"
+            if [ -s "${change_file}" ]; then cat "${change_file}"; else echo "- None"; fi
+          } > "${notes_file}"
+
+          echo "RELEASE_NOTES=${notes_file}" >> "${GITHUB_ENV}"
+
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -163,10 +242,11 @@ jobs:
           release_tag="${GITHUB_REF_NAME}"
 
           if gh release view "${release_tag}" > /dev/null 2>&1; then
+            gh release edit "${release_tag}" --notes-file "${RELEASE_NOTES}"
             gh release upload "${release_tag}" "${PACKAGE_PATH}" --clobber
           else
             gh release create "${release_tag}" "${PACKAGE_PATH}" \
               --target "${GITHUB_SHA}" \
               --title "${release_tag}" \
-              --notes "Automated Blender extension build."
+              --notes-file "${RELEASE_NOTES}"
           fi
