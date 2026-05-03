@@ -360,7 +360,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     force_unicode: BoolProperty(name='Force Unicode',
                                 description="Force to use 'utf-8' to decode filepath \nOnly enable when your system coding 'utf-8'",
                                 default=False)
-    cpp_obj_importer: BoolProperty(name='Use C++ obj importer', default=False)
     # addon
     asset_helper: BoolProperty(name='Asset Helper', default=True)
     # asset helper batch import pbr tags
@@ -370,7 +369,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
     experimental: BoolProperty(name='Experimental', default=False)
 
     # Export
-    cpp_obj_exporter: BoolProperty(name='Use C++ obj exporter', default=False)
     extend_export_menu: BoolProperty(name='Extend Export Menu', default=False)
 
     post_open_dir: BoolProperty(name='Open Dir After Export',
@@ -426,12 +424,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
     def draw_addons(self, context, layout):
         box = layout.box()
-        box.operator('spio.check_update', text='Check Update', icon='INFO')
-
-        from ..addon.addon_updater.op_check_version import SPIO_check_update
-        SPIO_check_update.draw_update(box)
-
-        box = layout.box()
         box.label(text='Addons', icon='EXPERIMENTAL')
         box.prop(self, 'asset_helper')
         box.prop(self, 'experimental')
@@ -465,9 +457,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             row.prop(self, 'force_unicode', text='')
             row.label(text='Force Unicode')
 
-            row = box.row(align=True)
-            row.prop(self, 'cpp_obj_importer')
-
             #### PBR Tags ####
             box = box.box()
             subcol = box.column(align=True)
@@ -498,9 +487,6 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             box.label(text='Export', icon="EXPORT")
             row = box.row(align=True)
             row.prop(context.preferences.filepaths, 'temporary_directory', text="Temporary Files")
-
-            row = box.row(align=True)
-            row.prop(self, 'cpp_obj_exporter')
 
             row = box.row(align=True)
             row.prop(self, 'extend_export_menu')

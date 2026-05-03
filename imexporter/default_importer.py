@@ -20,7 +20,7 @@ importer = {
 }
 
 
-def get_importer(cpp_obj_importer=True):
+def get_importer():
     im = importer.copy()
     im['obj'] = 'wm.obj_import'
 

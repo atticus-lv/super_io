@@ -124,7 +124,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
         from .dynamic_io import DynamicImport
         from ..imexporter.default_importer import get_importer
 
-        importer = get_importer(cpp_obj_importer=get_pref().cpp_obj_importer)
+        importer = get_importer()
 
         for index in self.CONFIGS.index_list:
             if index in match_index_list: continue  # not register those match config
@@ -243,7 +243,7 @@ class WM_OT_super_import(SuperImport):
     def import_default(self, context):
         from ..imexporter.default_importer import get_importer
 
-        importer = get_importer(cpp_obj_importer=get_pref().cpp_obj_importer)
+        importer = get_importer()
 
         ext = self.ext
         if ext in importer:
