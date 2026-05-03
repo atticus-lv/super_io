@@ -23,7 +23,13 @@ import super_io  # noqa: E402
 
 super_io.register()
 
-from super_io.preferences.data_config_store import get_config_data, normalize_document, serialize_legacy_item  # noqa: E402
+from super_io.preferences.data_config_store import (  # noqa: E402
+    flush_runtime_config_if_dirty,
+    get_config_data,
+    get_config_path,
+    normalize_document,
+    serialize_legacy_item,
+)
 from super_io.preferences.operator_inspector import get_operator_label, iter_operator_properties, operator_exists  # noqa: E402
 from super_io.imexporter.default_importer import get_importer  # noqa: E402
 from super_io.imexporter.default_exporter import get_exporter, get_exporter_ops_props  # noqa: E402
@@ -77,6 +83,13 @@ op_callable, op_args, op_context = helper.get_operator_and_args()
 assert op_callable.get_rna_type().bl_rna.identifier == bpy.ops.wm.obj_import.get_rna_type().bl_rna.identifier
 assert op_args == {"use_split_objects": True}
 assert op_context == "EXEC_DEFAULT"
+
+item.description = "Autosave smoke check"
+autosave_path = Path(flush_runtime_config_if_dirty())
+autosaved = json.loads(autosave_path.read_text(encoding="utf-8"))
+autosaved_smoke = next(config for config in autosaved["configs"] if config["name"] == "Smoke OBJ Import")
+assert autosaved_smoke["description"] == "Autosave smoke check"
+assert Path(get_config_path()).resolve() == autosave_path.resolve()
 
 legacy_pref_item = config_data.config_list.add()
 legacy_pref_item.name = "Legacy Preference OBJ"

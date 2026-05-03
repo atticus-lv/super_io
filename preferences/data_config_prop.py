@@ -13,15 +13,25 @@ from .utils import get_pref
 from .operator_inspector import normalize_bl_idname
 
 
+def mark_config_dirty(self=None, context=None):
+    try:
+        from .data_config_store import mark_runtime_config_dirty
+        mark_runtime_config_dirty(self, context)
+    except Exception:
+        pass
+
+
 class OperatorProperty(PropertyGroup):
-    name: StringProperty(name='Property')
-    value: StringProperty(name='Value')
+    name: StringProperty(name='Property', update=mark_config_dirty)
+    value: StringProperty(name='Value', update=mark_config_dirty)
 
 
 def correct_blidname(self, context):
     bl_idname = normalize_bl_idname(self.bl_idname)
     if bl_idname != self.bl_idname:
         self.bl_idname = bl_idname
+        return
+    mark_config_dirty(self, context)
 
 
 def correct_name(self, context):
@@ -30,6 +40,8 @@ def correct_name(self, context):
     names = [item.name for item in get_config_list(context) if item.name == self.name and item.name != '']
     if len(names) != 1:
         self.name += '(1)'
+        return
+    mark_config_dirty(self, context)
 
 
 def get_color_tag_enum_items():
@@ -53,22 +65,25 @@ def get_operator_type():
 
 
 class ConfigItemProperty(PropertyGroup):
-    identifier: StringProperty(name='Identifier', default='')
+    identifier: StringProperty(name='Identifier', default='', update=mark_config_dirty)
     # USE
-    use_config: BoolProperty(name='Use', default=True)
+    use_config: BoolProperty(name='Use', default=True, update=mark_config_dirty)
     # UI
     color_tag: EnumProperty(name='Color Tag',
-                            items=enum_color_tag_items)
+                            items=enum_color_tag_items,
+                            update=mark_config_dirty)
     # IO type
     io_type: EnumProperty(name='IO Type',
                           items=[('IMPORT', 'Import', '', 'IMPORT', 0), ('EXPORT', 'Export', '', 'EXPORT', 1)],
-                          default='IMPORT')
+                          default='IMPORT',
+                          update=mark_config_dirty)
     # information
     name: StringProperty(name='Preset Name', update=correct_name)
     description: StringProperty(name='Description',
-                                description='Show in the popup operator tips')
+                                description='Show in the popup operator tips',
+                                update=mark_config_dirty)
     # extension
-    extension: StringProperty(name='Extension')
+    extension: StringProperty(name='Extension', update=mark_config_dirty)
 
     # custom import match rule
     ###############################
@@ -78,13 +93,15 @@ class ConfigItemProperty(PropertyGroup):
                                     ('ENDSWITH', 'Endswith', ''),
                                     ('IN', 'Contain', ''),
                                     ('REGEX', 'Regex (Match or not)', ''), ],
-                             default='NONE', description='Matching rule of the name')
+                             default='NONE', description='Matching rule of the name',
+                             update=mark_config_dirty)
 
-    match_value: StringProperty(name='Match Value', default='')
+    match_value: StringProperty(name='Match Value', default='', update=mark_config_dirty)
 
     # custom export temp path
     temporary_directory: StringProperty(name='Temporary Directory', subtype='DIR_PATH',
-                                        description="Temporary Directory to store export files.\nIf empty, use blender's default temporary directory")
+                                        description="Temporary Directory to store export files.\nIf empty, use blender's default temporary directory",
+                                        update=mark_config_dirty)
 
     # remove grease pencil from default because this design is only allow one default importer
     operator_type: EnumProperty(
@@ -154,23 +171,26 @@ class ConfigItemProperty(PropertyGroup):
             None,
             ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
-        default='CUSTOM', )
+        default='CUSTOM',
+        update=mark_config_dirty, )
 
     # custom operator
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)
     context: EnumProperty(name="Operator Context",
                           items=[("INVOKE_DEFAULT", "INVOKE_DEFAULT", ''),
                                  ("EXEC_DEFAULT", "EXEC_DEFAULT", ''), ],
-                          default='EXEC_DEFAULT')
+                          default='EXEC_DEFAULT',
+                          update=mark_config_dirty)
     context_area: EnumProperty(name="Area",
                                items=[
                                    ("VIEW_3D", "3D View", ''),
                                    ("IMAGE_EDITOR", "Image Editor", ''),
                                    ("NODE_EDITOR", "Node Editor", ''),
                                ],
-                               default='VIEW_3D')
+                               default='VIEW_3D',
+                               update=mark_config_dirty)
     prop_list: CollectionProperty(type=OperatorProperty)
-    show_prop_list: BoolProperty(name='Properties', default=True)
+    show_prop_list: BoolProperty(name='Properties', default=True, update=mark_config_dirty)
 
 
 def register():

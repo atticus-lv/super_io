@@ -13,6 +13,10 @@ from .data_config_prop import ConfigItemProperty
 
 CONFIG_SCHEMA_VERSION = 2
 CONFIG_FILE_NAME = "custom_io_configs.json"
+AUTOSAVE_INTERVAL = 0.75
+_CONFIG_DIRTY = False
+_CONFIG_LOADING = False
+_CONFIG_AUTOSAVE_SCHEDULED = False
 CONFIG_ITEM_FIELDS = (
     "identifier",
     "use_config",
@@ -51,12 +55,45 @@ LEGACY_BLEND_TYPES = {
 }
 
 
+def is_runtime_config_available():
+    return (
+        hasattr(bpy.types, "WindowManager")
+        and hasattr(bpy.types.WindowManager, "spio_config")
+        and hasattr(bpy.context, "window_manager")
+        and hasattr(bpy.context.window_manager, "spio_config")
+    )
+
+
+def mark_runtime_config_dirty(_self=None, _context=None):
+    global _CONFIG_DIRTY, _CONFIG_AUTOSAVE_SCHEDULED
+    if _CONFIG_LOADING or not is_runtime_config_available():
+        return
+
+    _CONFIG_DIRTY = True
+    if not _CONFIG_AUTOSAVE_SCHEDULED:
+        _CONFIG_AUTOSAVE_SCHEDULED = True
+        bpy.app.timers.register(_autosave_runtime_config, first_interval=AUTOSAVE_INTERVAL, persistent=True)
+
+
+def _autosave_runtime_config():
+    global _CONFIG_AUTOSAVE_SCHEDULED
+    _CONFIG_AUTOSAVE_SCHEDULED = False
+    flush_runtime_config_if_dirty()
+    return None
+
+
+def flush_runtime_config_if_dirty(context=None):
+    if not _CONFIG_DIRTY or not is_runtime_config_available():
+        return None
+    return write_runtime_config(context=context)
+
+
 class ConfigRuntimeProperty(PropertyGroup):
     schema_version: IntProperty(default=CONFIG_SCHEMA_VERSION)
     source_path: StringProperty(name="Config File")
     migrated_from_preferences: BoolProperty(default=False)
     config_list: CollectionProperty(type=ConfigItemProperty)
-    config_list_index: IntProperty(min=0, default=0)
+    config_list_index: IntProperty(min=0, default=0, update=mark_runtime_config_dirty)
 
 
 def get_config_data(context=None):
@@ -326,17 +363,22 @@ def default_config_document():
 
 
 def apply_document_to_runtime(data, context=None):
+    global _CONFIG_LOADING
     runtime = get_config_data(context)
-    document = normalize_document(data)
-    runtime.schema_version = document["schema_version"]
-    runtime.config_list.clear()
+    _CONFIG_LOADING = True
+    try:
+        document = normalize_document(data)
+        runtime.schema_version = document["schema_version"]
+        runtime.config_list.clear()
 
-    for config in document["configs"]:
-        item = runtime.config_list.add()
-        apply_config_to_item(item, config)
+        for config in document["configs"]:
+            item = runtime.config_list.add()
+            apply_config_to_item(item, config)
 
-    runtime.source_path = get_config_path(create=True)
-    set_config_index(document["active_index"], context)
+        runtime.source_path = get_config_path(create=True)
+        set_config_index(document["active_index"], context)
+    finally:
+        _CONFIG_LOADING = False
     return runtime
 
 
@@ -347,6 +389,7 @@ def read_config_file(path=None):
 
 
 def write_runtime_config(path=None, context=None):
+    global _CONFIG_DIRTY
     runtime = get_config_data(context)
     path = path or get_config_path(create=True)
     Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -357,6 +400,7 @@ def write_runtime_config(path=None, context=None):
         json.dump(document, f, indent=4, ensure_ascii=False)
 
     runtime.source_path = path
+    _CONFIG_DIRTY = False
     return path
 
 
@@ -405,5 +449,6 @@ def register():
 
 
 def unregister():
+    flush_runtime_config_if_dirty()
     del bpy.types.WindowManager.spio_config
     bpy.utils.unregister_class(ConfigRuntimeProperty)
