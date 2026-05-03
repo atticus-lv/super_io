@@ -318,12 +318,12 @@ def change_panel_category():
         return
 
     for panel in ui_panel.panels:
-        if "bl_rna" in panel.__dict__:
+        if "bl_rna" not in panel.__dict__:
+            panel.bl_category = pref.category
+        else:
             bpy.utils.unregister_class(panel)
-
-    for panel in ui_panel.panels:
-        panel.bl_category = pref.category
-        bpy.utils.register_class(panel)
+            panel.bl_category = pref.category
+            bpy.utils.register_class(panel)
 
 
 def update_category(self, context):
