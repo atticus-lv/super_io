@@ -49,7 +49,7 @@ class SPIO_OT_import_image_as_reference(image_io, bpy.types.Operator):
 
     def execute(self, context):
         for filepath in self.files.split('$$'):
-            bpy.ops.object.load_reference_image(filepath=filepath)
+            bpy.ops.object.empty_image_add(filepath=filepath, background=False)
 
         return {'FINISHED'}
 
@@ -60,11 +60,11 @@ class SPIO_OT_import_image_as_plane(image_io, bpy.types.Operator):
 
     def execute(self, context):
         filepaths = self.files.split('$$')
-        dir = os.path.dirname(filepaths[0]) + '\\'
+        directory = os.path.dirname(filepaths[0]) + os.sep
         files = [{"name": os.path.basename(filepath)} for filepath in
                  filepaths]
 
-        bpy.ops.import_image.to_plane(files=files, directory=dir, offset=True)
+        bpy.ops.image.import_as_mesh_planes(files=files, directory=directory, offset=True)
 
         return {'FINISHED'}
 

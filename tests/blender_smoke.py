@@ -48,6 +48,8 @@ assert get_exporter()["stl"] == "wm.stl_export"
 assert get_exporter(extend=True)["ply"] == "wm.ply_export"
 assert get_exporter_ops_props()["obj"] == {"export_selected_objects": True}
 assert_operator_exists("bpy.ops.image.clipboard_paste".removeprefix("bpy.ops."))
+assert_operator_exists("object.empty_image_add")
+assert_operator_exists("image.import_as_mesh_planes")
 
 
 config_data = get_config_data()
