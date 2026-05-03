@@ -174,7 +174,7 @@ exporter_ops_props = {
 }
 
 
-def get_exporter(cpp_obj_exporter=True, extend=False):
+def get_exporter(extend=False):
     m = exporter_min.copy()
     if extend:
         m.update(exporter_extend)
@@ -182,5 +182,5 @@ def get_exporter(cpp_obj_exporter=True, extend=False):
     return m
 
 
-def get_exporter_ops_props(cpp_obj_exporter=True):
+def get_exporter_ops_props():
     return exporter_ops_props.copy()

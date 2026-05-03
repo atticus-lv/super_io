@@ -8,7 +8,6 @@ data = {
     "Developer: Atticus": "开发者: Atticus",
     "Current Version:": "当前版本:",
     "Latest Version:": "最新版本:",
-    "Check Update": "检查更新",
     "Download": "下载",
     "Regenerate": "重新生成",
     "Addons": "插件",

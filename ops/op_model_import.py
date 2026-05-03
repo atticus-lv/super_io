@@ -29,7 +29,7 @@ class SPIO_OT_import_model(bpy.types.Operator):
             )
 
     def execute(self, context):
-        importer = get_importer(cpp_obj_importer=get_pref().cpp_obj_importer)
+        importer = get_importer()
 
         for filepath in self.files.split('$$'):
             ext = filepath.split('.')[-1]
