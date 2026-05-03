@@ -148,7 +148,7 @@ class ConfigItemHelper():
 
         elif operator_type.startswith('EXPORT'):
             ext = remove_prefix(operator_type, 'EXPORT_').lower()
-            bl_idname = default_exporter.get(ext)
+            bl_idname = get_exporter(cpp_obj_exporter=pref.cpp_obj_exporter if pref else False, extend=True).get(ext)
             op_callable = get_op_by_idname(bl_idname)
 
             ops_args = exporter_ops_props.get(ext)

@@ -129,12 +129,48 @@ class Clipboard():
         clipboard.push_pixel_to_clipboard(path)
 
     def pull_image_from_clipboard(self):
+        image_path = self.pull_image_from_clipboard_with_blender()
+        if image_path:
+            return image_path
+
         if sys.platform == 'win32':
             clipboard = PowerShellClipboard()
         elif sys.platform == 'darwin':
             clipboard = MacClipboard()
 
         return clipboard.pull_image_from_clipboard()
+
+    def pull_image_from_clipboard_with_blender(self, save_name='spio_from_clipboard.png'):
+        area = bpy.context.area
+        if area is None:
+            return ''
+
+        old_area_type = area.type
+        old_images = set(bpy.data.images)
+        try:
+            if area.type != 'IMAGE_EDITOR':
+                area.type = 'IMAGE_EDITOR'
+
+            result = bpy.ops.image.clipboard_paste()
+            if result != {'FINISHED'}:
+                return ''
+
+            pasted_images = [image for image in bpy.data.images if image not in old_images]
+            image = pasted_images[0] if pasted_images else area.spaces.active.image
+            if image is None:
+                return ''
+
+            ts = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
+            filepath = os.path.join(get_dir(), ts + '.' + save_name)
+            image.filepath_raw = filepath
+            image.file_format = 'PNG'
+            image.save()
+            return filepath
+        except Exception:
+            return ''
+        finally:
+            if area.type != old_area_type:
+                area.type = old_area_type
 
 
 class MacClipboard():

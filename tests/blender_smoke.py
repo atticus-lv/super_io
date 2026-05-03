@@ -24,6 +24,30 @@ import super_io  # noqa: E402
 super_io.register()
 
 from super_io.preferences.data_config_store import get_config_data  # noqa: E402
+from super_io.imexporter.default_importer import get_importer  # noqa: E402
+from super_io.imexporter.default_exporter import get_exporter, get_exporter_ops_props  # noqa: E402
+
+
+def assert_operator_exists(bl_idname):
+    op = getattr(getattr(bpy.ops, bl_idname.split(".")[0]), bl_idname.split(".")[1])
+    op.get_rna_type()
+
+
+for bl_idname in {
+    *get_importer().values(),
+    *get_exporter(extend=True).values(),
+}:
+    assert_operator_exists(bl_idname)
+
+assert get_importer()["obj"] == "wm.obj_import"
+assert get_importer()["stl"] == "wm.stl_import"
+assert get_importer()["ply"] == "wm.ply_import"
+assert get_importer()["fbx"] == "wm.fbx_import"
+assert get_exporter()["obj"] == "wm.obj_export"
+assert get_exporter()["stl"] == "wm.stl_export"
+assert get_exporter(extend=True)["ply"] == "wm.ply_export"
+assert get_exporter_ops_props()["obj"] == {"export_selected_objects": True}
+assert_operator_exists("bpy.ops.image.clipboard_paste".removeprefix("bpy.ops."))
 
 
 config_data = get_config_data()
@@ -50,6 +74,13 @@ old_json.write_text(
                 "operator_type": "DEFAULT_FBX",
                 "io_type": "IMPORT",
                 "prop_list": {"automatic_bone_orientation": True},
+            },
+            "Legacy DAE Import": {
+                "name": "Legacy DAE Import",
+                "extension": "dae",
+                "operator_type": "DEFAULT_DAE",
+                "io_type": "IMPORT",
+                "prop_list": {},
             }
         },
         indent=4,
@@ -60,6 +91,10 @@ old_json.write_text(
 result = bpy.ops.spio.import_config(filepath=str(old_json))
 assert result == {"FINISHED"}, result
 assert any(config.name == "Legacy FBX Import" for config in config_data.config_list)
+legacy_dae = next(config for config in config_data.config_list if config.name == "Legacy DAE Import")
+assert legacy_dae.use_config is False
+assert legacy_dae.operator_type == "CUSTOM"
+assert legacy_dae.bl_idname == "wm.collada_import"
 
 result = bpy.ops.spio.export_config(filepath=str(new_json), export_all=True)
 assert result == {"FINISHED"}, result
