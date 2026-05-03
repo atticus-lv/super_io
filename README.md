@@ -1,16 +1,18 @@
 <p align="center">
-  <a href="https://atticus-lv.gitee.io/super_io/#/">
+  <a href="docs/index.md">
     <img src="res/img/logo_bg.png" alt="logo" width="540px"/>
   </a>
 </p>
 <h4 align="center">
-    Allow you to copy and paste to import / export models and images. <br>
+    Clipboard-driven import and export shortcuts for Blender 5. <br>
 </h4>
 <p align="center">
-    Documentation ➡️
-    <a href="https://atticus-lv.gitee.io/super_io/#/">
-	[Gitee] 
-    </a>
+    <a href="docs/guide/getting-started.md">Documentation</a>
+    ·
+    <a href="docs/zh/guide/getting-started.md">中文文档</a>
+    ·
+    <a href="https://github.com/atticus-lv/super_io/releases">Releases</a>
+    ·
     Blender 5.0+
 </p>
 
@@ -44,15 +46,14 @@ Before upgrading from an older Super IO version, it is recommended to export or 
 
 ![f_world](res/img/f_world.gif)
 
-**SPIO is a blender addon that allow you to copy and paste to import or export.**
+**Super IO is a Blender extension that lets you copy and paste to import or export files.**
 
-Currently we can not drag and drop to import model in blender, but with this addon, you can easily copy your model/Image
-in your File Explorer, then paste in blender with **just one click/shortcut**,which has improved the efficiency of
-importing and exporting blender files / Models / pictures
+Copy models, images, blend files, SVG files, or folders in your file manager, then paste them into Blender with a shortcut.
+You can also export selected objects or images and place the result back on the clipboard.
 
-With third-party Scripts, you are allowed to copy/paste among blender, Cinema 4d and Houdini
+Super IO 2.x uses Blender 5's extension format and stores custom import/export rules in a versioned JSON configuration file.
 
-> Support windows / Mac platforms(Not Fully Support, only win with c4d/houdini addon)
+For installation, upgrade notes, and custom configuration examples, see the [documentation](docs/guide/getting-started.md).
 
 # Contributing
 
@@ -62,7 +63,7 @@ And new features which come from great idea!
 
 # Feature
 
-> Check the [document](https://atticus-lv.gitee.io/super_io/#/) above for more information
+> Check the [documentation](docs/guide/getting-started.md) for more information.
 
 ![f_config](./res/img/f_preset.png)
 
