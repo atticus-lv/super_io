@@ -1,15 +1,14 @@
 import bpy
 import os
+import bpy.utils.previews
 from ...preferences.prefs import get_pref
-from ...ui.t3dn_bip import previews
 
 # Image items
 ####################
 
 __tempPreview__ = {}  # store in global, delete in unregister
 
-# image_extensions = ('.png', '.jpg', '.jpeg')
-image_extensions = ('.bip', '.png')
+image_extensions = ('.png', '.jpg', '.jpeg')
 
 
 def check_extension(input_string: str, extensions: set) -> bool:
@@ -19,7 +18,7 @@ def check_extension(input_string: str, extensions: set) -> bool:
 
 def clear_preview_cache():
     for preview in __tempPreview__.values():
-        previews.remove(preview)
+        bpy.utils.previews.remove(preview)
     __tempPreview__.clear()
 
 
@@ -54,11 +53,6 @@ def enum_thumbnails_from_dir(directory, context):
         image_names = []
         for fn in os.listdir(directory):
             if check_extension(fn.lower(), image_extensions):
-                # check that a bip file exists
-                name = os.path.splitext(fn)[0]
-                if name + '.bip' in image_names: continue
-                if name + '.png' in image_names: image_names.remove(name + '.png')
-
                 image_names.append(fn)
 
         for i, name in enumerate(image_names):
@@ -292,7 +286,7 @@ def asset_browser(self, context):
 
 
 def register():
-    img_preview = previews.new(max_size=(512, 512))
+    img_preview = bpy.utils.previews.new()
     img_preview.img_dir = ""
     img_preview.img = ()
     __tempPreview__["spio_asset_thumbnails"] = img_preview

@@ -1,8 +1,8 @@
 import bpy
 import os
+import bpy.utils.previews
 
 from pathlib import Path
-from ..ui.t3dn_bip import previews
 
 G_PV_COLL = {}
 G_ICON_ID = {}
@@ -15,14 +15,15 @@ def register_icon():
     mats_icon = []
 
     for file in os.listdir(str(icon_dir)):
-        if file.endswith('.bip'):
+        if file.endswith('.png'):
             mats_icon.append(icon_dir.joinpath(file))
-    # 注册
-    pcoll = previews.new(lazy_load=not bpy.app.background)
+
+    pcoll = bpy.utils.previews.new()
 
     for icon_path in mats_icon:
-        pcoll.load(icon_path.name[:-4], str(icon_path), 'IMAGE')
-        G_ICON_ID[icon_path.name[:-4]] = pcoll.get(icon_path.name[:-4]).icon_id
+        icon_name = icon_path.stem
+        pcoll.load(icon_name, str(icon_path), 'IMAGE')
+        G_ICON_ID[icon_name] = pcoll.get(icon_name).icon_id
 
     G_PV_COLL['spio_icon'] = pcoll
 
@@ -31,7 +32,7 @@ def unregister_icon():
     # global G_PV_COLL, G_MAT_ICON_ID
 
     for pcoll in G_PV_COLL.values():
-        previews.remove(pcoll)
+        bpy.utils.previews.remove(pcoll)
 
     G_PV_COLL.clear()
     G_ICON_ID.clear()
