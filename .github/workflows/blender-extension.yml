@@ -1,26 +1,12 @@
 name: Blender Extension
 
 on:
-  pull_request:
   push:
     branches:
-      - blender-5
       - main
       - master
-      - "codex/**"
     tags:
       - "v*"
-  workflow_dispatch:
-    inputs:
-      publish_release:
-        description: "Upload the built extension zip to a GitHub Release"
-        required: true
-        type: boolean
-        default: false
-      release_tag:
-        description: "Release tag to publish to; defaults to the current tag when run from a tag"
-        required: false
-        type: string
 
 permissions:
   contents: read
@@ -103,6 +89,7 @@ jobs:
 
   package:
     name: Package Extension
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     needs: test
     permissions:
@@ -168,22 +155,12 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub Release
-        if: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true') }}
         env:
           GH_TOKEN: ${{ github.token }}
-          INPUT_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.release_tag || '' }}
         run: |
           set -euo pipefail
 
-          release_tag="${INPUT_RELEASE_TAG}"
-          if [ -z "${release_tag}" ] && [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            release_tag="${GITHUB_REF_NAME}"
-          fi
-
-          if [ -z "${release_tag}" ]; then
-            echo "::error::release_tag is required when manually publishing from a non-tag ref"
-            exit 1
-          fi
+          release_tag="${GITHUB_REF_NAME}"
 
           if gh release view "${release_tag}" > /dev/null 2>&1; then
             gh release upload "${release_tag}" "${PACKAGE_PATH}" --clobber
