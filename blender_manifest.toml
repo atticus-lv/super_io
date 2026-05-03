@@ -28,6 +28,7 @@ paths_exclude_pattern = [
   "__pycache__/",
   "build/",
   "dist/",
+  "docs/",
   ".*",
   "*.zip",
 ]

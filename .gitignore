@@ -1,3 +1,7 @@
 __pycache__
 .vscode
 .idea/
+docs/node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+docs/.vitepress/*.log
