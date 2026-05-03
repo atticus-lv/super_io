@@ -2,10 +2,12 @@ import { defineConfig } from 'vitepress'
 
 const releases = 'https://github.com/atticus-lv/super_io/releases'
 const repo = 'https://github.com/atticus-lv/super_io'
+const base = process.env.VITEPRESS_BASE ?? '/'
 
 export default defineConfig({
   title: 'Super IO',
   description: 'Clipboard-driven import and export shortcuts for Blender 5',
+  base,
   cleanUrls: true,
   lastUpdated: true,
   head: [
