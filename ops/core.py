@@ -49,17 +49,8 @@ def convert_value(value):
         return value
 
 
-def get_op_by_idname(bl_idname):
-    return getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
-
-
-def remove_prefix(s, prefix):
-    return s.removeprefix(prefix)
-
-
-from ..imexporter.default_importer import get_importer
 from ..imexporter.lib_blend import default_blend_lib
-from ..imexporter.default_addon import importer_addon
+from ..preferences.operator_inspector import get_operator as get_inspected_operator
 
 
 class ConfigItemHelper():
@@ -90,69 +81,22 @@ class ConfigItemHelper():
         return True
 
     def get_operator_and_args(self):
-        from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
-        pref = get_pref()
-        # get exporter by preferences
-        default_exporter = get_exporter(extend=pref.extend_export_menu if pref else False)
-        exporter_ops_props = get_exporter_ops_props()
+        if not self.bl_idname:
+            return None, {}, None
+        return get_inspected_operator(self.bl_idname), self.prop_list.copy(), self.context
 
-        # get namespace to store operator param
-        # cat, name = MESH_OT_process_cad.bl_idname.split('.')
-        # op = getattr(getattr(bpy.ops, cat), name)
-        # for key, value in dict(op.get_rna_type().properties).items():
-        #     if key == 'namespace':
-        #         namespace = value.default
-        #         break
-        # init
-        op_callable = None
-        ops_args = dict()
-        operator_type = self.operator_type
-        op_context = None
-
-        # custom operator
-        if operator_type == 'CUSTOM':
-            # custom operator
-            bl_idname = self.bl_idname
-            op_callable = getattr(getattr(bpy.ops, bl_idname.split('.')[0]), bl_idname.split('.')[1])
-            ops_args = self.prop_list
-            op_context = self.context
-
-        # default operator
-        elif operator_type.startswith('DEFAULT'):
-            importer = get_importer()
-            bl_idname = importer.get(remove_prefix(operator_type, 'DEFAULT_').lower())
-            op_callable = get_op_by_idname(bl_idname)
-
-        elif operator_type.startswith('APPEND_BLEND'):
-            subpath = remove_prefix(operator_type, 'APPEND_BLEND_').title()
-
-            data_type = default_blend_lib.get(subpath)
-            op_callable = bpy.ops.spio.append_blend
-            ops_args = {'sub_path': subpath,
-                        'data_type': data_type,
-                        'load_all': True}
-
-        elif operator_type.startswith('LINK_BLEND'):
-            subpath = remove_prefix(operator_type, 'LINK_BLEND_').title()
-
-            data_type = default_blend_lib.get(subpath)
-            op_callable = bpy.ops.spio.link_blend
-            ops_args = {'sub_path': subpath,
-                        'data_type': data_type,
-                        'load_all': True}
-
-        elif operator_type.startswith('ADDONS'):
-            bl_idname = importer_addon.get(operator_type)
-            op_callable = get_op_by_idname(bl_idname)
-
-        elif operator_type.startswith('EXPORT'):
-            ext = remove_prefix(operator_type, 'EXPORT_').lower()
-            bl_idname = get_exporter(extend=True).get(ext)
-            op_callable = get_op_by_idname(bl_idname)
-
-            ops_args = exporter_ops_props.get(ext)
-
-        return op_callable, ops_args, op_context
+    def get_file_argument_name(self):
+        if not self.bl_idname:
+            return "filepath"
+        try:
+            properties = get_inspected_operator(self.bl_idname).get_rna_type().properties
+        except Exception:
+            return "filepath"
+        if "filepath" in properties:
+            return "filepath"
+        if "files" in properties:
+            return "files"
+        return "filepath"
 
     def get_match_files(self, file_list):
         match_rule = self.match_rule
@@ -225,7 +169,7 @@ class ConfigHelper():
 
         if config.get('name') == '' or config.get('extension') == '': return False
 
-        if config.get('operator_type') == 'CUSTOM' and config.get('bl_idname') == '': return False
+        if config.get('bl_idname') == '': return False
 
         return True
 

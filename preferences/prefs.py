@@ -12,6 +12,14 @@ from bpy.types import PropertyGroup
 from .. import __folder_name__
 import rna_keymap_ui
 from .data_config_store import get_config_data, get_config_list, set_config_index, write_runtime_config
+from .operator_inspector import (
+    default_property_value,
+    get_operator_description,
+    get_operator_label,
+    iter_operator_properties,
+    iter_registered_operators,
+    operator_exists,
+)
 
 
 def get_pref():
@@ -54,6 +62,84 @@ class SPIO_OT_OperatorPropRemove(OperatorPropAction, bpy.types.Operator):
     bl_label = "Remove Prop"
 
     action = 'REMOVE'
+
+
+class SPIO_OT_OperatorSelector(bpy.types.Operator):
+    bl_idname = "spio.operator_selector"
+    bl_label = "Select Operator"
+    bl_property = "enum_idname"
+    bl_options = {'INTERNAL'}
+
+    config_list_index: IntProperty()
+    _enum_items = []
+
+    def get_operator_items(self, context):
+        enum_items = self.__class__._enum_items
+        enum_items.clear()
+        for bl_idname, label, description in iter_registered_operators():
+            enum_items.append((bl_idname, f"{label} ({bl_idname})", description))
+        return enum_items
+
+    enum_idname: EnumProperty(name="Operator", items=get_operator_items)
+
+    def execute(self, context):
+        item = get_config_list(context)[self.config_list_index]
+        item.bl_idname = self.enum_idname
+        item.operator_type = "CUSTOM"
+        if item.name == "" or item.name.startswith("Config"):
+            item.name = get_operator_label(item.bl_idname)
+        if item.description == "":
+            item.description = get_operator_description(item.bl_idname)
+        write_runtime_config(context=context)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.window_manager.invoke_search_popup(self)
+        return {'FINISHED'}
+
+
+class SPIO_OT_OperatorPropertyAddFromRNA(bpy.types.Operator):
+    bl_idname = "spio.operator_property_add_from_rna"
+    bl_label = "Add from RNA Properties"
+    bl_property = "property_name"
+    bl_options = {'INTERNAL', 'UNDO'}
+
+    config_list_index: IntProperty()
+    _property_items = []
+
+    def get_property_items(self, context):
+        enum_items = self.__class__._property_items
+        enum_items.clear()
+        item = get_config_list(context)[self.config_list_index]
+        existing = {prop.name for prop in item.prop_list}
+        for prop in iter_operator_properties(item.bl_idname):
+            identifier = prop["identifier"]
+            if identifier in existing:
+                continue
+            enum_items.append((identifier, f"{prop['name']} ({identifier})", prop["description"]))
+        if not enum_items:
+            enum_items.append(("__NONE__", "No editable properties", ""))
+        return enum_items
+
+    property_name: EnumProperty(name="Property", items=get_property_items)
+
+    def execute(self, context):
+        if self.property_name == "__NONE__":
+            return {'CANCELLED'}
+        item = get_config_list(context)[self.config_list_index]
+        prop_info = next(
+            (prop for prop in iter_operator_properties(item.bl_idname) if prop["identifier"] == self.property_name),
+            None,
+        )
+        prop_item = item.prop_list.add()
+        prop_item.name = self.property_name
+        prop_item.value = default_property_value(prop_info or {})
+        write_runtime_config(context=context)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.window_manager.invoke_search_popup(self)
+        return {'FINISHED'}
 
 
 class SPIO_OT_ConfigListAction:
@@ -653,64 +739,51 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             box2.prop(item, 'temporary_directory')
 
         box3 = box.box()
-        # warning
-        if item.operator_type.startswith('EXPORT') and item.io_type not in {'EXPORT'}:
-            box3.alert = True
-            box3.label(text='Wrong IO Type / Operator Type', icon='ERROR')
+        box3.alert = not operator_exists(item.bl_idname)
+        box3.label(text=get_operator_label(item.bl_idname), icon='TOOL_SETTINGS')
+        row = box3.row(align=True)
+        row.prop(item, 'bl_idname')
+        selector = row.operator('spio.operator_selector', text='', icon='VIEWZOOM')
+        selector.config_list_index = config_index
 
-        elif (not (item.operator_type.startswith('EXPORT') or item.operator_type.startswith('CUSTOM')) and
-              item.io_type == 'EXPORT'):
-            box3.alert = True
-            box3.label(text='Wrong IO Type / Operator Type', icon='ERROR')
-        else:
-            box3.alert = False
-        box3.prop(item, 'operator_type')
+        if item.bl_idname == '':
+            box3.label(text='No Operator Found', icon='ERROR')
+        elif not operator_exists(item.bl_idname):
+            box3.label(text=f'Operator "{item.bl_idname}" is not registered', icon='ERROR')
+
+        box3.prop(item, 'context')
 
         # context area
         if get_pref().experimental:
             box3.prop(item, 'context_area')
 
-        if item.operator_type == 'CUSTOM':
-            box3.prop(item, 'context')
-            box3.prop(item, 'bl_idname')
+        col = box3.box().column()
+        col.use_property_split = False
+        row = col.row(align=False)
+        row.prop(item, 'show_prop_list', icon='TRIA_DOWN' if item.show_prop_list else 'TRIA_RIGHT', emboss=False)
+        row.operator('spio.read_preset', icon='PRESET').bl_idname_input = item.bl_idname
+        prop_selector = row.operator('spio.operator_property_add_from_rna', text='', icon='ADD')
+        prop_selector.config_list_index = config_index
 
-            # ops props
-            col = box3.box().column()
+        if item.bl_idname != '' and item.show_prop_list:
 
-            row = col.row(align=True)
-            if item.bl_idname != '':
-                text = 'bpy.ops.' + item.bl_idname + '(' + 'filepath,' + '{prop=value})'
-            else:
-                text = 'No Operator Found'
-            row.alert = True
-            row.label(icon='TOOL_SETTINGS', text=text)
+            row = col.row()
+            if len(item.prop_list) != 0:
+                row.label(text='Property')
+                row.label(text='Value')
 
-            # set a box
-            col = col.box().column(align=True)
-            col.use_property_split = False
-            row = col.row(align=False)
-            row.prop(item, 'show_prop_list', icon='TRIA_DOWN' if item.show_prop_list else 'TRIA_RIGHT', emboss=False)
-            row.operator('spio.read_preset', icon='PRESET').bl_idname_input = item.bl_idname
-
-            if item.bl_idname != '' and item.show_prop_list:
-
+            for prop_index, prop_item in enumerate(item.prop_list):
                 row = col.row()
-                if len(item.prop_list) != 0:
-                    row.label(text='Property')
-                    row.label(text='Value')
+                row.prop(prop_item, 'name', text='')
+                row.prop(prop_item, 'value', text='')
 
-                for prop_index, prop_item in enumerate(item.prop_list):
-                    row = col.row()
-                    row.prop(prop_item, 'name', text='')
-                    row.prop(prop_item, 'value', text='')
-
-                    d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
-                    d.config_list_index = config_index
-                    d.prop_index = prop_index
-                col.separator()
-                row = col.row(align=False)
-                d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
+                d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
                 d.config_list_index = config_index
+                d.prop_index = prop_index
+            col.separator()
+            row = col.row(align=False)
+            d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
+            d.config_list_index = config_index
 
 
 class SPIO_PT_ListFilterPanel(bpy.types.Panel):
@@ -740,6 +813,7 @@ classes = [
     SPIO_PT_ListFilterPanel,
 
     SPIO_OT_OperatorPropAdd, SPIO_OT_OperatorPropRemove,
+    SPIO_OT_OperatorSelector, SPIO_OT_OperatorPropertyAddFromRNA,
 
     SPIO_OT_ConfigListAdd, SPIO_OT_ConfigListRemove, SPIO_OT_ConfigListCopy, SPIO_OT_ConfigListMoveUP,
     SPIO_OT_ConfigListMoveDown,

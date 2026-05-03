@@ -10,6 +10,7 @@ from bpy.props import (EnumProperty,
                        PointerProperty)
 from bpy.types import PropertyGroup
 from .utils import get_pref
+from .operator_inspector import normalize_bl_idname
 
 
 class OperatorProperty(PropertyGroup):
@@ -18,10 +19,9 @@ class OperatorProperty(PropertyGroup):
 
 
 def correct_blidname(self, context):
-    if self.bl_idname.startswith('bpy.ops.'):
-        self.bl_idname = self.bl_idname[8:]
-    if self.bl_idname.endswith('()'):
-        self.bl_idname = self.bl_idname[:-2]
+    bl_idname = normalize_bl_idname(self.bl_idname)
+    if bl_idname != self.bl_idname:
+        self.bl_idname = bl_idname
 
 
 def correct_name(self, context):
@@ -154,7 +154,7 @@ class ConfigItemProperty(PropertyGroup):
             None,
             ('CUSTOM', 'Custom', '', 'USER', 666),
         ],
-        default='DEFAULT_OBJ', )
+        default='CUSTOM', )
 
     # custom operator
     bl_idname: StringProperty(name='Operator Identifier', update=correct_blidname)

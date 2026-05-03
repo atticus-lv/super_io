@@ -84,12 +84,14 @@ class DynamicImport:
             with MeasureTime() as start_time:
                 for file_path in self.file_list:
                     if file_path in self.match_file_op_dict: continue
-                    ops_args['filepath'] = file_path
+                    file_arg = ITEM.get_file_argument_name()
+                    call_args = ops_args.copy()
+                    call_args[file_arg] = file_path
                     try:
                         if op_context:
-                            op_callable(op_context, **ops_args)
+                            op_callable(op_context, **call_args)
                         else:
-                            op_callable(**ops_args)
+                            op_callable(**call_args)
                     except Exception as e:
                         self.report({"ERROR"}, str(e))
 
@@ -123,18 +125,21 @@ class DynamicExport:
 
         return temp_dir
 
-    def export_single(self, context, op_callable, op_args):
+    def export_single(self, context, op_callable, op_args, op_context=None):
         paths = []
         temp_dir = self.get_temp_dir()
         filepath = os.path.join(temp_dir, context.active_object.name + f'.{self.extension}').replace('\\', '/')
         paths.append(filepath)
 
         op_args.update({'filepath': filepath})
-        op_callable(**op_args)
+        if op_context:
+            op_callable(op_context, **op_args)
+        else:
+            op_callable(**op_args)
 
         return paths
 
-    def export_batch(self, context, op_callable, op_args):
+    def export_batch(self, context, op_callable, op_args, op_context=None):
         paths = []
         temp_dir = self.get_temp_dir()
 
@@ -151,7 +156,10 @@ class DynamicExport:
             obj.select_set(True)
 
             op_args.update({'filepath': filepath})
-            op_callable(**op_args)
+            if op_context:
+                op_callable(op_context, **op_args)
+            else:
+                op_callable(**op_args)
             obj.select_set(False)
 
         context.view_layer.objects.active = src_active
@@ -177,12 +185,12 @@ class DynamicExport:
 
             with MeasureTime() as start_time:
                 if self.batch_mode:
-                    paths = self.export_batch(context, op_callable, op_args)
+                    paths = self.export_batch(context, op_callable, op_args, op_context)
                     self.report({'INFO'},
                                 f'{len(paths)} {self.extension} files has been copied to Clipboard')
 
                 else:
-                    paths = self.export_single(context, op_callable, op_args)
+                    paths = self.export_single(context, op_callable, op_args, op_context)
                     self.report({'INFO'},
                                 f'{context.active_object.name}.{self.extension} has been copied to Clipboard')
 
