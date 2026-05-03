@@ -34,16 +34,10 @@ adjt_zh_HANS = TranslationHelper('spio_zh_HANS', zh_CN.data, lang='zh_HANS')
 
 
 def register():
-    if bpy.app.version < (4, 0, 0):
-        adjt_zh_CN.register()
-    else:
-        adjt_zh_HANS.register()
-        adjt_zh_CN.register()
+    adjt_zh_HANS.register()
+    adjt_zh_CN.register()
 
 
 def unregister():
-    if bpy.app.version < (4, 0, 0):
-        adjt_zh_CN.unregister()
-    else:
-        adjt_zh_HANS.unregister()
-        adjt_zh_CN.register()
+    adjt_zh_HANS.unregister()
+    adjt_zh_CN.unregister()

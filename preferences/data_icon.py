@@ -38,10 +38,7 @@ def unregister_icon():
 
 
 def get_color_tag_icon(index):
-    if bpy.app.version < (2, 93, 0):
-        return 'COLORSET_13_VEC' if index == 0 else f'COLORSET_0{index}_VEC'
-    else:
-        return f'COLLECTION_COLOR_0{index}' if index != 0 else 'OUTLINER_COLLECTION'
+    return f'COLLECTION_COLOR_0{index}' if index != 0 else 'OUTLINER_COLLECTION'
 
 
 def register():

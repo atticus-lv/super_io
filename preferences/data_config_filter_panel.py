@@ -95,8 +95,7 @@ class SPIO_OT_color_tag_selector(bpy.types.Operator):
                 row.operator(f'wm.spio_color_tag_{i}', text='',
                              icon=get_color_tag_icon(i))
 
-        context.window_manager.popup_menu(draw, title="Color", icon='OUTLINER_COLLECTION' if bpy.app.version > (
-            2, 93, 0) else 'COLORSET_13_VEC')
+        context.window_manager.popup_menu(draw, title="Color", icon='OUTLINER_COLLECTION')
 
         return {'FINISHED'}
 

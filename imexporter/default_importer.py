@@ -27,10 +27,7 @@ importer = {
 
 def get_importer(cpp_obj_importer=True):
     im = importer.copy()
-    if bpy.app.version >= (4,0,0):
-        im['obj'] = 'wm.obj_import'
-    elif cpp_obj_importer and bpy.app.version >= (3, 2, 0):
-        im['obj'] = 'wm.obj_import'
+    im['obj'] = 'wm.obj_import'
 
     return im
 

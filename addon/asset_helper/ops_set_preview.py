@@ -31,10 +31,7 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if bpy.app.version < (4, 0, 0):
-            return context.selected_assets
-        else:
-            return context.selected_assets
+        return context.selected_assets
 
     def draw(self, context):
         layout = self.layout
@@ -64,8 +61,7 @@ class SPIO_OT_set_preview_to_selected_assets(bpy.types.Operator):
 
     def execute(self, context):
         parm = context.area.spaces.active.params
-        asset_library_reference = parm.asset_library_ref if bpy.app.version < (
-        4, 0, 0) else parm.asset_library_reference
+        asset_library_reference = parm.asset_library_reference
         current_library_name = asset_library_reference
         match_obj = [asset_file.local_id for asset_file in context.selected_assets if
                      current_library_name == "LOCAL"]

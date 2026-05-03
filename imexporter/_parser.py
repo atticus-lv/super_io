@@ -71,8 +71,6 @@ class SPIO_Config:
             }
         """
 
-        # version = bpy.app.version
-        # if version >= (4,0,0):
         FILENAME = '_config.yaml'
         p = Path(__file__).parent.joinpath('4.0')
         file = p.joinpath(FILENAME)
@@ -144,7 +142,8 @@ class ConfigParser():
         context = ConfigDefines.CONTEXT.value
 
         item = self.data[catalog][name]
-        assert (bl_idname := item.get(idname), None), f'bl_idname not found in item {name} of catalog {catalog}.'
+        bl_idname = item.get(idname)
+        assert bl_idname is not None, f'bl_idname not found in item {name} of catalog {catalog}.'
 
         op_func = self.get_op_by_idname(bl_idname)
         op_args = item.get(args, {})
