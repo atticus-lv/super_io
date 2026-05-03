@@ -11,6 +11,7 @@ from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import get_pref
 
 from ..preferences.data_icon import G_ICON_ID
+from ..preferences.data_config_store import get_config_list
 
 
 class SuperImport(IO_Base, bpy.types.Operator):
@@ -107,7 +108,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
 
         for index in self.CONFIGS.index_list:
             # set config for register
-            config_item = get_pref().config_list[index]
+            config_item = get_config_list(context)[index]
             ITEM = ConfigItemHelper(config_item)
             if not ITEM.is_config_item_poll(context.area.type): continue
 
@@ -128,7 +129,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
         for index in self.CONFIGS.index_list:
             if index in match_index_list: continue  # not register those match config
             # only for register
-            config_item = get_pref().config_list[index]
+            config_item = get_config_list(context)[index]
             ITEM = ConfigItemHelper(config_item)
             if not ITEM.is_config_item_poll(context.area.type): continue
 

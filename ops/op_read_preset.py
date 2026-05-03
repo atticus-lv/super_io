@@ -2,6 +2,7 @@ import bpy
 import os
 from os.path import join
 from ..preferences.prefs import get_pref
+from ..preferences.data_config_store import get_config_data
 
 import re
 
@@ -75,7 +76,8 @@ class SPIO_OT_read_preset(bpy.types.Operator):
             name = os.path.basename(path)
 
             def execute(self, context):
-                config_item = get_pref().config_list[get_pref().config_list_index]
+                config_data = get_config_data(context)
+                config_item = config_data.config_list[config_data.config_list_index]
                 args = get_preset_chars(self.path)
                 prop_list = config_item.prop_list
 

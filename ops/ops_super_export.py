@@ -5,6 +5,7 @@ from .core import MeasureTime, ConfigItemHelper, ConfigHelper
 from .core import is_float, get_pref, convert_value
 
 from ..preferences.data_icon import G_ICON_ID
+from ..preferences.data_config_store import get_config_list
 
 
 class WM_OT_super_export(IO_Base, bpy.types.Operator):
@@ -34,7 +35,7 @@ class WM_OT_super_export(IO_Base, bpy.types.Operator):
 
             for index in self.CONFIGS.index_list:
                 # pass in
-                config_item = get_pref().config_list[index]
+                config_item = get_config_list(context)[index]
                 ITEM = ConfigItemHelper(config_item)
                 if not ITEM.is_config_item_poll(context.area.type): continue
 

@@ -14,10 +14,9 @@ import ssl
 
 from ...preferences.prefs import get_pref
 from ... import __folder_name__
-from ... import bl_info
+from ...metadata import ADDON_VERSION
 from . import state
 
-ADDON_VERSION = bl_info.get('version')
 RELEASES_URL = 'https://api.github.com/repos/atticus-lv/super_io/releases?per_page=10'
 
 
