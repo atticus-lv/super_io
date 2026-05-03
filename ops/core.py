@@ -14,7 +14,7 @@ def get_pref():
 
 
 def viewlayer_fix_291(self, context):
-    return context.view_layer.depsgraph if bpy.app.version >= (2, 91, 0) else context.view_layer
+    return context.view_layer.depsgraph
 
 
 class MeasureTime():
@@ -54,10 +54,7 @@ def get_op_by_idname(bl_idname):
 
 
 def remove_prefix(s, prefix):
-    if bpy.app.version < (2, 93, 0):
-        return s[len(prefix):]
-    else:
-        return s.removeprefix(prefix)
+    return s.removeprefix(prefix)
 
 
 from ..imexporter.default_importer import get_importer

@@ -140,7 +140,7 @@ class render_asset_preview:
 
     def get_match_obj(self, context):
         parm = context.area.spaces.active.params
-        asset_library_reference = parm.asset_library_ref if bpy.app.version < (4, 0, 0) else parm.asset_library_reference
+        asset_library_reference = parm.asset_library_reference
         current_library_name = asset_library_reference
         match_obj = [asset_file.local_id for asset_file in context.selected_assets if
                      hasattr(asset_file, 'local_id')]
@@ -301,15 +301,13 @@ def register():
     bpy.utils.register_class(SPIO_OI_render_world_asset_preview)
     bpy.utils.register_class(SPIO_OI_render_material_asset_preview)
 
-    if bpy.app.version >= (3, 0, 0):
-        bpy.utils.register_class(SPIO_MT_asset_browser_menu)
-        bpy.types.ASSETBROWSER_MT_editor_menus.append(asset_browser)
+    bpy.utils.register_class(SPIO_MT_asset_browser_menu)
+    bpy.types.ASSETBROWSER_MT_editor_menus.append(asset_browser)
 
 
 def unregister():
-    if bpy.app.version >= (3, 0, 0):
-        bpy.utils.unregister_class(SPIO_MT_asset_browser_menu)
-        bpy.types.ASSETBROWSER_MT_editor_menus.remove(asset_browser)
+    bpy.utils.unregister_class(SPIO_MT_asset_browser_menu)
+    bpy.types.ASSETBROWSER_MT_editor_menus.remove(asset_browser)
 
     # bpy.utils.unregister_class(SPIO_OT_render_hdri_preview)
     bpy.utils.unregister_class(SPIO_OI_render_world_asset_preview)

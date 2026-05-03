@@ -33,20 +33,12 @@ def correct_name(self, context):
 
 
 def get_color_tag_enum_items():
-    if bpy.app.version < (2, 93, 0):
-        items = [
-            (f'COLOR_0{i}',
-             '',
-             '',
-             f'COLORSET_0{i}_VEC' if i != 0 else 'COLORSET_13_VEC', i) for i in range(0, 9)
-        ]
-    else:
-        items = [
-            (f'COLOR_0{i}',
-             '',
-             '',
-             f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION', i) for i in range(0, 9)
-        ]
+    items = [
+        (f'COLOR_0{i}',
+         '',
+         '',
+         f'COLLECTION_COLOR_0{i}' if i != 0 else 'OUTLINER_COLLECTION', i) for i in range(0, 9)
+    ]
 
     return items
 
