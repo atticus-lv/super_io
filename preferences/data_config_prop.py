@@ -25,8 +25,9 @@ def correct_blidname(self, context):
 
 
 def correct_name(self, context):
-    pref = get_pref()
-    names = [item.name for item in pref.config_list if item.name == self.name and item.name != '']
+    from .data_config_store import get_config_list
+
+    names = [item.name for item in get_config_list(context) if item.name == self.name and item.name != '']
     if len(names) != 1:
         self.name += '(1)'
 
@@ -60,6 +61,7 @@ def get_operator_type():
 
 
 class ConfigItemProperty(PropertyGroup):
+    identifier: StringProperty(name='Identifier', default='')
     # USE
     use_config: BoolProperty(name='Use', default=True)
     # UI

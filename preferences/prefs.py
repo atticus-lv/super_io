@@ -11,11 +11,15 @@ from bpy.types import PropertyGroup
 
 from .. import __folder_name__
 import rna_keymap_ui
+from .data_config_store import get_config_data, get_config_list, set_config_index, write_runtime_config
 
 
 def get_pref():
     """get preferences of this plugin"""
-    return bpy.context.preferences.addons.get(__folder_name__).preferences
+    addon = bpy.context.preferences.addons.get(__folder_name__)
+    if addon is not None:
+        return addon.preferences
+    return None
 
 
 class OperatorPropAction:
@@ -27,14 +31,14 @@ class OperatorPropAction:
     action = None
 
     def execute(self, context):
-        pref = get_pref()
-        item = pref.config_list[self.config_list_index]
+        item = get_config_list(context)[self.config_list_index]
 
         if self.action == 'ADD':
             item.prop_list.add()
         elif self.action == 'REMOVE':
             item.prop_list.remove(self.prop_index)
 
+        write_runtime_config(context=context)
         return {'FINISHED'}
 
 
@@ -61,50 +65,52 @@ class SPIO_OT_ConfigListAction:
     action = None
 
     def execute(self, context):
-        pref = get_pref()
+        config_data = get_config_data(context)
+        config_list = config_data.config_list
 
         if self.action == 'ADD':
-            new_item = pref.config_list.add()
-            new_item.name = f'Config{len(pref.config_list)}'
+            new_item = config_list.add()
+            new_item.name = f'Config{len(config_list)}'
             # correct index
-            old_index = pref.config_list_index
-            new_index = len(pref.config_list) - 1
-            pref.config_list_index = new_index
+            old_index = config_data.config_list_index
+            new_index = len(config_list) - 1
+            config_data.config_list_index = new_index
 
             for i in range(old_index, new_index - 1):
                 bpy.ops.spio.config_list_move_up()
 
         elif self.action == 'REMOVE':
-            pref.config_list.remove(self.index)
-            pref.config_list_index = self.index - 1 if self.index != 0 else 0
+            config_list.remove(self.index)
+            set_config_index(self.index - 1 if self.index != 0 else 0, context)
 
         elif self.action == 'COPY':
-            src_item = pref.config_list[self.index]
+            src_item = config_list[self.index]
 
-            new_item = pref.config_list.add()
+            new_item = config_list.add()
 
             for key in src_item.__annotations__.keys():
                 value = getattr(src_item, key)
                 if key != 'prop_list':
                     setattr(new_item, key, value)
-                # prop list
-                if len(new_item.prop_list) != 0:
-                    for prop_index, prop_item in enumerate(src_item.prop_list):
-                        prop, value = prop_item.name, prop_item.value
-                        # skip if the prop is not filled
-                        if prop == '' or value == '': continue
-                        prop_item = new_item.prop_list.add()
+            new_item.identifier = ''
+            # prop list
+            if len(src_item.prop_list) != 0:
+                for prop_index, src_prop_item in enumerate(src_item.prop_list):
+                    prop, value = src_prop_item.name, src_prop_item.value
+                    # skip if the prop is not filled
+                    if prop == '' or value == '': continue
+                    prop_item = new_item.prop_list.add()
+                    prop_item.name = prop
+                    prop_item.value = value
 
-                        from ..ops.core import convert_value
-                        setattr(prop_item, prop, convert_value(value))
-
-            old_index = pref.config_list_index
-            new_index = len(pref.config_list) - 1
-            pref.config_list_index = len(pref.config_list) - 1
+            old_index = config_data.config_list_index
+            new_index = len(config_list) - 1
+            config_data.config_list_index = len(config_list) - 1
 
             for i in range(old_index, new_index - 1):
                 bpy.ops.spio.config_list_move_up()
 
+        write_runtime_config(context=context)
         return {'FINISHED'}
 
 
@@ -116,20 +122,21 @@ class SPIO_OT_ConfigListMove:
     action = None
 
     def execute(self, context):
-        pref = get_pref()
-        my_list = pref.config_list
-        index = pref.config_list_index
+        config_data = get_config_data(context)
+        my_list = config_data.config_list
+        index = config_data.config_list_index
         neighbor = index + (-1 if self.action == 'UP' else 1)
         my_list.move(neighbor, index)
         self.move_index(context)
+        write_runtime_config(context=context)
 
         return {'FINISHED'}
 
     def move_index(self, context):
-        pref = get_pref()
-        index = pref.config_list_index
+        config_data = get_config_data(context)
+        index = config_data.config_list_index
         new_index = index + (-1 if self.action == 'UP' else 1)
-        pref.config_list_index = max(0, min(new_index, len(pref.config_list) - 1))
+        config_data.config_list_index = max(0, min(new_index, len(config_data.config_list) - 1))
 
 
 class SPIO_OT_ConfigListAdd(SPIO_OT_ConfigListAction, bpy.types.Operator):
@@ -246,7 +253,7 @@ class SPIO_MT_ConfigIOMenu(bpy.types.Menu):
         layout = self.layout
         layout.operator('spio.import_config', icon='IMPORT')
         layout.operator('spio.export_config', icon='EXPORT')
-        layout.operator('wm.save_userpref', icon='PREFERENCES')
+        layout.operator('spio.save_config', icon='FILE_TICK')
 
 
 class NWPrincipledPreferences(bpy.types.PropertyGroup):
@@ -306,13 +313,16 @@ class NWPrincipledPreferences(bpy.types.PropertyGroup):
 
 def change_panel_category():
     from ..ui import ui_panel
+    pref = get_pref()
+    if pref is None:
+        return
 
     for panel in ui_panel.panels:
         if "bl_rna" in panel.__dict__:
             bpy.utils.unregister_class(panel)
 
     for panel in ui_panel.panels:
-        panel.bl_category = get_pref().category
+        panel.bl_category = pref.category
         bpy.utils.register_class(panel)
 
 
@@ -561,6 +571,9 @@ class SPIO_Preference(bpy.types.AddonPreferences):
             old_km_name = km.name
 
     def draw_config(self, context, layout):
+        config_data = get_config_data(context)
+        config_index = config_data.config_list_index
+
         row = layout.column().row(align=False)
         row.alignment = 'CENTER'
 
@@ -591,13 +604,13 @@ class SPIO_Preference(bpy.types.AddonPreferences):
 
         col_list.template_list(
             "PREF_UL_ConfigList", "Config List",
-            self, "config_list",
-            self, "config_list_index")
+            config_data, "config_list",
+            config_data, "config_list_index")
 
         col_btn.operator('spio.config_list_add', text='', icon='ADD')
 
         d = col_btn.operator('spio.config_list_remove', text='', icon='REMOVE')
-        d.index = self.config_list_index
+        d.index = config_index
 
         col_btn.separator()
 
@@ -607,10 +620,10 @@ class SPIO_Preference(bpy.types.AddonPreferences):
         col_btn.separator()
 
         c = col_btn.operator('spio.config_list_copy', text='', icon='DUPLICATE')
-        c.index = self.config_list_index
+        c.index = config_index
 
-        if len(self.config_list) == 0: return
-        item = self.config_list[self.config_list_index]
+        if len(config_data.config_list) == 0: return
+        item = config_data.config_list[config_index]
         if not item: return
 
         col = layout.column()
@@ -706,12 +719,12 @@ class SPIO_Preference(bpy.types.AddonPreferences):
                     row.prop(prop_item, 'value', text='')
 
                     d = row.operator('wm.spio_operator_prop_remove', text='', icon='PANEL_CLOSE', emboss=False)
-                    d.config_list_index = self.config_list_index
+                    d.config_list_index = config_index
                     d.prop_index = prop_index
                 col.separator()
                 row = col.row(align=False)
                 d = row.operator('wm.spio_operator_prop_add', text='Add Property', icon='ADD', emboss=False)
-                d.config_list_index = self.config_list_index
+                d.config_list_index = config_index
 
 
 class SPIO_PT_ListFilterPanel(bpy.types.Panel):
