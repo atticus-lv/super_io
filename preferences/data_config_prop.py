@@ -92,7 +92,6 @@ class ConfigItemProperty(PropertyGroup):
         items=[
             ("", "Import", "Default blender build-in importer", "CUBE", 0),
             None,
-            ('DEFAULT_DAE', 'Collada (.dae)', '', 'IMPORT', 99),
             ('DEFAULT_ABC', 'Alembic (.abc)', '', 'IMPORT', 98),
             ('DEFAULT_USD', 'USD (.usd/.usda/.usdc)', '', 'IMPORT', 97),
             ('DEFAULT_SVG', 'SVG (.svg)', '', 'GP_SELECT_POINTS', 96),
@@ -101,11 +100,9 @@ class ConfigItemProperty(PropertyGroup):
             ('DEFAULT_FBX', 'FBX (.fbx)', '', 'IMPORT', 93),
             ('DEFAULT_GLTF', 'glTF 2.0 (.gltf/.glb)', '', 'IMPORT', 92),
             ('DEFAULT_OBJ', 'Wavefront (.obj)', '', 'IMPORT', 91),
-            ('DEFAULT_X3D', 'X3D (.x3d/.wrl)', '', 'IMPORT', 90),
 
             ("", "Export", "Default blender build-in exporter", "CUBE", 0),
 
-            ('EXPORT_DAE', 'Collada (.dae)', '', 'EXPORT', 199),
             ('EXPORT_ABC', 'Alembic (.abc)', '', 'EXPORT', 198),
             ('EXPORT_USD', 'USD (.usd)', '', 'EXPORT', 197),
             ('EXPORT_USDC', 'USD (.usdc)', '', 'EXPORT', 196),

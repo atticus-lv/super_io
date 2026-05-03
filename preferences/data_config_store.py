@@ -30,6 +30,11 @@ CONFIG_ITEM_FIELDS = (
     "context_area",
     "show_prop_list",
 )
+UNSUPPORTED_LEGACY_OPERATORS = {
+    "DEFAULT_DAE": "wm.collada_import",
+    "DEFAULT_X3D": "import_scene.x3d",
+    "EXPORT_DAE": "wm.collada_export",
+}
 
 
 class ConfigRuntimeProperty(PropertyGroup):
@@ -109,6 +114,15 @@ def normalize_config(config, index=0):
     if not config.get("identifier"):
         config["identifier"] = make_identifier(config.get("name", ""), index)
     config.setdefault("prop_list", {})
+    operator_type = config.get("operator_type")
+    if operator_type in UNSUPPORTED_LEGACY_OPERATORS:
+        config["use_config"] = False
+        config["operator_type"] = "CUSTOM"
+        config["bl_idname"] = UNSUPPORTED_LEGACY_OPERATORS[operator_type]
+        config["context"] = config.get("context") or "EXEC_DEFAULT"
+        note = f"Disabled during Blender 5 migration: {operator_type} is not available"
+        description = config.get("description", "")
+        config["description"] = f"{description}\n{note}".strip()
     return config
 
 

@@ -5,21 +5,16 @@ importer = {
     'usdc': 'wm.usd_import',
     'usda': 'wm.usd_import',
 
-    'ply': 'import_mesh.ply',
-    'stl': 'import_mesh.stl',
-    'dae': 'wm.collada_import',
+    'ply': 'wm.ply_import',
+    'stl': 'wm.stl_import',
     'abc': 'wm.alembic_import',
-    'obj': 'import_scene.obj',
-    'fbx': 'import_scene.fbx',
+    'obj': 'wm.obj_import',
+    'fbx': 'wm.fbx_import',
 
     'glb': 'import_scene.gltf',
     'gltf': 'import_scene.gltf',
 
-    'x3d': 'import_scene.x3d',
-    'wrl': 'import_scene.x3d',
-
-    'svg': 'import_curve.svg',
-    'dxf': 'import_scene.dxf',
+    'svg': 'wm.grease_pencil_import_svg',
     'vdb': 'object.volume_import',
     'bvh': 'import_anim.bvh',
 }
@@ -33,14 +28,6 @@ def get_importer(cpp_obj_importer=True):
 
 
 importer_lib = {
-    'DEFAULT_DAE': {
-        'bl_idname': 'wm.collada_import',
-        'name': 'Collada (.dae)',
-        'description': '',
-        'icon': 'IMPORT',
-        'number': 99,
-        'ext': 'dae'
-    },
     'DEFAULT_ABC': {
         'bl_idname': 'wm.alembic_import',
         'name': 'Alembic (.abc)',
@@ -58,7 +45,7 @@ importer_lib = {
         'ext': ['usd', 'usda', 'usdc']
     },
     'DEFAULT_SVG': {
-        'bl_idname': 'import_curve.svg',
+        'bl_idname': 'wm.grease_pencil_import_svg',
         'name': 'SVG (.svg)',
         'description': '',
         'icon': 'GP_SELECT_POINTS',
@@ -66,7 +53,7 @@ importer_lib = {
         'ext': 'svg'
     },
     'DEFAULT_PLY': {
-        'bl_idname': 'import_mesh.ply',
+        'bl_idname': 'wm.ply_import',
         'name': 'Stanford (.ply)',
         'description': '',
         'icon': 'IMPORT',
@@ -74,7 +61,7 @@ importer_lib = {
         'ext': 'ply'
     },
     'DEFAULT_STL': {
-        'bl_idname': 'import_mesh.stl',
+        'bl_idname': 'wm.stl_import',
         'name': 'Stl (.stl)',
         'description': '',
         'icon': 'IMPORT',
@@ -82,7 +69,7 @@ importer_lib = {
         'ext': 'stl'
     },
     'DEFAULT_FBX': {
-        'bl_idname': 'import_scene.fbx',
+        'bl_idname': 'wm.fbx_import',
         'name': 'FBX (.fbx)',
         'description': '',
         'icon': 'IMPORT',
@@ -98,20 +85,12 @@ importer_lib = {
         'ext': ['gltf', 'glb']
     },
     'DEFAULT_OBJ': {
-        'bl_idname': 'import_scene.obj',
+        'bl_idname': 'wm.obj_import',
         'name': 'Wavefront (.obj)',
         'description': '',
         'icon': 'IMPORT',
         'number': 91,
         'ext': 'obj'
-    },
-    'DEFAULT_X3D': {
-        'bl_idname': 'import_scene.x3d',
-        'name': 'X3D (.x3d/.wrl)',
-        'description': '',
-        'icon': 'IMPORT',
-        'number': 90,
-        'ext': ['x3d', 'wrl']
     },
     'OpenVDB': {
         'bl_idname': 'object.volume_import',
