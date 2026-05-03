@@ -20,7 +20,7 @@ Super IO can call an operator in different execution modes:
 - `EXEC_DEFAULT` runs the operator directly and is best for repeatable presets.
 - `INVOKE_DEFAULT` lets Blender show the operator's normal popup when the operator supports it.
 
-When importing a file, Super IO passes the file path to the operator through the `filepath` argument. Operators that do not accept `filepath` are not suitable for direct file import configs.
+When importing a file, Super IO passes the file path to the operator through the file argument supported by that operator, usually `filepath` or `files`.
 
 ## Properties
 

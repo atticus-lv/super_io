@@ -37,7 +37,8 @@ export default defineConfig({
         text: 'Custom Config',
         items: [
           { text: 'Config Management', link: '/guide/custom-config' },
-          { text: 'Custom Operators', link: '/guide/custom-operators' }
+          { text: 'Custom Operators', link: '/guide/custom-operators' },
+          { text: 'Config Storage', link: '/guide/config-storage' }
         ]
       },
       {
@@ -84,7 +85,8 @@ export default defineConfig({
             text: '自定义配置',
             items: [
               { text: '配置管理', link: '/zh/guide/custom-config' },
-              { text: '自定义操作符', link: '/zh/guide/custom-operators' }
+              { text: '自定义操作符', link: '/zh/guide/custom-operators' },
+              { text: '配置数据存储', link: '/zh/guide/config-storage' }
             ]
           },
           {

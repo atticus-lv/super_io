@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="docs/index.md">
+  <a href="https://atticus-lv.github.io/super_io/">
     <img src="res/img/logo_bg.png" alt="logo" width="540px"/>
   </a>
 </p>
@@ -7,9 +7,9 @@
     Clipboard-driven import and export shortcuts for Blender 5. <br>
 </h4>
 <p align="center">
-    <a href="docs/guide/getting-started.md">Documentation</a>
+    <a href="https://atticus-lv.github.io/super_io/">Documentation</a>
     ·
-    <a href="docs/zh/guide/getting-started.md">中文文档</a>
+    <a href="https://atticus-lv.github.io/super_io/zh/">中文文档</a>
     ·
     <a href="https://github.com/atticus-lv/super_io/releases">Releases</a>
     ·
@@ -53,7 +53,7 @@ You can also export selected objects or images and place the result back on the 
 
 Super IO 2.x uses Blender 5's extension format and stores custom import/export rules in a versioned JSON configuration file.
 
-For installation, upgrade notes, and custom configuration examples, see the [documentation](docs/guide/getting-started.md).
+For installation, upgrade notes, and custom configuration examples, see the [documentation](https://atticus-lv.github.io/super_io/).
 
 # Contributing
 
@@ -63,7 +63,7 @@ And new features which come from great idea!
 
 # Feature
 
-> Check the [documentation](docs/guide/getting-started.md) for more information.
+> Check the [documentation](https://atticus-lv.github.io/super_io/) for more information.
 
 ![f_config](./res/img/f_preset.png)
 

@@ -20,7 +20,7 @@ Super IO 可以用不同执行模式调用操作符：
 - `EXEC_DEFAULT` 会直接执行操作符，适合可重复使用的预设。
 - `INVOKE_DEFAULT` 会让 Blender 显示操作符自身的弹窗，前提是该操作符支持。
 
-导入文件时，Super IO 会通过 `filepath` 参数把文件路径传给操作符。不接受 `filepath` 的操作符不适合直接作为文件导入配置。
+导入文件时，Super IO 会通过该操作符支持的文件参数传入路径，通常是 `filepath` 或 `files`。
 
 ## 参数
 

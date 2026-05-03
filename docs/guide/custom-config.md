@@ -9,7 +9,7 @@ Open the Super IO preferences and add a custom import/export item. A config usua
 - Name and prompt text shown in Super IO menus.
 - File extension, such as `obj`, `blend`, or `png`.
 - IO type: import or export.
-- Operator type or custom operator ID.
+- Blender operator ID, such as `wm.obj_import` or `wm.stl_export`.
 - Optional properties passed to the Blender operator.
 - Optional match rules for filename prefix, suffix, or other supported rules.
 
@@ -43,6 +43,6 @@ For a file named `M_IamMaterial.blend`, you can make a preset that recognizes ma
 2. Set the extension to `blend`.
 3. Set the match rule to prefix.
 4. Set the match value to `M_`.
-5. Set the operator type to append materials.
+5. Set the operator to the blend material import operator.
 
 Now files starting with `M_` can use the material import preset without asking you to choose from every blend import option.
