@@ -12,7 +12,10 @@ class MacClipboard():
 
     def pull(self, force_unicode=False):
         self.file_urls = []
-        from . import _native as pasteboard
+        try:
+            from . import _native as pasteboard
+        except ImportError:
+            return self.pull_file_urls_with_osascript()
 
         pb = pasteboard.Pasteboard()
 
@@ -21,6 +24,33 @@ class MacClipboard():
         if urls is not None:
             self.file_urls = list(urls)
 
+        return self.file_urls
+
+    def pull_file_urls_with_osascript(self):
+        commands = [
+            'set filePaths to ""',
+            'try',
+            '    set clipboardItems to the clipboard as list',
+            '    repeat with clipboardItem in clipboardItems',
+            '        try',
+            '            set filePaths to filePaths & POSIX path of clipboardItem & linefeed',
+            '        end try',
+            '    end repeat',
+            'on error',
+            '    try',
+            '        set filePaths to POSIX path of (the clipboard as alias)',
+            '    end try',
+            'end try',
+            'return filePaths',
+        ]
+        popen = subprocess.Popen(
+            self.get_osascript_args(commands),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding='utf-8',
+        )
+        stdout, stderr = popen.communicate()
+        self.file_urls = [file for file in stdout.splitlines() if file]
         return self.file_urls
 
     def push_pixel_to_clipboard(self, path):

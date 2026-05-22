@@ -6,6 +6,11 @@ from bpy.props import StringProperty, BoolProperty, EnumProperty
 
 from ..public_path_utils import get_template_dir, TemplateDir
 
+NODE_IMAGE_NODE_TYPES = {
+    'CompositorNodeTree': 'CompositorNodeImage',
+    'GeometryNodeTree': 'GeometryNodeImageTexture',
+}
+
 
 class image_io:
     bl_options = {'UNDO_GROUPED'}
@@ -21,10 +26,14 @@ class image_io:
                     and context.mode == "OBJECT")
 
         elif context.area.type == "NODE_EDITOR":
+            space_data = getattr(context, 'space_data', None)
+            if getattr(context.area, 'ui_type', '') == 'CompositorNodeTree':
+                return getattr(context, 'scene', None) is not None
+
             return (
                     context.area.type == "NODE_EDITOR"
                     and context.area.ui_type in {'GeometryNodeTree', "ShaderNodeTree", 'CompositorNodeTree'}
-                    and context.space_data.edit_tree is not None
+                    and get_node_tree(space_data, context) is not None
             )
         elif context.area.type == 'FILE_BROWSER':
             return context.area.ui_type == 'ASSETS'
@@ -41,6 +50,85 @@ class image_io:
         image = images[0]
 
         return image
+
+
+def load_image_data_by_path(path):
+    try:
+        return bpy.data.images.load(path, check_existing=True)
+    except RuntimeError:
+        image = bpy.data.images.get(os.path.basename(path))
+        if image is None:
+            raise
+        image.reload()
+        return image
+
+
+def get_compositor_node_tree(context, create=False):
+    scene = getattr(context, 'scene', None)
+    if scene is None:
+        return None
+
+    tree = getattr(scene, 'node_tree', None)
+    if tree is not None:
+        return tree
+
+    tree = getattr(scene, 'compositing_node_group', None)
+    if tree is not None:
+        return tree
+
+    if not create:
+        return None
+
+    if hasattr(scene, 'use_nodes'):
+        try:
+            scene.use_nodes = True
+        except Exception:
+            pass
+        tree = getattr(scene, 'node_tree', None) or getattr(scene, 'compositing_node_group', None)
+        if tree is not None:
+            return tree
+
+    if hasattr(scene, 'compositing_node_group'):
+        tree = bpy.data.node_groups.new('Compositing Nodes', 'CompositorNodeTree')
+        scene.compositing_node_group = tree
+        return tree
+
+    return None
+
+
+def get_node_tree(space_data, context=None, create=False):
+    if space_data is None:
+        return None
+
+    for attr in ('edit_tree', 'node_tree'):
+        tree = getattr(space_data, attr, None)
+        if tree is not None:
+            return tree
+
+    if context is not None and getattr(context.area, 'ui_type', '') == 'CompositorNodeTree':
+        return get_compositor_node_tree(context, create=create)
+
+    return None
+
+
+def get_image_node_type(context):
+    ui_type = getattr(context.area, 'ui_type', '')
+    if ui_type == 'ShaderNodeTree':
+        shader_type = getattr(context.space_data, 'shader_type', '')
+        if shader_type == 'WORLD':
+            return 'ShaderNodeTexEnvironment'
+        return 'ShaderNodeTexImage'
+
+    return NODE_IMAGE_NODE_TYPES.get(ui_type)
+
+
+def assign_image_to_node(node, image):
+    if hasattr(node, 'image'):
+        node.image = image
+        return
+
+    if hasattr(node, 'inputs') and 'Image' in node.inputs:
+        node.inputs['Image'].default_value = image
 
 
 class SPIO_OT_import_image_as_reference(image_io, bpy.types.Operator):
@@ -74,22 +162,18 @@ class SPIO_OT_import_image_as_nodes(image_io, bpy.types.Operator):
     bl_label = "Import as Nodes"
 
     def execute(self, context):
-        location_X, location_Y = context.space_data.cursor_location
+        nt = get_node_tree(context.space_data, context, create=True)
+        node_type = get_image_node_type(context)
+        if nt is None or node_type is None:
+            self.report({'ERROR'}, 'No supported node tree found')
+            return {'CANCELLED'}
+
+        location_X, location_Y = getattr(context.space_data, 'cursor_location', (0, 0))
         for filepath in self.files.split('$$'):
             image = self.load_image_by_path(filepath)
 
-            bpy.ops.node.select_all(action='DESELECT')
-            nt = context.space_data.edit_tree
-
-            if context.area.ui_type == 'ShaderNodeTree':
-                if context.space_data.shader_type == 'WORLD':
-                    node_type = 'ShaderNodeTexEnvironment'
-                else:
-                    node_type = 'ShaderNodeTexImage'
-            elif context.area.ui_type == 'GeometryNodeTree':
-                node_type = 'GeometryNodeImageTexture'
-            elif context.area.ui_type == 'CompositorNodeTree':
-                node_type = 'CompositorNodeImage'
+            for node in nt.nodes:
+                node.select = False
 
             tex_node = nt.nodes.new(node_type)
             tex_node.location = location_X, location_Y
@@ -100,10 +184,7 @@ class SPIO_OT_import_image_as_nodes(image_io, bpy.types.Operator):
             tex_node.select = True
             nt.nodes.active = tex_node
 
-            if node_type in {'ShaderNodeTexImage', 'ShaderNodeTexEnvironment', 'CompositorNodeImage'}:
-                tex_node.image = image
-            elif node_type == 'GeometryNodeImageTexture':
-                tex_node.inputs['Image'].default_value = image
+            assign_image_to_node(tex_node, image)
 
         return {'FINISHED'}
 
