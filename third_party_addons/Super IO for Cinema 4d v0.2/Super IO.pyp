@@ -40,9 +40,6 @@ import sys
 import ctypes
 import ctypes.wintypes as w
 
-from locale import getdefaultlocale
-
-
 class Clipboard():
     def __init__(self, file_urls=None):
         if sys.platform not in {'win32', 'darwin'}:
@@ -210,9 +207,9 @@ class WinTypeClipboard:
         self.file_urls = []
 
         self.CF_HDROP = 15
+        self.DRAG_QUERY_FILE_COUNT = 0xFFFFFFFF
 
         u32 = ctypes.windll.user32
-        k32 = ctypes.windll.kernel32
         s32 = ctypes.windll.shell32
 
         self.OpenClipboard = u32.OpenClipboard
@@ -229,8 +226,9 @@ class WinTypeClipboard:
         self.CloseClipboard.argtypes = None
         self.CloseClipboard.restype = w.BOOL
 
-        self.DragQueryFile = s32.DragQueryFile
-        self.DragQueryFile.argtypes = [w.HANDLE, w.UINT, ctypes.c_void_p, w.UINT]
+        self.DragQueryFile = s32.DragQueryFileW
+        self.DragQueryFile.argtypes = [w.HANDLE, w.UINT, w.LPWSTR, w.UINT]
+        self.DragQueryFile.restype = w.UINT
 
     @property
     def file_list(self):
@@ -238,25 +236,29 @@ class WinTypeClipboard:
 
     def pull(self, force_unicode=False):
         # get
+        opened = False
         try:
             if self.OpenClipboard(None):
+                opened = True
                 h_hdrop = self.GetClipboardData(self.CF_HDROP)
 
                 if h_hdrop:
-                    # expose force unicode to preferences(if enabled unicode beta setting)
-                    FS_ENCODING = getdefaultlocale()[1] if not force_unicode else 'utf-8'
-                    file_count = self.DragQueryFile(h_hdrop, -1, None, 0)
+                    file_count = self.DragQueryFile(h_hdrop, self.DRAG_QUERY_FILE_COUNT, None, 0)
 
                     for index in range(file_count):
-                        buf = ctypes.c_buffer(260)
-                        self.DragQueryFile(h_hdrop, index, buf, ctypes.sizeof(buf))
-                        self.file_urls.append(buf.value.decode(FS_ENCODING))
+                        length = self.DragQueryFile(h_hdrop, index, None, 0)
+                        if length == 0:
+                            continue
+                        buf = ctypes.create_unicode_buffer(length + 1)
+                        self.DragQueryFile(h_hdrop, index, buf, length + 1)
+                        self.file_urls.append(buf.value)
 
             return self.file_urls
-        except UnicodeError:
-            pass
+        except (OSError, ctypes.ArgumentError):
+            return None
         finally:
-            self.CloseClipboard()
+            if opened:
+                self.CloseClipboard()
 
 
 import c4d
@@ -293,7 +295,11 @@ def get_config():
 
     with open(config_path, 'r') as f:
         config_data = json.load(f)
-        FORCE_UNICORE = config_data.get('FORCE_UNICORE')
+        FORCE_UNICORE = config_data.get('FORCE_UNICORE', False)
+        if isinstance(FORCE_UNICORE, str):
+            FORCE_UNICORE = FORCE_UNICORE.lower() in {'1', 'true', 'yes', 'on'}
+        else:
+            FORCE_UNICORE = bool(FORCE_UNICORE)
         TEMP_DIR = config_data.get('TEMP_DIR')
         return FORCE_UNICORE, TEMP_DIR
 
