@@ -19,10 +19,16 @@ class SidebarSetup:
 class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
     bl_label = ''
 
+    @classmethod
+    def poll(cls, context):
+        return get_pref() is not None
+
     def draw_header(self, context):
         layout = self.layout
         layout.alignment = "LEFT"
         pref = get_pref()
+        if pref is None:
+            return
 
         row = layout
         row = row.row(align=True)
@@ -34,6 +40,10 @@ class SPIO_PT_PrefPanel(SidebarSetup, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         pref = get_pref()
+        if pref is None:
+            layout.label(text='Super IO preferences unavailable', icon='ERROR')
+            return
+
         if pref.ui == 'SETTINGS':
             SPIO_Preference.draw_settings(pref, context, layout)
         elif pref.ui == 'CONFIG':
@@ -68,7 +78,8 @@ class SPIO_PT_AssetHelper(SidebarSetup, bpy.types.Panel):
 
     @classmethod
     def poll(self, context):
-        return get_pref().asset_helper
+        pref = get_pref()
+        return pref is not None and pref.asset_helper
 
     def draw(self, context):
         layout = self.layout
@@ -112,4 +123,3 @@ def unregister():
     bpy.utils.unregister_class(SPIO_PT_PrefPanel_Main)
     bpy.utils.unregister_class(SPIO_PT_ImportPanel)
     bpy.utils.unregister_class(SPIO_PT_AssetHelper)
-

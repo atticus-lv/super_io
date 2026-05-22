@@ -9,7 +9,7 @@ from bpy.props import (EnumProperty,
                        IntProperty,
                        BoolProperty)
 
-from .core import get_pref, MeasureTime, PostProcess
+from .core import get_pref_attr, MeasureTime, PostProcess
 
 
 class IO_Base(bpy.types.Operator):
@@ -49,8 +49,8 @@ class IO_Base(bpy.types.Operator):
             bpy.utils.unregister_class(cls)
 
     def report_time(self, start_time):
-        if get_pref().report_time: self.report({"INFO"},
-                                               f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
+        if get_pref_attr('report_time', True): self.report({"INFO"},
+                                                           f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
 
     # Import Method
     def import_blend_default(self, context):
@@ -95,8 +95,8 @@ class DynamicImport:
                     except Exception as e:
                         self.report({"ERROR"}, str(e))
 
-                if get_pref().report_time: self.report({"INFO"},
-                                                       f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
+                if get_pref_attr('report_time', True): self.report({"INFO"},
+                                                                   f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
         else:
             self.report({"ERROR"}, f'{op_callable} Error!!!')
 
@@ -199,8 +199,8 @@ class DynamicExport:
                 POST.copy_to_clipboard(paths=PostProcess.get_update_files(src_file, temp_dir), op=self)
                 POST.open_dir(temp_dir)
 
-                if get_pref().report_time: self.report({"INFO"},
-                                                       f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
+                if get_pref_attr('report_time', True): self.report({"INFO"},
+                                                                   f'{self.bl_label} Cost {round(time.time() - start_time, 5)} s')
         else:
             self.report({"ERROR"}, f'{op_callable} Error!!!')
 

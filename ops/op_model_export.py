@@ -4,7 +4,7 @@ import sys
 
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 
-from .core import get_pref, PostProcess
+from .core import get_pref_attr, PostProcess
 
 
 class ModeCopyDefault:
@@ -80,7 +80,7 @@ class SPIO_OT_export_model(ModeCopyDefault, bpy.types.Operator):
 
         from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
         # get exporter by preferences
-        default_exporter = get_exporter(extend=get_pref().extend_export_menu)
+        default_exporter = get_exporter(extend=get_pref_attr('extend_export_menu', False))
         exporter_ops_props = get_exporter_ops_props()
 
         if self.extension not in default_exporter: return {"CANCELLED"}

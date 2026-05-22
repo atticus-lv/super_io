@@ -8,10 +8,44 @@ from bpy.props import (StringProperty)
 
 from .dynamic_io import IO_Base
 from .core import MeasureTime, ConfigItemHelper, ConfigHelper
-from .core import get_pref
+from .core import get_pref_attr
 
 from ..preferences.data_icon import G_ICON_ID
 from ..preferences.data_config_store import get_config_list
+
+
+def capture_dispatch_context(context):
+    return {
+        'window': getattr(context, 'window', None),
+        'screen': getattr(context, 'screen', None),
+        'area': getattr(context, 'area', None),
+        'region': getattr(context, 'region', None),
+    }
+
+
+def run_in_dispatch_context(context, dispatch_context, callback):
+    override = {key: value for key, value in dispatch_context.items() if value is not None}
+    if not override:
+        return callback(context)
+
+    try:
+        override_context = context.temp_override(**override)
+    except Exception:
+        return callback(context)
+
+    try:
+        override_context.__enter__()
+    except Exception:
+        return callback(context)
+
+    try:
+        result = callback(bpy.context)
+    except Exception:
+        override_context.__exit__(*sys.exc_info())
+        raise
+    else:
+        override_context.__exit__(None, None, None)
+        return result
 
 
 class SuperImport(IO_Base, bpy.types.Operator):
@@ -23,17 +57,20 @@ class SuperImport(IO_Base, bpy.types.Operator):
     ############
     def invoke(self, context, event):
         self.restore()
+        dispatch_context = capture_dispatch_context(context)
 
         from ..clipboard.clipboard import Clipboard as Clipboard
         # get Clipboard
         self.clipboard = Clipboard()
-        file_list = self.clipboard.pull_files_from_clipboard(force_unicode=get_pref().force_unicode)
+        file_list = self.clipboard.pull_files_from_clipboard(
+            force_unicode=get_pref_attr('force_unicode', False)
+        )
 
         del self.clipboard  # release clipboard
 
         if len(file_list) == 0:
             self.report({"ERROR"}, "No file found in clipboard!")
-            return {"CANCELLED"}
+            return {"FINISHED"}
 
         for file_path in file_list:
             if os.path.isdir(file_path):
@@ -76,14 +113,14 @@ class SuperImport(IO_Base, bpy.types.Operator):
             self.use_custom_config = False
 
             if self.ext == 'blend':
-                self.import_blend_default(context)
+                run_in_dispatch_context(context, dispatch_context, self.import_blend_default)
                 return {'FINISHED'}
             else:
-                return self.execute(context)
+                return run_in_dispatch_context(context, dispatch_context, self.execute)
 
         self.use_custom_config = True
 
-        return self.import_custom_dynamic(context)
+        return run_in_dispatch_context(context, dispatch_context, self.import_custom_dynamic)
 
     def execute(self, context):
         with MeasureTime() as start_time:
@@ -171,7 +208,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
                     except Exception as e:
                         self.report({"ERROR"}, str(e))
 
-                if get_pref().report_time: self.report_time(start_time)
+                if get_pref_attr('report_time', True): self.report_time(start_time)
 
         # then popup menu to select the remain not matching file
         remain_list = list()
@@ -194,6 +231,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
             from .core import PopupImportMenu
             import_op = self
             ext = self.ext
+            target_context = context
 
             def draw_custom_menu(self, context):
                 layout = self.layout
@@ -212,15 +250,15 @@ class SuperImport(IO_Base, bpy.types.Operator):
                 elif ext == 'blend':
                     pop = PopupImportMenu(file_list=remain_list,
                                           dir_list=dir_list,
-                                          context=context)
+                                          context=target_context)
                     menu = pop.default_blend_menu(return_menu=True)
-                    if menu: menu(self, context)
+                    if menu: menu(self, target_context)
                 else:
                     pop = PopupImportMenu(file_list=remain_list,
                                           dir_list=dir_list,
-                                          context=context)
+                                          context=target_context)
                     menu = pop.default_image_menu(return_menu=True)
-                    if menu: menu(self, context)
+                    if menu: menu(self, target_context)
 
             context.window_manager.popup_menu(draw_custom_menu, title=title, icon='FILEBROWSER')
 

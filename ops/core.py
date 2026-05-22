@@ -13,6 +13,13 @@ def get_pref():
     return None
 
 
+def get_pref_attr(attr, default=None):
+    pref = get_pref()
+    if pref is None:
+        return default
+    return getattr(pref, attr, default)
+
+
 def viewlayer_fix_291(self, context):
     return context.view_layer.depsgraph
 
@@ -274,7 +281,7 @@ class PopupExportMenu():
             # col.separator()
             from ..imexporter.default_exporter import get_exporter, get_exporter_ops_props
             # get exporter by preferences
-            default_exporter = get_exporter(extend=get_pref().extend_export_menu)
+            default_exporter = get_exporter(extend=get_pref_attr('extend_export_menu', False))
             exporter_ops_props = get_exporter_ops_props()
 
             for ext, bl_idname in default_exporter.items():
@@ -296,6 +303,7 @@ class PopupImportMenu():
 
     def default_image_menu(self, return_menu=False):
         context = self.context
+        target_context = self.context
         join_paths = '$$'.join(self.file_list)
         join_dirs = '$$'.join(self.dir_list)
 
@@ -352,7 +360,7 @@ class PopupImportMenu():
                     op = col.operator('spio.import_image_as_nodes')
                     op.files = join_paths
 
-                    if context.area.ui_type == 'ShaderNodeTree':
+                    if target_context.area.ui_type == 'ShaderNodeTree':
                         col = layout.column()
                         op = col.operator('spio.import_image_pbr_setup')
                         op.files = join_paths
@@ -478,7 +486,7 @@ class PostProcess():
         post_process_blend_file(filepath, scripts_file_name)
 
     def open_dir(self, temp_dir):
-        if get_pref().post_open_dir:
+        if get_pref_attr('post_open_dir', False):
             bpy.ops.wm.path_open(filepath=temp_dir)
 
     @staticmethod
@@ -493,7 +501,7 @@ class PostProcess():
 
     def copy_to_clipboard(self, paths, op):
         """Win only now, need to test mac"""
-        if get_pref().post_push_to_clipboard:
+        if get_pref_attr('post_push_to_clipboard', True):
 
             from ..clipboard.clipboard import Clipboard as Clipboard
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import os
 import sys
+import ctypes
 
 from locale import getdefaultlocale
 
@@ -11,6 +12,80 @@ import bpy
 
 TEMP_DIR = ''
 IMAGE_CREATE_TIME_COST = 1  # seconds
+
+SPACE_STATE_ATTRS = (
+    'tree_type',
+    'shader_type',
+    'geometry_nodes_type',
+)
+
+
+def _get_optional_attr(data, attr):
+    if not hasattr(data, attr):
+        return False, None
+    try:
+        return True, getattr(data, attr)
+    except Exception:
+        return False, None
+
+
+def _set_optional_attr(data, attr, value):
+    if not hasattr(data, attr):
+        return
+    try:
+        setattr(data, attr, value)
+    except Exception:
+        pass
+
+
+def _capture_area_state(area):
+    state = {
+        'type': area.type,
+        'space': {},
+    }
+
+    has_ui_type, ui_type = _get_optional_attr(area, 'ui_type')
+    if has_ui_type:
+        state['ui_type'] = ui_type
+
+    try:
+        space = area.spaces.active
+    except Exception:
+        space = None
+
+    if space is not None:
+        for attr in SPACE_STATE_ATTRS:
+            has_attr, value = _get_optional_attr(space, attr)
+            if has_attr and isinstance(value, str) and value:
+                state['space'][attr] = value
+
+    return state
+
+
+def _restore_area_state(area, state):
+    try:
+        if area.type != state['type']:
+            area.type = state['type']
+    except Exception:
+        return
+
+    if 'ui_type' in state:
+        _set_optional_attr(area, 'ui_type', state['ui_type'])
+
+    try:
+        space = area.spaces.active
+    except Exception:
+        return
+
+    for attr, value in state['space'].items():
+        _set_optional_attr(space, attr, value)
+
+
+def _can_paste_image_from_clipboard():
+    try:
+        return bpy.ops.image.clipboard_paste.poll()
+    except Exception:
+        return False
 
 
 def get_dir():
@@ -85,8 +160,7 @@ class Clipboard():
             res = CheckStringFile().is_something()
             if res:
                 file_list.append(res)
-
-            return file_list
+                return file_list
 
         # user is copying image bytes
         image_path = self.pull_image_from_clipboard()  # create image from clipboard
@@ -133,23 +207,26 @@ class Clipboard():
         if image_path:
             return image_path
 
+        if sys.platform == 'darwin':
+            return MacClipboard().pull_image_from_clipboard()
         if sys.platform == 'win32':
-            clipboard = PowerShellClipboard()
-        elif sys.platform == 'darwin':
-            clipboard = MacClipboard()
+            return PowerShellClipboard().pull_image_from_clipboard()
 
-        return clipboard.pull_image_from_clipboard()
+        return ''
 
     def pull_image_from_clipboard_with_blender(self, save_name='spio_from_clipboard.png'):
         area = bpy.context.area
         if area is None:
             return ''
 
-        old_area_type = area.type
+        old_area_state = _capture_area_state(area)
         old_images = set(bpy.data.images)
         try:
             if area.type != 'IMAGE_EDITOR':
                 area.type = 'IMAGE_EDITOR'
+
+            if not _can_paste_image_from_clipboard():
+                return ''
 
             result = bpy.ops.image.clipboard_paste()
             if result != {'FINISHED'}:
@@ -169,15 +246,17 @@ class Clipboard():
         except Exception:
             return ''
         finally:
-            if area.type != old_area_type:
-                area.type = old_area_type
+            _restore_area_state(area, old_area_state)
 
 
 class MacClipboard():
 
     def pull(self, force_unicode=False):
         self.file_urls = []
-        from .darwin import _native as pasteboard
+        try:
+            from .darwin import _native as pasteboard
+        except ImportError:
+            return self.pull_file_urls_with_osascript()
 
         pb = pasteboard.Pasteboard()
 
@@ -186,6 +265,33 @@ class MacClipboard():
         if urls is not None:
             self.file_urls = list(urls)
 
+        return self.file_urls
+
+    def pull_file_urls_with_osascript(self):
+        commands = [
+            'set filePaths to ""',
+            'try',
+            '    set clipboardItems to the clipboard as list',
+            '    repeat with clipboardItem in clipboardItems',
+            '        try',
+            '            set filePaths to filePaths & POSIX path of clipboardItem & linefeed',
+            '        end try',
+            '    end repeat',
+            'on error',
+            '    try',
+            '        set filePaths to POSIX path of (the clipboard as alias)',
+            '    end try',
+            'end try',
+            'return filePaths',
+        ]
+        popen = subprocess.Popen(
+            self.get_osascript_args(commands),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding='utf-8',
+        )
+        stdout, stderr = popen.communicate()
+        self.file_urls = [file for file in stdout.splitlines() if file]
         return self.file_urls
 
     def push_pixel_to_clipboard(self, path):
@@ -211,6 +317,10 @@ class MacClipboard():
         return args
 
     def pull_image_from_clipboard(self, save_name='spio_from_clipboard.png'):
+        filepath = self.pull_image_from_clipboard_with_cocoa(save_name)
+        if filepath:
+            return filepath
+
         ts = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
         filepath = os.path.join(get_dir(), ts + '.' + save_name)
 
@@ -226,6 +336,64 @@ class MacClipboard():
         stdout, stderr = popen.communicate()
 
         return filepath
+
+    def pull_image_from_clipboard_with_cocoa(self, save_name='spio_from_clipboard.png'):
+        try:
+            ctypes.cdll.LoadLibrary('/System/Library/Frameworks/AppKit.framework/AppKit')
+            objc = ctypes.cdll.LoadLibrary('/usr/lib/libobjc.A.dylib')
+            objc.objc_getClass.restype = ctypes.c_void_p
+            objc.objc_getClass.argtypes = [ctypes.c_char_p]
+            objc.sel_registerName.restype = ctypes.c_void_p
+            objc.sel_registerName.argtypes = [ctypes.c_char_p]
+
+            msg_send_addr = ctypes.cast(objc.objc_msgSend, ctypes.c_void_p).value
+            msg_id = ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p)(msg_send_addr)
+            msg_id_id = ctypes.CFUNCTYPE(
+                ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p
+            )(msg_send_addr)
+            msg_id_cstr = ctypes.CFUNCTYPE(
+                ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_char_p
+            )(msg_send_addr)
+            msg_ulong = ctypes.CFUNCTYPE(ctypes.c_ulong, ctypes.c_void_p, ctypes.c_void_p)(msg_send_addr)
+
+            ns_pasteboard = objc.objc_getClass(b'NSPasteboard')
+            ns_string = objc.objc_getClass(b'NSString')
+            pasteboard = msg_id(ns_pasteboard, objc.sel_registerName(b'generalPasteboard'))
+
+            pasteboard_types = (
+                ('public.png', 'png'),
+                ('Apple PNG pasteboard type', 'png'),
+                ('public.tiff', 'tiff'),
+                ('NeXT TIFF v4.0 pasteboard type', 'tiff'),
+            )
+            for pasteboard_type, extension in pasteboard_types:
+                ns_type = msg_id_cstr(
+                    ns_string,
+                    objc.sel_registerName(b'stringWithUTF8String:'),
+                    pasteboard_type.encode('utf-8'),
+                )
+                data = msg_id_id(pasteboard, objc.sel_registerName(b'dataForType:'), ns_type)
+                if not data:
+                    continue
+
+                length = msg_ulong(data, objc.sel_registerName(b'length'))
+                if length == 0:
+                    continue
+
+                bytes_ptr = msg_id(data, objc.sel_registerName(b'bytes'))
+                if not bytes_ptr:
+                    continue
+
+                ts = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
+                base_name, _ext = os.path.splitext(save_name)
+                filepath = os.path.join(get_dir(), f'{ts}.{base_name}.{extension}')
+                with open(filepath, 'wb') as f:
+                    f.write(ctypes.string_at(bytes_ptr, length))
+                return filepath
+        except Exception:
+            return ''
+
+        return ''
 
 
 class PowerShellClipboard:
