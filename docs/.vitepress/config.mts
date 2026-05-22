@@ -42,6 +42,13 @@ export default defineConfig({
         ]
       },
       {
+        text: 'Third-party Addons',
+        items: [
+          { text: 'Cinema 4D Plugin', link: '/guide/cinema-4d' },
+          { text: 'Houdini Shelf Tool', link: '/guide/houdini' }
+        ]
+      },
+      {
         text: 'Compatibility',
         items: [
           { text: 'Older Blender Versions', link: '/guide/older-blender' }
@@ -87,6 +94,13 @@ export default defineConfig({
               { text: '配置管理', link: '/zh/guide/custom-config' },
               { text: '自定义操作符', link: '/zh/guide/custom-operators' },
               { text: '配置数据存储', link: '/zh/guide/config-storage' }
+            ]
+          },
+          {
+            text: '第三方插件',
+            items: [
+              { text: 'Cinema 4D 插件', link: '/zh/guide/cinema-4d' },
+              { text: 'Houdini 工具架', link: '/zh/guide/houdini' }
             ]
           },
           {
