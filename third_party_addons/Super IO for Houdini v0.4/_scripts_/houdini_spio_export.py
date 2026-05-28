@@ -5,6 +5,8 @@
 # add export format menu
 # v0.3
 # add alembic animation export
+# v0.4
+# version bump for unicode clipboard import compatibility
 
 from __future__ import annotations
 

@@ -27,8 +27,8 @@ class ScriptDir(Enum):
 
 
 class ExternalDir(Enum):
-    C4D = 'Super IO for Cinema 4d v0.2'
-    HOUDINI = 'Super IO for Houdini v0.3'
+    C4D = 'Super IO for Cinema 4d v0.3'
+    HOUDINI = 'Super IO for Houdini v0.4'
 
 
 class ModulesDir(Enum):

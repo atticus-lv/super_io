@@ -1,0 +1,103 @@
+name: Third-Party Plugins
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUTF8: "1"
+
+jobs:
+  package:
+    name: Package Third-Party Plugins
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build plugin packages
+        env:
+          PACKAGE_DIR: ${{ runner.temp }}/super_io-third-party-dist
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import os
+          import zipfile
+          from pathlib import Path
+
+          workspace = Path(os.environ["GITHUB_WORKSPACE"])
+          output_dir = Path(os.environ["PACKAGE_DIR"])
+          output_dir.mkdir(parents=True, exist_ok=True)
+
+          packages = [
+              (
+                  workspace / "third_party_addons" / "Super IO for Cinema 4d v0.3",
+                  output_dir / "super_io-cinema4d-v0.3.zip",
+                  "C4D_PACKAGE_PATH",
+              ),
+              (
+                  workspace / "third_party_addons" / "Super IO for Houdini v0.4",
+                  output_dir / "super_io-houdini-v0.4.zip",
+                  "HOUDINI_PACKAGE_PATH",
+              ),
+          ]
+
+          env_file = Path(os.environ["GITHUB_ENV"])
+          with env_file.open("a", encoding="utf-8") as env:
+              for source_dir, package_path, env_name in packages:
+                  if not source_dir.is_dir():
+                      raise SystemExit(f"Missing third-party plugin directory: {source_dir}")
+
+                  with zipfile.ZipFile(package_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+                      for path in sorted(source_dir.rglob("*")):
+                          if "__pycache__" in path.parts or path.suffix == ".pyc":
+                              continue
+                          if path.is_file():
+                              archive.write(path, path.relative_to(source_dir.parent))
+
+                  env.write(f"{env_name}={package_path}\n")
+          PY
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: super_io-third-party-plugins
+          path: |
+            ${{ env.C4D_PACKAGE_PATH }}
+            ${{ env.HOUDINI_PACKAGE_PATH }}
+          if-no-files-found: error
+
+      - name: Publish GitHub Release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          release_tag="${GITHUB_REF_NAME}"
+          release_assets=(
+            "${C4D_PACKAGE_PATH}"
+            "${HOUDINI_PACKAGE_PATH}"
+          )
+
+          if gh release view "${release_tag}" > /dev/null 2>&1; then
+            gh release upload "${release_tag}" "${release_assets[@]}" --clobber
+          else
+            if ! gh release create "${release_tag}" "${release_assets[@]}" \
+              --target "${GITHUB_SHA}" \
+              --title "${release_tag}" \
+              --notes "Third-party plugin packages for ${release_tag}."; then
+              gh release upload "${release_tag}" "${release_assets[@]}" --clobber
+            fi
+          fi

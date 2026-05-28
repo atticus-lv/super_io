@@ -26,7 +26,7 @@ class SPIO_OT_copy_c4d_plugin(bpy.types.Operator):
         layout.label(text='You can find it in extension menu')
 
         file = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Cinema 4d v0.2'))
+            os.path.join(os.path.dirname(__file__), "..", 'third_party_addons', 'Super IO for Cinema 4d v0.3'))
         full_path = os.path.abspath(file)
 
         layout.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = full_path
@@ -77,7 +77,7 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
     package_path: bpy.props.StringProperty(name='Packages Path', default='', subtype='DIR_PATH')
 
     def execute(self, context):
-        pointer_path = Path(__file__).parent.parent.joinpath('third_party_addons', 'Super IO for Houdini v0.3').resolve()
+        pointer_path = Path(__file__).parent.parent.joinpath('third_party_addons', 'Super IO for Houdini v0.4').resolve()
 
         package_path = Path(self.package_path).resolve()
 
@@ -109,7 +109,7 @@ class SPIO_OT_copy_houdini_script(bpy.types.Operator):
         layout.operator('wm.path_open', text='Install Tutorial', icon='QUESTION').filepath = os.path.join(
             os.path.dirname(__file__),
             '..', 'third_party_addons',
-            'Super IO for Houdini v0.3')
+            'Super IO for Houdini v0.4')
 
 
 class SPIO_OT_load_text(bpy.types.Operator):

@@ -23,7 +23,7 @@ Houdini 工具可以从剪贴板导入 `obj`、`fbx`、`stl`、`dae`、`abc`、`
 5. 确认 `Packages Path`，通常是 `Documents/houdini{version}/packages`。
 6. 点击 `Install`。
 
-Super IO 会写入一个 `SPIO.json` 包配置文件，让 Houdini 指向随包的 `Super IO for Houdini v0.3` 目录。
+Super IO 会写入一个 `SPIO.json` 包配置文件，让 Houdini 指向随包的 `Super IO for Houdini v0.4` 目录。
 
 ## 在 Houdini 添加工具架
 

@@ -17,7 +17,7 @@ Super IO includes a small Cinema 4D plugin for moving data between Cinema 4D and
 2. Open the Super IO preferences.
 3. In `Third-party`, click `Install Cinema 4d Plugin`.
 4. Click `Install Tutorial` to open the bundled plugin folder.
-5. Copy `Super IO for Cinema 4d v0.2` into Cinema 4D's `plugins` directory.
+5. Copy `Super IO for Cinema 4d v0.3` into Cinema 4D's `plugins` directory.
 6. Restart Cinema 4D.
 
 After installation, the Super IO command is available from Cinema 4D's extension menu.

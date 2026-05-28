@@ -3,6 +3,8 @@
 # initial win
 # v0.2
 # add more ext support, add abc/usd node support
+# v0.4
+# read clipboard file paths with unicode Windows API
 
 from __future__ import annotations
 

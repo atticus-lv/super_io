@@ -21,6 +21,8 @@
 # add export format menu
 # v0.3
 # add alembic animation export
+# v0.4
+# version bump for unicode clipboard import compatibility
 
 from __future__ import annotations
 
@@ -215,6 +217,8 @@ main()
 # initial win
 # v0.2
 # add more ext support, add abc/usd node support
+# v0.4
+# read clipboard file paths with unicode Windows API
 
 from __future__ import annotations
 
