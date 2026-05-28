@@ -3,6 +3,8 @@
 # Only Scripts
 # v0.2
 # promote into a plugin for cinema4d
+# v0.3
+# read clipboard file paths with unicode Windows API
 
 
 from __future__ import annotations

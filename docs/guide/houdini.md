@@ -23,7 +23,7 @@ The bundled Houdini tool can import `obj`, `fbx`, `stl`, `dae`, `abc`, `usd`, `u
 5. Confirm the `Packages Path`, usually `Documents/houdini{version}/packages`.
 6. Click `Install`.
 
-Super IO writes an `SPIO.json` package file that points Houdini to the bundled `Super IO for Houdini v0.3` folder.
+Super IO writes an `SPIO.json` package file that points Houdini to the bundled `Super IO for Houdini v0.4` folder.
 
 ## Add The Shelf In Houdini
 

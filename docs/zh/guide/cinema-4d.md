@@ -17,7 +17,7 @@ Super IO 内置了一个 Cinema 4D 插件，用来配合 Blender 侧的剪贴板
 2. 打开 Super IO 的偏好设置。
 3. 在 `Third-party` 区域点击 `Install Cinema 4d Plugin`。
 4. 点击 `Install Tutorial` 打开随包插件目录。
-5. 将 `Super IO for Cinema 4d v0.2` 复制到 Cinema 4D 的 `plugins` 目录。
+5. 将 `Super IO for Cinema 4d v0.3` 复制到 Cinema 4D 的 `plugins` 目录。
 6. 重启 Cinema 4D。
 
 安装后，可以在 Cinema 4D 的扩展菜单中找到 Super IO 命令。
