@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "super_io"
-version = "2.1.1"
+version = "2.2.0"
 name = "Super IO"
 tagline = "Clipboard driven custom import and export shortcuts"
 maintainer = "Atticus"
