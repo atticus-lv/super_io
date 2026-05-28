@@ -10,8 +10,6 @@ import sys
 import ctypes
 import ctypes.wintypes as w
 
-from locale import getdefaultlocale
-
 import hou
 import numpy as np
 
@@ -43,7 +41,7 @@ def main():
         return print("Not Support this platform!")
 
     clipboard = WintypesClipboard()
-    file_list = clipboard.pull(force_unicode=FORCE_UNICORE)
+    file_list = clipboard.pull(force_unicode=FORCE_UNICORE) or []
     del clipboard  # release clipboard
 
     if len(file_list) == 0:
@@ -98,9 +96,9 @@ class WintypesClipboard():
         self.file_urls = file_urls
 
         self.CF_HDROP = 15
+        self.DRAG_QUERY_FILE_COUNT = 0xFFFFFFFF
 
         u32 = ctypes.windll.user32
-        k32 = ctypes.windll.kernel32
         s32 = ctypes.windll.shell32
 
         self.OpenClipboard = u32.OpenClipboard
@@ -117,27 +115,36 @@ class WintypesClipboard():
         self.CloseClipboard.argtypes = None
         self.CloseClipboard.restype = w.BOOL
 
-        self.DragQueryFile = s32.DragQueryFile
-        self.DragQueryFile.argtypes = [w.HANDLE, w.UINT, ctypes.c_void_p, w.UINT]
+        self.DragQueryFile = s32.DragQueryFileW
+        self.DragQueryFile.argtypes = [w.HANDLE, w.UINT, w.LPWSTR, w.UINT]
+        self.DragQueryFile.restype = w.UINT
 
     def pull(self, force_unicode=False):
         self.file_urls = []
 
-        if self.OpenClipboard(None):
-            h_hdrop = self.GetClipboardData(self.CF_HDROP)
+        opened = False
+        try:
+            if self.OpenClipboard(None):
+                opened = True
+                h_hdrop = self.GetClipboardData(self.CF_HDROP)
 
-            if h_hdrop:
-                # expose force unicode to preferences(if enabled unicode beta setting)
-                FS_ENCODING = getdefaultlocale()[1] if not force_unicode else 'utf-8'
-                file_count = self.DragQueryFile(h_hdrop, -1, None, 0)
+                if h_hdrop:
+                    file_count = self.DragQueryFile(h_hdrop, self.DRAG_QUERY_FILE_COUNT, None, 0)
 
-                for index in range(file_count):
-                    buf = ctypes.c_buffer(260)
-                    self.DragQueryFile(h_hdrop, index, buf, ctypes.sizeof(buf))
-                    self.file_urls.append(buf.value.decode(FS_ENCODING))
+                    for index in range(file_count):
+                        length = self.DragQueryFile(h_hdrop, index, None, 0)
+                        if length == 0:
+                            continue
+                        buf = ctypes.create_unicode_buffer(length + 1)
+                        self.DragQueryFile(h_hdrop, index, buf, length + 1)
+                        self.file_urls.append(buf.value)
 
-        self.CloseClipboard()
-        return self.file_urls
+            return self.file_urls
+        except (OSError, ctypes.ArgumentError):
+            return []
+        finally:
+            if opened:
+                self.CloseClipboard()
 
 
 main()
