@@ -1,7 +1,5 @@
 from pathlib import Path
-import os
 from enum import Enum
-import re
 
 
 class ConfigFile(Enum):
@@ -12,7 +10,10 @@ class ConfigFile(Enum):
 
 
 class AssetDir(Enum):
-    DIRECTORY = 'asset'
+    DIRECTORY = 'assets'
+    ICONS = 'icons'
+    IMAGES = 'images'
+    SCENES = 'scenes'
     SCRIPTS = 'scripts'
     TEMPLATES = 'templates'
 
@@ -41,6 +42,16 @@ class DefaultIcons(Enum):
     EXPORT = 'export.png'
 
 
+class AssetHelperSceneDir(Enum):
+    HDR = 'hdr_scene'
+    MATERIAL = 'mat_scene'
+
+
+class AssetHelperScript(Enum):
+    RENDER_MATERIAL_PREVIEW = 'script_render_material_asset_pv.py'
+    RENDER_WORLD_PREVIEW = 'script_render_world_asset_pv.py'
+
+
 def get_modules_dir():
     d = Path(__file__).parent.joinpath(ModulesDir.DIRECTORY.value)
 
@@ -67,3 +78,31 @@ def get_template_dir(subpath: TemplateDir | None = None) -> Path:
         d = d.joinpath(subpath.value)
 
     return d
+
+
+def get_icon_dir(subpath: DefaultIcons | None = None) -> Path:
+    d = get_asset_dir(AssetDir.ICONS)
+
+    assert subpath in DefaultIcons or subpath is None, f'Icon {subpath} not found.'
+
+    if subpath is not None:
+        d = d.joinpath(subpath.value)
+
+    return d
+
+
+def get_asset_helper_scene_dir(subpath: AssetHelperSceneDir | None = None) -> Path:
+    d = get_asset_dir(AssetDir.SCENES).joinpath('asset_helper')
+
+    assert subpath in AssetHelperSceneDir or subpath is None, f'Asset helper scene {subpath} not found.'
+
+    if subpath is not None:
+        d = d.joinpath(subpath.value)
+
+    return d
+
+
+def get_asset_helper_script(subpath: AssetHelperScript) -> Path:
+    assert subpath in AssetHelperScript, f'Asset helper script {subpath} not found.'
+
+    return get_asset_dir(AssetDir.SCRIPTS).joinpath('asset_helper', subpath.value)

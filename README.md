@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://atticus-lv.github.io/super_io/">
-    <img src="res/img/logo_bg.png" alt="logo" width="540px"/>
+    <img src="assets/images/readme/logo_bg.png" alt="logo" width="540px"/>
   </a>
 </p>
 <h4 align="center">
@@ -44,7 +44,7 @@ Before upgrading from an older Super IO version, it is recommended to export or 
 
 # Intro
 
-![f_world](res/img/f_world.gif)
+![f_world](assets/images/readme/f_world.gif)
 
 **Super IO is a Blender extension that lets you copy and paste to import or export files.**
 
@@ -65,7 +65,7 @@ And new features which come from great idea!
 
 > Check the [documentation](https://atticus-lv.github.io/super_io/) for more information.
 
-![f_config](./res/img/f_preset.png)
+![f_config](./assets/images/readme/f_preset.png)
 
 ### Import
 
@@ -113,7 +113,7 @@ And new features which come from great idea!
 
 #### Advanced import and export
 
-![f_config](./res/img/f_config.png)
+![f_config](./assets/images/readme/f_config.png)
 
 + Custom import and export configuration
 
@@ -135,7 +135,7 @@ And new features which come from great idea!
 
 #### Asset Manager
 
-![f_mat](./res/img/f_mat.png)
+![f_mat](./assets/images/readme/f_mat.png)
 
 + Batch render world previews
 + Batch render material previews
@@ -149,7 +149,7 @@ And new features which come from great idea!
 
 > c4d plugin (R23+), houdini shelf tool / pie menu
 
-![f_addon](res/img/f_addon.png)
+![f_addon](assets/images/readme/f_addon.png)
 
 # Thanks
 
@@ -157,4 +157,3 @@ And new features which come from great idea!
 
 + [ImagePaste](https://github.com/Yeetus3141/ImagePaste)
 + [t3dn-bip](https://3dninjas.github.io/3dn-bip/)
-

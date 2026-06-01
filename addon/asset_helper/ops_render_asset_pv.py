@@ -1,7 +1,7 @@
 import bpy
 import os
 import bpy.utils.previews
-from ...preferences.prefs import get_pref
+from ...public_path_utils import AssetHelperSceneDir, AssetHelperScript, get_asset_helper_scene_dir, get_asset_helper_script
 
 # Image items
 ####################
@@ -72,13 +72,13 @@ def enum_thumbnails_from_dir(directory, context):
 
 
 def enum_world_render_preset(self, context):
-    dir = os.path.join(os.path.dirname(__file__), "hdr_scene")
-    return enum_thumbnails_from_dir(dir, context)
+    directory = get_asset_helper_scene_dir(AssetHelperSceneDir.HDR)
+    return enum_thumbnails_from_dir(str(directory), context)
 
 
 def enum_mat_render_preset(self, context):
-    dir = os.path.join(os.path.dirname(__file__), "mat_scene")
-    return enum_thumbnails_from_dir(dir, context)
+    directory = get_asset_helper_scene_dir(AssetHelperSceneDir.MATERIAL)
+    return enum_thumbnails_from_dir(str(directory), context)
 
 
 class render_asset_preview:
@@ -186,8 +186,8 @@ class SPIO_OI_render_world_asset_preview(render_asset_preview, bpy.types.Operato
 
     def execute(self, context):
         # WORLD, SOURCEPATH, BLENDEPATH, SIZE, OUTPATH = argv
-        scripts_path = os.path.join(os.path.dirname(__file__), 'script_render_world_asset_pv.py')
-        blend_path = os.path.join(os.path.dirname(__file__), 'hdr_scene', self.scene[:-4] + '.blend')
+        scripts_path = get_asset_helper_script(AssetHelperScript.RENDER_WORLD_PREVIEW)
+        blend_path = get_asset_helper_scene_dir(AssetHelperSceneDir.HDR).joinpath(self.scene[:-4] + '.blend')
 
         for world in self.match_obj:
             out_png = os.path.join(
@@ -197,13 +197,13 @@ class SPIO_OI_render_world_asset_preview(render_asset_preview, bpy.types.Operato
                 args = {
                     'WORLD': world,
                     'SOURCEPATH': bpy.data.filepath,
-                    'BLENDPATH': blend_path,
+                    'BLENDPATH': str(blend_path),
                     'OUTPATH': out_png,
                     'SIZE': self.resolution,
                     'SAMPLES': self.samples,
                     'DENOISE': '1' if self.denoise else '0',
                 }
-                run_cmd(scripts_path, *args.values())
+                run_cmd(str(scripts_path), *args.values())
 
             except Exception as e:
                 print(f'Render image "{world}" failed:', e)
@@ -229,8 +229,8 @@ class SPIO_OI_render_material_asset_preview(render_asset_preview, bpy.types.Oper
         self.draw_settings(context, layout)
 
     def execute(self, context):
-        scripts_path = os.path.join(os.path.dirname(__file__), 'script_render_material_asset_pv.py')
-        blend_path = os.path.join(os.path.dirname(__file__), 'mat_scene', self.scene[:-4] + '.blend')
+        scripts_path = get_asset_helper_script(AssetHelperScript.RENDER_MATERIAL_PREVIEW)
+        blend_path = get_asset_helper_scene_dir(AssetHelperSceneDir.MATERIAL).joinpath(self.scene[:-4] + '.blend')
 
         for material in self.match_obj:
             out_png = os.path.join(
@@ -241,14 +241,14 @@ class SPIO_OI_render_material_asset_preview(render_asset_preview, bpy.types.Oper
                 args = {
                     'MAT': material,
                     'SOURCEPATH': bpy.data.filepath,
-                    'BLENDPATH': blend_path,
+                    'BLENDPATH': str(blend_path),
                     'OUTPATH': out_png,
                     'SIZE': self.resolution,
                     'SAMPLES': '64',
                     'DENOISE': '1',
                     'DISPLACE': '1' if self.displacement else '0',
                 }
-                run_cmd(scripts_path, *args.values())
+                run_cmd(str(scripts_path), *args.values())
 
             except Exception as e:
                 print(f'Render image "{material}" failed:', e)
@@ -308,4 +308,3 @@ def unregister():
     bpy.utils.unregister_class(SPIO_OI_render_material_asset_preview)
 
     clear_preview_cache()
-

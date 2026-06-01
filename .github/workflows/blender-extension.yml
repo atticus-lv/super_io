@@ -69,6 +69,7 @@ jobs:
             preferences \
             ops \
             addon \
+            assets \
             imexporter \
             translation \
             ui \

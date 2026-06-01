@@ -2,7 +2,7 @@ import bpy
 import os
 import bpy.utils.previews
 
-from pathlib import Path
+from ..public_path_utils import get_icon_dir
 
 G_PV_COLL = {}
 G_ICON_ID = {}
@@ -11,7 +11,7 @@ G_ICON_ID = {}
 def register_icon():
     # global G_PV_COLL, G_ICON_ID
 
-    icon_dir = Path(__file__).parent.parent.joinpath('ui', 'icons')
+    icon_dir = get_icon_dir()
     mats_icon = []
 
     for file in os.listdir(str(icon_dir)):
