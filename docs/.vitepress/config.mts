@@ -53,6 +53,12 @@ export default defineConfig({
         items: [
           { text: 'Older Blender Versions', link: '/guide/older-blender' }
         ]
+      },
+      {
+        text: 'Maintenance',
+        items: [
+          { text: 'Runtime Structure', link: '/maintenance/runtime-structure' }
+        ]
       }
     ],
     socialLinks: [
