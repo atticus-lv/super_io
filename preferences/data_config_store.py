@@ -7,10 +7,10 @@ import bpy
 from bpy.props import BoolProperty, CollectionProperty, IntProperty, PointerProperty, StringProperty
 from bpy.types import PropertyGroup
 
-from ..metadata import ADDON_ID
 from .data_config_prop import ConfigItemProperty
 
 
+ADDON_ID = "super_io"
 CONFIG_SCHEMA_VERSION = 2
 CONFIG_FILE_NAME = "custom_io_configs.json"
 AUTOSAVE_INTERVAL = 0.75

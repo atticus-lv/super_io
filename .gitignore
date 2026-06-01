@@ -1,4 +1,15 @@
 __pycache__
+*.py[cod]
+*$py.class
+
+.cache/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+build/
+dist/
+
 .vscode
 .idea/
 docs/node_modules/
