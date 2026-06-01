@@ -46,17 +46,38 @@ jobs:
                   workspace / "third_party_addons" / "Super IO for Cinema 4d v0.3",
                   output_dir / "super_io-cinema4d-v0.3.zip",
                   "C4D_PACKAGE_PATH",
+                  "Super IO for Cinema 4d v0.3/",
               ),
               (
                   workspace / "third_party_addons" / "Super IO for Houdini v0.4",
                   output_dir / "super_io-houdini-v0.4.zip",
                   "HOUDINI_PACKAGE_PATH",
+                  "Super IO for Houdini v0.4/",
               ),
           ]
 
+          def validate_package(package_path, expected_root):
+              if not package_path.is_file():
+                  raise SystemExit(f"Missing package: {package_path}")
+
+              with zipfile.ZipFile(package_path, "r") as archive:
+                  names = archive.namelist()
+
+              if not any(name.startswith(expected_root) for name in names):
+                  raise SystemExit(f"{package_path.name} does not contain expected root {expected_root}")
+
+              dirty_entries = [
+                  name for name in names
+                  if "__pycache__" in Path(name).parts or name.endswith(".pyc")
+              ]
+              if dirty_entries:
+                  raise SystemExit(
+                      f"{package_path.name} contains generated Python cache files: {dirty_entries[:5]}"
+                  )
+
           env_file = Path(os.environ["GITHUB_ENV"])
           with env_file.open("a", encoding="utf-8") as env:
-              for source_dir, package_path, env_name in packages:
+              for source_dir, package_path, env_name, expected_root in packages:
                   if not source_dir.is_dir():
                       raise SystemExit(f"Missing third-party plugin directory: {source_dir}")
 
@@ -67,6 +88,7 @@ jobs:
                           if path.is_file():
                               archive.write(path, path.relative_to(source_dir.parent))
 
+                  validate_package(package_path, expected_root)
                   env.write(f"{env_name}={package_path}\n")
           PY
 
