@@ -61,7 +61,7 @@ def get_modules_dir():
 def get_asset_dir(subpath: AssetDir | None = None) -> Path:
     d = Path(__file__).parent.joinpath(AssetDir.DIRECTORY.value)
 
-    assert subpath in AssetDir or subpath is None, f'Asset {subpath} not found.'
+    assert subpath is None or isinstance(subpath, AssetDir), f'Asset {subpath} not found.'
 
     if subpath is not None:
         d = d.joinpath(subpath.value)
@@ -72,7 +72,7 @@ def get_asset_dir(subpath: AssetDir | None = None) -> Path:
 def get_template_dir(subpath: TemplateDir | None = None) -> Path:
     d = get_asset_dir().joinpath(AssetDir.TEMPLATES.value)
 
-    assert subpath in TemplateDir or subpath is None, f'Template {subpath} not found.'
+    assert subpath is None or isinstance(subpath, TemplateDir), f'Template {subpath} not found.'
 
     if subpath is not None:
         d = d.joinpath(subpath.value)
@@ -83,7 +83,7 @@ def get_template_dir(subpath: TemplateDir | None = None) -> Path:
 def get_icon_dir(subpath: DefaultIcons | None = None) -> Path:
     d = get_asset_dir(AssetDir.ICONS)
 
-    assert subpath in DefaultIcons or subpath is None, f'Icon {subpath} not found.'
+    assert subpath is None or isinstance(subpath, DefaultIcons), f'Icon {subpath} not found.'
 
     if subpath is not None:
         d = d.joinpath(subpath.value)
@@ -94,7 +94,7 @@ def get_icon_dir(subpath: DefaultIcons | None = None) -> Path:
 def get_asset_helper_scene_dir(subpath: AssetHelperSceneDir | None = None) -> Path:
     d = get_asset_dir(AssetDir.SCENES).joinpath('asset_helper')
 
-    assert subpath in AssetHelperSceneDir or subpath is None, f'Asset helper scene {subpath} not found.'
+    assert subpath is None or isinstance(subpath, AssetHelperSceneDir), f'Asset helper scene {subpath} not found.'
 
     if subpath is not None:
         d = d.joinpath(subpath.value)
@@ -103,6 +103,6 @@ def get_asset_helper_scene_dir(subpath: AssetHelperSceneDir | None = None) -> Pa
 
 
 def get_asset_helper_script(subpath: AssetHelperScript) -> Path:
-    assert subpath in AssetHelperScript, f'Asset helper script {subpath} not found.'
+    assert isinstance(subpath, AssetHelperScript), f'Asset helper script {subpath} not found.'
 
     return get_asset_dir(AssetDir.SCRIPTS).joinpath('asset_helper', subpath.value)
