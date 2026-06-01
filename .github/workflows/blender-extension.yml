@@ -81,6 +81,25 @@ jobs:
         run: |
           "${BLENDER_BIN}" --factory-startup --command extension validate "${GITHUB_WORKSPACE}"
 
+      - name: Build and validate extension package
+        env:
+          PACKAGE_DIR: ${{ runner.temp }}/super_io-test-dist
+        run: |
+          set -euo pipefail
+          mkdir -p "${PACKAGE_DIR}"
+          "${BLENDER_BIN}" --factory-startup --command extension build \
+            --source-dir "${GITHUB_WORKSPACE}" \
+            --output-dir "${PACKAGE_DIR}"
+
+          shopt -s nullglob
+          packages=("${PACKAGE_DIR}"/super_io-*.zip)
+          if [ "${#packages[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one extension zip, found ${#packages[@]}"
+            exit 1
+          fi
+
+          "${BLENDER_BIN}" --factory-startup --command extension validate "${packages[0]}"
+
       - name: Run Blender smoke test
         run: |
           "${BLENDER_BIN}" --factory-startup --background \
