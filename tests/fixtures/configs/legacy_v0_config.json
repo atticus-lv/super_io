@@ -1,0 +1,56 @@
+{
+    "Legacy FBX Import": {
+        "name": "Legacy FBX Import",
+        "extension": "fbx",
+        "operator_type": "DEFAULT_FBX",
+        "io_type": "IMPORT",
+        "prop_list": {
+            "automatic_bone_orientation": true
+        }
+    },
+    "Legacy STL Export": {
+        "name": "Legacy STL Export",
+        "extension": "stl",
+        "operator_type": "EXPORT_STL",
+        "io_type": "EXPORT",
+        "prop_list": {}
+    },
+    "Legacy Custom Import": {
+        "name": "Legacy Custom Import",
+        "extension": "obj",
+        "operator_type": "CUSTOM",
+        "bl_idname": "wm.obj_import",
+        "io_type": "IMPORT",
+        "prop_list": {
+            "use_split_groups": false
+        }
+    },
+    "Legacy Append Material": {
+        "name": "Legacy Append Material",
+        "extension": "blend",
+        "operator_type": "APPEND_BLEND_MATERIAL",
+        "io_type": "IMPORT",
+        "prop_list": {}
+    },
+    "Legacy DAE Import": {
+        "name": "Legacy DAE Import",
+        "extension": "dae",
+        "operator_type": "DEFAULT_DAE",
+        "io_type": "IMPORT",
+        "prop_list": {}
+    },
+    "Legacy X3D Import": {
+        "name": "Legacy X3D Import",
+        "extension": "x3d",
+        "operator_type": "DEFAULT_X3D",
+        "io_type": "IMPORT",
+        "prop_list": {}
+    },
+    "Legacy DAE Export": {
+        "name": "Legacy DAE Export",
+        "extension": "dae",
+        "operator_type": "EXPORT_DAE",
+        "io_type": "EXPORT",
+        "prop_list": {}
+    }
+}

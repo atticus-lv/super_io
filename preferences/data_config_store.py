@@ -123,6 +123,13 @@ def set_config_index(index, context=None):
 
 
 def get_config_path(create=True):
+    override_dir = os.environ.get("SPIO_CONFIG_DIR")
+    if override_dir:
+        base_path = Path(override_dir)
+        if create:
+            base_path.mkdir(parents=True, exist_ok=True)
+        return str(base_path / CONFIG_FILE_NAME)
+
     root_package = __package__.rsplit(".preferences", 1)[0]
     try:
         base_path = bpy.utils.extension_path_user(root_package, path="", create=create)

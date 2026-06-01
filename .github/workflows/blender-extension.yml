@@ -66,7 +66,6 @@ jobs:
           python -m compileall \
             __init__.py \
             __make_addon_zip.py \
-            metadata.py \
             preferences \
             ops \
             addon \
@@ -84,8 +83,11 @@ jobs:
       - name: Run Blender smoke test
         run: |
           "${BLENDER_BIN}" --factory-startup --background \
-            --python "${GITHUB_WORKSPACE}/tests/blender_smoke.py" \
-            -- --workspace "${GITHUB_WORKSPACE}"
+            --python "${GITHUB_WORKSPACE}/tests/blender/background_smoke.py" \
+            -- \
+            --workspace "${GITHUB_WORKSPACE}" \
+            --runtime-dir "${RUNNER_TEMP}/super_io-blender-background" \
+            --config-dir "${RUNNER_TEMP}/super_io-blender-background/super_io_config"
 
   package:
     name: Package Extension
