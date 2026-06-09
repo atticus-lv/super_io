@@ -59,6 +59,7 @@ from super_io.preferences.data_config_store import (  # noqa: E402
     get_config_data,
     get_config_path,
     normalize_document,
+    save_runtime_config_before_file_load,
     serialize_legacy_item,
 )
 from super_io.preferences.operator_inspector import get_operator_label, iter_operator_properties, operator_exists  # noqa: E402
@@ -214,6 +215,32 @@ def smoke_config_io():
     assert any(config["name"] == "Legacy FBX Import" and config["bl_idname"] == "wm.fbx_import" for config in exported["configs"])
 
 
+def smoke_config_reload_after_file_load():
+    assert any(
+        getattr(handler, "__name__", "") == "save_runtime_config_before_file_load"
+        for handler in bpy.app.handlers.load_pre
+    )
+    assert any(
+        getattr(handler, "__name__", "") == "load_runtime_config_after_file_load"
+        for handler in bpy.app.handlers.load_post
+    )
+
+    config_data = get_config_data()
+    config_data.config_list.clear()
+    item = config_data.config_list.add()
+    item.name = "Smoke Reload OBJ Import"
+    item.extension = "obj"
+    item.bl_idname = "wm.obj_import"
+    item.io_type = "IMPORT"
+
+    save_runtime_config_before_file_load(None)
+    result = bpy.ops.wm.read_homefile(use_empty=True)
+    assert result == {"FINISHED"}, result
+
+    config_data = get_config_data()
+    assert any(config.name == "Smoke Reload OBJ Import" for config in config_data.config_list)
+
+
 def smoke_pbr_material_setup():
     op_image_io.get_pref = _get_smoke_preferences
 
@@ -259,6 +286,7 @@ def main():
         smoke_default_operator_maps()
         smoke_operator_inspector()
         smoke_config_io()
+        smoke_config_reload_after_file_load()
         smoke_pbr_material_setup()
         smoke_batch_append_blend()
     finally:

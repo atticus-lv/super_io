@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 
 import bpy
+from bpy.app.handlers import persistent
 from bpy.props import BoolProperty, CollectionProperty, IntProperty, PointerProperty, StringProperty
 from bpy.types import PropertyGroup
 
@@ -86,6 +87,38 @@ def flush_runtime_config_if_dirty(context=None):
     if not _CONFIG_DIRTY or not is_runtime_config_available():
         return None
     return write_runtime_config(context=context)
+
+
+@persistent
+def save_runtime_config_before_file_load(_dummy):
+    flush_runtime_config_if_dirty()
+
+
+@persistent
+def load_runtime_config_after_file_load(_dummy):
+    if is_runtime_config_available():
+        load_or_migrate_runtime_config()
+
+
+def _same_handler(left, right):
+    return (
+        left == right
+        or (
+            getattr(left, "__module__", None) == getattr(right, "__module__", None)
+            and getattr(left, "__name__", None) == getattr(right, "__name__", None)
+        )
+    )
+
+
+def _remove_handler(handler_list, handler):
+    for registered_handler in list(handler_list):
+        if _same_handler(registered_handler, handler):
+            handler_list.remove(registered_handler)
+
+
+def _append_unique_handler(handler_list, handler):
+    _remove_handler(handler_list, handler)
+    handler_list.append(handler)
 
 
 class ConfigRuntimeProperty(PropertyGroup):
@@ -453,9 +486,13 @@ def serialize_legacy_item(item, index=0):
 def register():
     bpy.utils.register_class(ConfigRuntimeProperty)
     bpy.types.WindowManager.spio_config = PointerProperty(type=ConfigRuntimeProperty)
+    _append_unique_handler(bpy.app.handlers.load_pre, save_runtime_config_before_file_load)
+    _append_unique_handler(bpy.app.handlers.load_post, load_runtime_config_after_file_load)
 
 
 def unregister():
+    _remove_handler(bpy.app.handlers.load_post, load_runtime_config_after_file_load)
+    _remove_handler(bpy.app.handlers.load_pre, save_runtime_config_before_file_load)
     flush_runtime_config_if_dirty()
     del bpy.types.WindowManager.spio_config
     bpy.utils.unregister_class(ConfigRuntimeProperty)
