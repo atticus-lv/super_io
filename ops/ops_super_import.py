@@ -48,6 +48,21 @@ def run_in_dispatch_context(context, dispatch_context, callback):
         return result
 
 
+def get_remaining_import_files(file_list, match_file_op_dict, primary_ext):
+    remain_list = []
+    seen_files = set()
+    primary_ext = (primary_ext or '').lower()
+
+    for file in file_list:
+        file_ext = file.split('.')[-1].lower()
+        should_remain = file not in match_file_op_dict or file_ext != primary_ext
+        if should_remain and file not in seen_files:
+            remain_list.append(file)
+            seen_files.add(file)
+
+    return remain_list
+
+
 class SuperImport(IO_Base, bpy.types.Operator):
     """Paste Model/Images"""
     bl_label = "Super Import"
@@ -198,12 +213,13 @@ class SuperImport(IO_Base, bpy.types.Operator):
             with MeasureTime() as start_time:
                 for filepath, item_helper in match_file_op_dict.items():
                     op_callable, ops_args, op_context = item_helper.get_operator_and_args()
-                    ops_args['filepath'] = filepath
+                    call_args = ops_args.copy()
+                    call_args[item_helper.get_file_argument_name()] = filepath
                     try:
                         if op_context:
-                            op_callable(op_context, **ops_args)
+                            op_callable(op_context, **call_args)
                         else:
-                            op_callable(**ops_args)
+                            op_callable(**call_args)
 
                     except Exception as e:
                         self.report({"ERROR"}, str(e))
@@ -211,14 +227,7 @@ class SuperImport(IO_Base, bpy.types.Operator):
                 if get_pref_attr('report_time', True): self.report_time(start_time)
 
         # then popup menu to select the remain not matching file
-        remain_list = list()
-        for file in file_list:
-            # file match ext but not in config
-            if file not in match_file_op_dict:
-                remain_list.append(file)
-            # file not match ext
-            if file.split('.')[-1] != self.ext:
-                remain_list.append(file)
+        remain_list = get_remaining_import_files(file_list, match_file_op_dict, self.ext)
 
         # menu title
         if len(match_file_op_dict) > 0:

@@ -115,12 +115,14 @@ class ConfigItemHelper():
             match_files = [file for file in file_list if os.path.basename(file).startswith(match_value)]
         elif match_rule == 'ENDSWITH':
             match_files = [file for file in file_list if
-                           os.path.basename(file).removesuffix('.' + self.ext).endswith(match_value)]
+                           os.path.splitext(os.path.basename(file))[0].endswith(match_value)]
         elif match_rule == 'IN':
             match_files = [file for file in file_list if match_value in os.path.basename(file)]
         elif match_rule == 'REGEX':
             import re
             match_files = [file for file in file_list if re.search(match_value, os.path.basename(file))]
+        else:
+            match_files = list()
 
         return match_files
 

@@ -47,6 +47,7 @@ sys.path.insert(0, str(package_parent))
 import bpy  # noqa: E402
 import super_io  # noqa: E402
 from super_io.ops import op_image_io  # noqa: E402
+from super_io.ops.ops_super_import import SuperImport, get_remaining_import_files  # noqa: E402
 
 
 super_io.register()
@@ -283,6 +284,77 @@ def smoke_import_image_as_nodes_assigns_image():
     assert any(Path(bpy.path.abspath(node.image.filepath)).resolve() == image_path.resolve() for node in image_nodes)
 
 
+def smoke_custom_import_match_rules():
+    config_data = get_config_data()
+    source_material = bpy.data.materials.new("SmokeRuleMatchedMaterial")
+    source_blend = runtime_dir / "blend" / "RuleMatched.blend"
+    source_blend.parent.mkdir(parents=True, exist_ok=True)
+    bpy.data.libraries.write(str(source_blend), {source_material}, fake_user=True)
+    bpy.data.materials.remove(source_material)
+    assert bpy.data.materials.get("SmokeRuleMatchedMaterial") is None
+
+    item = config_data.config_list.add()
+    config_index = len(config_data.config_list) - 1
+    item.name = "Smoke Blend Rule Import"
+    item.extension = "blend"
+    item.bl_idname = "spio.batch_import_blend"
+    item.io_type = "IMPORT"
+    item.match_rule = "ENDSWITH"
+    item.match_value = "RuleMatched"
+    for name, value in {
+        "action": "APPEND",
+        "data_type": "materials",
+        "load_all": "True",
+    }.items():
+        prop = item.prop_list.add()
+        prop.name = name
+        prop.value = value
+
+    assert get_remaining_import_files(
+        [str(source_blend), str(source_blend.with_suffix(".png"))],
+        {str(source_blend): item},
+        "blend",
+    ) == [str(source_blend.with_suffix(".png"))]
+
+    class _FakeImport:
+        file_list = [str(source_blend)]
+        dir_list = []
+        dep_classes = []
+        ext = "blend"
+
+        class _Configs:
+            index_list = [config_index]
+
+        CONFIGS = _Configs()
+
+        def register_dep_classes(self):
+            for cls in self.dep_classes:
+                bpy.utils.register_class(cls)
+
+        def unregister_dep_classes(self):
+            for cls in self.dep_classes:
+                bpy.utils.unregister_class(cls)
+
+        def report(self, report_type, message):
+            raise AssertionError(f"{report_type}: {message}")
+
+        def report_time(self, _start_time):
+            pass
+
+    class _FakeContext:
+        window_manager = bpy.context.window_manager
+
+        class area:
+            type = "VIEW_3D"
+
+    try:
+        result = SuperImport.import_custom_dynamic(_FakeImport(), _FakeContext())
+        assert result == {"FINISHED"}, result
+        assert bpy.data.materials.get("SmokeRuleMatchedMaterial") is not None
+    finally:
+        config_data.config_list.remove(config_index)
+
+
 def smoke_pbr_material_setup():
     op_image_io.get_pref = _get_smoke_preferences
 
@@ -330,6 +402,7 @@ def main():
         smoke_config_io()
         smoke_config_reload_after_file_load()
         smoke_import_image_as_nodes_assigns_image()
+        smoke_custom_import_match_rules()
         smoke_pbr_material_setup()
         smoke_batch_append_blend()
     finally:
