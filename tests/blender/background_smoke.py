@@ -241,6 +241,48 @@ def smoke_config_reload_after_file_load():
     assert any(config.name == "Smoke Reload OBJ Import" for config in config_data.config_list)
 
 
+def smoke_import_image_as_nodes_assigns_image():
+    texture_dir = runtime_dir / "textures" / "ClipboardNode"
+    texture_dir.mkdir(parents=True, exist_ok=True)
+    image_path = texture_dir / "ClipboardPaste.png"
+    _write_png(image_path)
+
+    material = bpy.data.materials.new("SmokeClipboardNodeMaterial")
+    material.use_nodes = True
+
+    class _FakeArea:
+        type = "NODE_EDITOR"
+        ui_type = "ShaderNodeTree"
+
+    class _FakeSpace:
+        node_tree = material.node_tree
+        edit_tree = material.node_tree
+        shader_type = "OBJECT"
+        cursor_location = (0, 0)
+
+    class _FakeContext:
+        area = _FakeArea()
+        space_data = _FakeSpace()
+
+    class _FakeOperator:
+        files = str(image_path)
+        load_image_by_path = op_image_io.image_io.load_image_by_path
+
+        def report(self, report_type, message):
+            raise AssertionError(f"{report_type}: {message}")
+
+    result = op_image_io.SPIO_OT_import_image_as_nodes.execute(_FakeOperator(), _FakeContext())
+    assert result == {"FINISHED"}, result
+
+    image_nodes = [
+        node
+        for node in material.node_tree.nodes
+        if node.bl_idname == "ShaderNodeTexImage" and node.image is not None
+    ]
+    assert image_nodes
+    assert any(Path(bpy.path.abspath(node.image.filepath)).resolve() == image_path.resolve() for node in image_nodes)
+
+
 def smoke_pbr_material_setup():
     op_image_io.get_pref = _get_smoke_preferences
 
@@ -287,6 +329,7 @@ def main():
         smoke_operator_inspector()
         smoke_config_io()
         smoke_config_reload_after_file_load()
+        smoke_import_image_as_nodes_assigns_image()
         smoke_pbr_material_setup()
         smoke_batch_append_blend()
     finally:

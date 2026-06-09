@@ -42,14 +42,20 @@ class image_io:
         src_images = list(bpy.data.images)
 
         # use built-in ops instead of bpy.data.images.load to detect sequence and UDIM
-        bpy.ops.image.open(filepath=path)
+        try:
+            bpy.ops.image.open(filepath=path)
+        except Exception:
+            pass
         # if image already load in, reload it
-        images = [img for img in bpy.data.images if img not in src_images] + [
-            bpy.data.images.get(os.path.basename(path))]
+        images = [img for img in bpy.data.images if img not in src_images]
+        existing_image = bpy.data.images.get(os.path.basename(path))
+        if existing_image is not None:
+            images.append(existing_image)
 
-        image = images[0]
+        if images:
+            return images[0]
 
-        return image
+        return load_image_data_by_path(path)
 
 
 def load_image_data_by_path(path):
